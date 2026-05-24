@@ -349,7 +349,7 @@
     },
     "Reaction": {
       "type": "object",
-      "required": ["trigger", "when", "effect"],
+      "required": ["trigger", "when", "notify", "description"],
       "additionalProperties": false,
       "properties": {
         "trigger": {
@@ -362,38 +362,34 @@
           }
         },
         "when": { "type": "array", "items": { "$ref": "#/$defs/Condition" } },
-        "effect": { "$ref": "#/$defs/SideEffect" }
+        "notify": { "$ref": "#/$defs/NotificationTarget" },
+        "description": { "type": "string" }
       }
     },
-    "SideEffect": {
+    "NotificationTarget": {
       "oneOf": [
         {
           "type": "object",
-          "required": ["kind", "to", "template"],
+          "required": ["actor"],
           "additionalProperties": false,
           "properties": {
-            "kind": { "const": "notify" },
-            "to": { "type": "string" },
-            "template": { "type": "string" }
+            "actor": { "type": "string" }
           }
         },
         {
           "type": "object",
-          "required": ["kind", "message"],
+          "required": ["owner"],
           "additionalProperties": false,
           "properties": {
-            "kind": { "const": "log" },
-            "message": { "type": "string" }
+            "owner": { "type": "string" }
           }
         },
         {
           "type": "object",
-          "required": ["kind", "url", "payload"],
+          "required": ["external"],
           "additionalProperties": false,
           "properties": {
-            "kind": { "const": "webhook" },
-            "url": { "type": "string" },
-            "payload": {}
+            "external": { "type": "string" }
           }
         }
       ]

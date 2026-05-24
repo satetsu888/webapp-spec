@@ -381,7 +381,8 @@ describe("reactions", () => {
       {
         trigger: { usecase: "complete-todo", entity: "User" },
         when: [],
-        effect: { kind: "log", message: "test" },
+        notify: { external: "test-log" },
+        description: "test reaction",
       },
     ];
     const result = validate(spec);

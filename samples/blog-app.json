@@ -226,12 +226,14 @@
     {
       "trigger": { "usecase": "create-comment", "entity": "Comment" },
       "when": [],
-      "effect": { "kind": "notify", "to": "post.author", "template": "新しいコメントが投稿されました: {{comment.body}}" }
+      "notify": { "owner": "Post" },
+      "description": "コメントが投稿されたことを記事の著者に通知する"
     },
     {
       "trigger": { "usecase": "publish-post", "entity": "Post" },
       "when": [],
-      "effect": { "kind": "log", "message": "記事が公開されました: {{post.title}}" }
+      "notify": { "external": "activity-log" },
+      "description": "記事が公開されたことを記録する"
     }
   ],
   "journeys": [

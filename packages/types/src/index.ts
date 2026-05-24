@@ -26,10 +26,10 @@ export type Constraint =
   | { entity: EntityRef; ownedBy: string; maxCount: number | null }
   | { entity: EntityRef; field: string; allowedValues: string[] };
 
-export type SideEffect =
-  | { kind: "notify"; to: string; template: string }
-  | { kind: "log"; message: string }
-  | { kind: "webhook"; url: string; payload: unknown };
+export type NotificationTarget =
+  | { actor: ActorRef }
+  | { owner: EntityRef }
+  | { external: string };
 
 export type Schema = Record<string, string>;
 
@@ -151,7 +151,8 @@ export type Usecase = {
 export type Reaction = {
   trigger: { usecase: UsecaseRef; entity: EntityRef };
   when: Condition[];
-  effect: SideEffect;
+  notify: NotificationTarget;
+  description: string;
 };
 
 // --- Journeys ---
