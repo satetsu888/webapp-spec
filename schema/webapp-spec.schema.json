@@ -3,10 +3,11 @@
   "$id": "https://webapp-spec.dev/schema/webapp-spec.schema.json",
   "title": "WebAppSpec",
   "type": "object",
-  "required": ["webappSpec", "version", "domain", "specs", "actors", "usecases", "reactions", "journeys", "ui"],
+  "required": ["webappSpec", "name", "version", "domain", "specs", "actors", "usecases", "reactions", "journeys", "ui"],
   "additionalProperties": false,
   "properties": {
     "webappSpec": { "type": "string", "description": "WebAppSpec format version" },
+    "name": { "type": "string", "description": "Name of the web application" },
     "version": { "type": "string", "description": "Application spec version" },
     "domain": { "$ref": "#/$defs/Domain" },
     "specs": { "type": "array", "items": { "$ref": "#/$defs/Spec" } },

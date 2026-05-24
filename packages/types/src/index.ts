@@ -222,6 +222,7 @@ export type UI = {
 
 export type WebAppSpec = {
   webappSpec: string;
+  name: string;
   version: string;
   domain: Domain;
   specs: Spec[];

@@ -52,7 +52,7 @@ export function Sidebar({ onUnload }: { onUnload: () => void }) {
   return (
     <aside className="flex h-screen w-56 flex-col border-r border-gray-200 bg-gray-50">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-        <span className="text-sm font-bold text-gray-800">WebAppSpec</span>
+        <span className="text-sm font-bold text-gray-800">{spec.spec.name}</span>
         <button
           onClick={onUnload}
           className="text-xs text-gray-500 hover:text-gray-800"

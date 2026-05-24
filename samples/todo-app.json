@@ -1,5 +1,6 @@
 {
   "webappSpec": "0.1.0",
+  "name": "Todo App",
   "version": "1.0.0",
   "domain": {
     "entities": [
