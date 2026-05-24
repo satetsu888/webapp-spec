@@ -1,0 +1,232 @@
+{
+  "domain": {
+    "entities": [
+      {
+        "id": "User",
+        "fields": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ],
+        "ownership": { "kind": "shared" },
+        "states": [],
+        "traits": []
+      },
+      {
+        "id": "Todo",
+        "fields": [
+          { "name": "title", "type": "string" },
+          { "name": "description", "type": "string", "required": false },
+          { "name": "status", "type": "string" },
+          { "name": "dueDate", "type": "date", "required": false },
+          { "name": "userId", "type": "User.id" }
+        ],
+        "ownership": { "kind": "personal", "ownerField": "userId" },
+        "states": [
+          { "name": "active", "field": "status", "value": "active" },
+          { "name": "completed", "field": "status", "value": "completed" }
+        ],
+        "traits": [
+          {
+            "name": "overdue",
+            "description": "期日を過ぎた未完了のTODO",
+            "derivedFrom": {
+              "and": [
+                { "field": "status", "equals": "active" },
+                { "field": "dueDate", "op": "lt", "value": "now" }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relations": [
+      { "id": "user-todos", "from": "User", "to": "Todo", "kind": "hasMany" }
+    ],
+    "transitions": [
+      {
+        "id": "create-todo",
+        "description": "TODOを作成する",
+        "changes": [
+          { "entity": "Todo", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "complete-todo",
+        "description": "TODOを完了にする",
+        "changes": [
+          { "entity": "Todo", "state": { "from": "active", "to": "completed" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "reopen-todo",
+        "description": "完了したTODOを再度有効にする",
+        "changes": [
+          { "entity": "Todo", "state": { "from": "completed", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "delete-todo",
+        "description": "TODOを削除する",
+        "changes": [
+          { "entity": "Todo", "state": { "from": "active", "to": "_end" }, "scope": "target" }
+        ],
+        "conditions": []
+      }
+    ]
+  },
+  "specs": [],
+  "actors": [
+    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } }
+  ],
+  "usecases": [
+    {
+      "id": "create-todo",
+      "description": "新しいTODOを作成する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Todo" },
+      "input": {
+        "title": "string",
+        "description": "string",
+        "dueDate": "date"
+      },
+      "transition": "create-todo",
+      "errors": []
+    },
+    {
+      "id": "complete-todo",
+      "description": "TODOを完了にする",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Todo" },
+      "input": { "todoId": "Todo.id" },
+      "transition": "complete-todo",
+      "errors": [
+        { "when": "already_completed", "description": "すでに完了済みのTODO" }
+      ]
+    },
+    {
+      "id": "reopen-todo",
+      "description": "完了したTODOを再度有効にする",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Todo" },
+      "input": { "todoId": "Todo.id" },
+      "transition": "reopen-todo",
+      "errors": [
+        { "when": "not_completed", "description": "完了していないTODO" }
+      ]
+    },
+    {
+      "id": "delete-todo",
+      "description": "TODOを削除する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Todo" },
+      "input": { "todoId": "Todo.id" },
+      "transition": "delete-todo",
+      "errors": []
+    }
+  ],
+  "reactions": [],
+  "journeys": [
+    {
+      "id": "manage-todos",
+      "actor": "member",
+      "goal": "TODOを管理する",
+      "steps": [
+        { "usecase": "create-todo" },
+        { "usecase": "complete-todo" },
+        { "usecase": "reopen-todo" },
+        { "usecase": "delete-todo" }
+      ]
+    }
+  ],
+  "ui": {
+    "components": [
+      {
+        "id": "todo-list",
+        "description": "TODO一覧を表示する",
+        "sources": [
+          {
+            "entity": "Todo",
+            "matching": ["active"],
+            "fields": ["title", "description", "status", "dueDate"],
+            "paginated": true,
+            "sort": [{ "field": "dueDate", "order": "asc" }]
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "title", "type": "string" },
+          { "name": "dueDate", "type": "date" },
+          { "name": "isOverdue", "type": "boolean" }
+        ],
+        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+      },
+      {
+        "id": "completed-todo-list",
+        "description": "完了済みTODO一覧を表示する",
+        "sources": [
+          {
+            "entity": "Todo",
+            "matching": ["completed"],
+            "fields": ["title", "description", "status"],
+            "paginated": true
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "title", "type": "string" }
+        ],
+        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+      },
+      {
+        "id": "todo-create-form",
+        "description": "TODO作成フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "title", "type": "string" },
+          { "name": "description", "type": "string" },
+          { "name": "dueDate", "type": "date" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "title", "type": "string" },
+          { "name": "description", "type": "string" },
+          { "name": "dueDate", "type": "date" }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "id": "todo-dashboard",
+        "components": ["todo-list", "completed-todo-list", "todo-create-form"],
+        "actions": [
+          {
+            "usecase": "create-todo",
+            "inputFrom": {
+              "title": "todo-create-form.title",
+              "description": "todo-create-form.description",
+              "dueDate": "todo-create-form.dueDate"
+            }
+          },
+          {
+            "usecase": "complete-todo",
+            "inputFrom": { "todoId": "todo-list.todoId" }
+          },
+          {
+            "usecase": "reopen-todo",
+            "inputFrom": { "todoId": "completed-todo-list.todoId" }
+          },
+          {
+            "usecase": "delete-todo",
+            "inputFrom": { "todoId": "todo-list.todoId" }
+          }
+        ]
+      }
+    ]
+  }
+}

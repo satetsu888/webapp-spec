@@ -1,0 +1,429 @@
+{
+  "domain": {
+    "entities": [
+      {
+        "id": "User",
+        "fields": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" },
+          { "name": "role", "type": "string" }
+        ],
+        "ownership": { "kind": "shared" },
+        "states": [],
+        "traits": [
+          {
+            "name": "is-admin",
+            "description": "管理者権限を持つユーザー",
+            "derivedFrom": { "field": "role", "equals": "admin" }
+          }
+        ]
+      },
+      {
+        "id": "Post",
+        "fields": [
+          { "name": "title", "type": "string" },
+          { "name": "body", "type": "string" },
+          { "name": "status", "type": "string" },
+          { "name": "authorId", "type": "User.id" },
+          { "name": "publishedAt", "type": "datetime", "required": false },
+          { "name": "category", "type": "string" }
+        ],
+        "ownership": { "kind": "personal", "ownerField": "authorId" },
+        "states": [
+          { "name": "draft", "field": "status", "value": "draft" },
+          { "name": "published", "field": "status", "value": "published" },
+          { "name": "archived", "field": "status", "value": "archived" }
+        ],
+        "traits": [
+          {
+            "name": "recent",
+            "description": "直近7日以内に公開された記事",
+            "derivedFrom": {
+              "and": [
+                { "field": "status", "equals": "published" },
+                { "field": "publishedAt", "op": "gte", "value": "7_days_ago" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "Comment",
+        "fields": [
+          { "name": "body", "type": "string" },
+          { "name": "status", "type": "string" },
+          { "name": "postId", "type": "Post.id" },
+          { "name": "authorId", "type": "User.id" }
+        ],
+        "ownership": { "kind": "personal", "ownerField": "authorId" },
+        "states": [
+          { "name": "visible", "field": "status", "value": "visible" },
+          { "name": "hidden", "field": "status", "value": "hidden" }
+        ],
+        "traits": []
+      },
+      {
+        "id": "Category",
+        "fields": [
+          { "name": "name", "type": "string" },
+          { "name": "slug", "type": "string" }
+        ],
+        "ownership": { "kind": "shared" },
+        "states": [],
+        "traits": []
+      }
+    ],
+    "relations": [
+      { "id": "user-posts", "from": "User", "to": "Post", "kind": "hasMany" },
+      { "id": "post-comments", "from": "Post", "to": "Comment", "kind": "hasMany" },
+      { "id": "user-comments", "from": "User", "to": "Comment", "kind": "hasMany" },
+      { "id": "category-posts", "from": "Category", "to": "Post", "kind": "hasMany" }
+    ],
+    "transitions": [
+      {
+        "id": "create-post",
+        "description": "記事を下書きとして作成する",
+        "changes": [
+          { "entity": "Post", "state": { "from": "_start", "to": "draft" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "publish-post",
+        "description": "記事を公開する",
+        "changes": [
+          { "entity": "Post", "state": { "from": "draft", "to": "published" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "unpublish-post",
+        "description": "公開中の記事を下書きに戻す",
+        "changes": [
+          { "entity": "Post", "state": { "from": "published", "to": "draft" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "archive-post",
+        "description": "記事をアーカイブする（関連コメントも非表示にする）",
+        "changes": [
+          { "entity": "Post", "state": { "from": "published", "to": "archived" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "create-comment",
+        "description": "記事にコメントを投稿する",
+        "changes": [
+          { "entity": "Comment", "state": { "from": "_start", "to": "visible" }, "scope": "target" }
+        ],
+        "conditions": [
+          { "field": "status", "equals": "published" }
+        ]
+      },
+      {
+        "id": "hide-comment",
+        "description": "コメントを非表示にする",
+        "changes": [
+          { "entity": "Comment", "state": { "from": "visible", "to": "hidden" }, "scope": "target" }
+        ],
+        "conditions": []
+      }
+    ]
+  },
+  "specs": [
+    {
+      "id": "post-title-length",
+      "description": "記事のタイトルは空にできない",
+      "rules": [
+        {
+          "when": { "field": "title", "op": "is_not_null" },
+          "constraint": { "entity": "Post", "field": "title", "allowedValues": [] }
+        }
+      ]
+    }
+  ],
+  "actors": [
+    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } },
+    { "id": "admin", "authState": { "kind": "authenticated", "roles": ["admin"] } }
+  ],
+  "usecases": [
+    {
+      "id": "create-post",
+      "description": "新しい記事を下書きとして作成する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": {
+        "title": "string",
+        "body": "string",
+        "category": "string"
+      },
+      "transition": "create-post",
+      "errors": []
+    },
+    {
+      "id": "publish-post",
+      "description": "下書きの記事を公開する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": { "postId": "Post.id" },
+      "transition": "publish-post",
+      "errors": [
+        { "when": "not_draft", "description": "下書き状態でない記事は公開できない" }
+      ]
+    },
+    {
+      "id": "unpublish-post",
+      "description": "公開中の記事を下書きに戻す",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": { "postId": "Post.id" },
+      "transition": "unpublish-post",
+      "errors": [
+        { "when": "not_published", "description": "公開中でない記事は非公開にできない" }
+      ]
+    },
+    {
+      "id": "archive-post",
+      "description": "記事をアーカイブする",
+      "actor": "admin",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": { "postId": "Post.id" },
+      "transition": "archive-post",
+      "errors": [
+        { "when": "not_published", "description": "公開中でない記事はアーカイブできない" }
+      ]
+    },
+    {
+      "id": "create-comment",
+      "description": "記事にコメントを投稿する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Comment" },
+      "input": {
+        "postId": "Post.id",
+        "body": "string"
+      },
+      "transition": "create-comment",
+      "errors": [
+        { "when": "post_not_published", "description": "公開中でない記事にはコメントできない" }
+      ]
+    },
+    {
+      "id": "hide-comment",
+      "description": "不適切なコメントを非表示にする",
+      "actor": "admin",
+      "target": { "kind": "single", "entity": "Comment" },
+      "input": { "commentId": "Comment.id" },
+      "transition": "hide-comment",
+      "errors": []
+    }
+  ],
+  "reactions": [
+    {
+      "trigger": { "usecase": "create-comment", "entity": "Comment" },
+      "when": [],
+      "effect": { "kind": "notify", "to": "post.author", "template": "新しいコメントが投稿されました: {{comment.body}}" }
+    },
+    {
+      "trigger": { "usecase": "publish-post", "entity": "Post" },
+      "when": [],
+      "effect": { "kind": "log", "message": "記事が公開されました: {{post.title}}" }
+    }
+  ],
+  "journeys": [
+    {
+      "id": "write-and-publish",
+      "actor": "member",
+      "goal": "記事を書いて公開する",
+      "steps": [
+        { "usecase": "create-post" },
+        { "usecase": "publish-post" },
+        { "usecase": "unpublish-post" }
+      ]
+    },
+    {
+      "id": "read-and-comment",
+      "actor": "member",
+      "goal": "記事を読んでコメントする",
+      "steps": [
+        { "usecase": "create-comment" }
+      ]
+    },
+    {
+      "id": "moderate-content",
+      "actor": "admin",
+      "goal": "不適切なコンテンツを管理する",
+      "steps": [
+        { "usecase": "hide-comment" },
+        { "usecase": "archive-post" }
+      ]
+    }
+  ],
+  "ui": {
+    "components": [
+      {
+        "id": "post-list",
+        "description": "公開済み記事の一覧",
+        "sources": [
+          {
+            "entity": "Post",
+            "matching": ["published"],
+            "fields": ["title", "category", "publishedAt", "authorId"],
+            "paginated": true,
+            "sort": [{ "field": "publishedAt", "order": "desc" }]
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "title", "type": "string" },
+          { "name": "category", "type": "string" },
+          { "name": "publishedAt", "type": "datetime" },
+          { "name": "authorName", "type": "string" }
+        ],
+        "outputs": [{ "name": "postId", "type": "Post.id" }]
+      },
+      {
+        "id": "post-detail",
+        "description": "記事の詳細表示とコメント一覧",
+        "sources": [
+          {
+            "entity": "Post",
+            "matching": ["published"],
+            "fields": ["title", "body", "category", "publishedAt", "authorId"]
+          },
+          {
+            "entity": "Comment",
+            "matching": ["visible"],
+            "fields": ["body", "authorId"],
+            "paginated": true,
+            "sort": [{ "field": "body", "order": "asc" }]
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "title", "type": "string" },
+          { "name": "body", "type": "string" },
+          { "name": "comments", "type": "Comment[]" }
+        ],
+        "outputs": [
+          { "name": "postId", "type": "Post.id" },
+          { "name": "commentId", "type": "Comment.id" }
+        ]
+      },
+      {
+        "id": "post-editor",
+        "description": "記事の作成・編集フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "title", "type": "string" },
+          { "name": "body", "type": "string" },
+          { "name": "category", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "title", "type": "string" },
+          { "name": "body", "type": "string" },
+          { "name": "category", "type": "string" }
+        ]
+      },
+      {
+        "id": "comment-form",
+        "description": "コメント投稿フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "body", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "body", "type": "string" }
+        ]
+      },
+      {
+        "id": "my-drafts",
+        "description": "自分の下書き記事一覧",
+        "sources": [
+          {
+            "entity": "Post",
+            "matching": ["draft"],
+            "fields": ["title", "category"],
+            "paginated": true
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "title", "type": "string" },
+          { "name": "category", "type": "string" }
+        ],
+        "outputs": [{ "name": "postId", "type": "Post.id" }]
+      }
+    ],
+    "views": [
+      {
+        "id": "home",
+        "components": ["post-list"],
+        "actions": []
+      },
+      {
+        "id": "post-page",
+        "components": ["post-detail", "comment-form"],
+        "actions": [
+          {
+            "usecase": "create-comment",
+            "inputFrom": {
+              "postId": "post-detail.postId",
+              "body": "comment-form.body"
+            }
+          }
+        ]
+      },
+      {
+        "id": "new-post",
+        "components": ["post-editor"],
+        "actions": [
+          {
+            "usecase": "create-post",
+            "inputFrom": {
+              "title": "post-editor.title",
+              "body": "post-editor.body",
+              "category": "post-editor.category"
+            }
+          }
+        ]
+      },
+      {
+        "id": "my-drafts-page",
+        "components": ["my-drafts"],
+        "actions": [
+          {
+            "usecase": "publish-post",
+            "inputFrom": { "postId": "my-drafts.postId" }
+          },
+          {
+            "usecase": "unpublish-post",
+            "inputFrom": { "postId": "my-drafts.postId" }
+          }
+        ]
+      },
+      {
+        "id": "admin-moderation",
+        "components": ["post-detail"],
+        "actions": [
+          {
+            "usecase": "hide-comment",
+            "inputFrom": { "commentId": "post-detail.commentId" }
+          },
+          {
+            "usecase": "archive-post",
+            "inputFrom": { "postId": "post-detail.postId" }
+          }
+        ]
+      }
+    ]
+  }
+}
