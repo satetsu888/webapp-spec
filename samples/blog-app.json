@@ -108,7 +108,8 @@
         "id": "archive-post",
         "description": "記事をアーカイブする（関連コメントも非表示にする）",
         "changes": [
-          { "entity": "Post", "state": { "from": "published", "to": "archived" }, "scope": "target" }
+          { "entity": "Post", "state": { "from": "published", "to": "archived" }, "scope": "target" },
+          { "entity": "Comment", "state": { "from": "visible", "to": "hidden" }, "scope": "related" }
         ],
         "conditions": []
       },

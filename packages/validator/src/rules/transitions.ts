@@ -34,22 +34,6 @@ export function checkTransitions(spec: WebAppSpec): ValidationIssue[] {
       }
     }
 
-    // Duplicate transitions: same entity, same from→to
-    for (let j = i + 1; j < spec.domain.transitions.length; j++) {
-      const other = spec.domain.transitions[j];
-      for (const c1 of tr.changes) {
-        for (const c2 of other.changes) {
-          if (c1.entity === c2.entity && c1.state.from === c2.state.from && c1.state.to === c2.state.to) {
-            issues.push({
-              severity: "warning",
-              rule: "transition.duplicate",
-              message: `Transitions "${tr.id}" and "${other.id}" define the same state change (${c1.entity}: ${c1.state.from} -> ${c1.state.to})`,
-              path: `domain.transitions[${i}]`,
-            });
-          }
-        }
-      }
-    }
   }
 
   // State reachability analysis per entity
