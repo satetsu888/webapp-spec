@@ -4,6 +4,8 @@ import type { WebAppSpec } from "@webapp-spec/types";
 
 function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
   return {
+    webappSpec: "0.1.0",
+    version: "1.0.0",
     domain: {
       entities: [
         {

@@ -220,6 +220,8 @@ export type UI = {
 // --- Root ---
 
 export type WebAppSpec = {
+  webappSpec: string;
+  version: string;
   domain: Domain;
   specs: Spec[];
   actors: Actor[];
