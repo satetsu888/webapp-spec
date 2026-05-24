@@ -448,6 +448,22 @@ describe("journeys", () => {
   });
 });
 
+describe("actors", () => {
+  it("warns when no anonymous actor is defined", () => {
+    const spec = minimalSpec();
+    spec.actors = spec.actors.filter((a) => a.authState.kind !== "anonymous");
+    const result = validate(spec);
+    expect(result.warnings.some((w) => w.rule === "actor.no-anonymous")).toBe(true);
+  });
+
+  it("does not warn when anonymous actor exists", () => {
+    const spec = minimalSpec();
+    spec.actors.push({ id: "anonymous", authState: { kind: "anonymous" } });
+    const result = validate(spec);
+    expect(result.warnings.filter((w) => w.rule === "actor.no-anonymous")).toHaveLength(0);
+  });
+});
+
 describe("entities", () => {
   it("detects entity with no states", () => {
     const spec = minimalSpec();
