@@ -1,3 +1,6 @@
+export const PSEUDO_STATES = ["_start", "_end"] as const;
+export type PseudoState = (typeof PSEUDO_STATES)[number];
+
 export type EntityRef = string;
 export type UsecaseRef = string;
 export type TransitionRef = string;

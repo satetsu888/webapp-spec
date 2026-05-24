@@ -1,4 +1,5 @@
 import type { WebAppSpec, Condition, Entity } from "@webapp-spec/types";
+import { PSEUDO_STATES } from "@webapp-spec/types";
 import type { ValidationIssue } from "../validator.js";
 
 function entityIds(spec: WebAppSpec): Set<string> {
@@ -118,10 +119,17 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
       } else {
         const entity = entityById(spec, change.entity)!;
         const states = stateNames(entity);
-        if (!states.has(change.state.from)) {
+        const pseudoSet = new Set<string>(PSEUDO_STATES);
+
+        if (change.state.from === "_end") {
+          issues.push({ severity: "error", rule: "transition.pseudo-state", message: `Transition "${tr.id}" の from に "_end" は使用できません（"_end" は to にのみ使用可能）`, path: `domain.transitions[${i}].changes[${j}].state.from` });
+        } else if (!pseudoSet.has(change.state.from) && !states.has(change.state.from)) {
           issues.push({ severity: "error", rule: "ref.state", message: `Transition "${tr.id}" の from state "${change.state.from}" は Entity "${change.entity}" に定義されていません`, path: `domain.transitions[${i}].changes[${j}].state.from` });
         }
-        if (!states.has(change.state.to)) {
+
+        if (change.state.to === "_start") {
+          issues.push({ severity: "error", rule: "transition.pseudo-state", message: `Transition "${tr.id}" の to に "_start" は使用できません（"_start" は from にのみ使用可能）`, path: `domain.transitions[${i}].changes[${j}].state.to` });
+        } else if (!pseudoSet.has(change.state.to) && !states.has(change.state.to)) {
           issues.push({ severity: "error", rule: "ref.state", message: `Transition "${tr.id}" の to state "${change.state.to}" は Entity "${change.entity}" に定義されていません`, path: `domain.transitions[${i}].changes[${j}].state.to` });
         }
       }

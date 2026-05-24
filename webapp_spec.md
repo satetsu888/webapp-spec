@@ -233,6 +233,35 @@ const archiveProject: Transition = {
 
 Entity 内に閉じるか複数にまたがるかは現時点の偶然であり、構造的な区別ではない。最初は単一 Entity の遷移でも後から複数 Entity に拡張されることは多いため、最初から同じ場所に統一しておく。
 
+#### 擬似状態 `_start` / `_end`
+
+Entity の作成と削除を状態遷移として表現するための予約語。Entity の states に定義してはならない。
+
+- `_start` — Entity が存在する前の状態。`from` にのみ使用可能。
+- `_end` — Entity がこの仕様上もう扱われない状態（削除）。`to` にのみ使用可能。物理削除か論理削除かは実装の決定事項。
+
+```typescript
+// 作成: _start → 初期状態
+const createTodo: Transition = {
+  id: "create-todo",
+  description: "TODOの作成",
+  changes: [
+    { entity: "Todo", state: { from: "_start", to: "active" }, scope: "target" },
+  ],
+  conditions: [],
+}
+
+// 削除: 任意の状態 → _end
+const deleteTodo: Transition = {
+  id: "delete-todo",
+  description: "TODOの削除",
+  changes: [
+    { entity: "Todo", state: { from: "active", to: "_end" }, scope: "target" },
+  ],
+  conditions: [],
+}
+```
+
 ---
 
 ## Specs — ビジネスルール

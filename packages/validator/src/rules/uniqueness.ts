@@ -1,4 +1,5 @@
 import type { WebAppSpec } from "@webapp-spec/types";
+import { PSEUDO_STATES } from "@webapp-spec/types";
 import type { ValidationIssue } from "../validator.js";
 
 function duplicates(items: string[]): string[] {
@@ -47,6 +48,18 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
     }
     for (const dup of duplicates(entity.traits.map((t) => t.name))) {
       issues.push({ severity: "error", rule: "unique.trait-name", message: `Entity "${entity.id}" の trait "${dup}" が重複しています`, path: `${prefix}.traits` });
+    }
+
+    const pseudoSet = new Set<string>(PSEUDO_STATES);
+    for (const state of entity.states) {
+      if (pseudoSet.has(state.name)) {
+        issues.push({
+          severity: "error",
+          rule: "unique.reserved-state-name",
+          message: `Entity "${entity.id}" の state 名 "${state.name}" は予約語です`,
+          path: `${prefix}.states`,
+        });
+      }
     }
 
     const stateNames = new Set(entity.states.map((s) => s.name));

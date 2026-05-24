@@ -177,6 +177,70 @@ describe("references", () => {
   });
 });
 
+describe("pseudo states", () => {
+  it("allows _start as from state", () => {
+    const spec = minimalSpec();
+    spec.domain.transitions.push({
+      id: "create-todo",
+      description: "TODO作成",
+      changes: [{ entity: "Todo", state: { from: "_start", to: "active" }, scope: "target" }],
+      conditions: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.filter((e) => e.rule === "ref.state" || e.rule === "transition.pseudo-state")).toHaveLength(0);
+  });
+
+  it("allows _end as to state", () => {
+    const spec = minimalSpec();
+    spec.domain.transitions.push({
+      id: "delete-todo",
+      description: "TODO削除",
+      changes: [{ entity: "Todo", state: { from: "active", to: "_end" }, scope: "target" }],
+      conditions: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.filter((e) => e.rule === "ref.state" || e.rule === "transition.pseudo-state")).toHaveLength(0);
+  });
+
+  it("rejects _end as from state", () => {
+    const spec = minimalSpec();
+    spec.domain.transitions.push({
+      id: "bad-transition",
+      description: "不正",
+      changes: [{ entity: "Todo", state: { from: "_end", to: "active" }, scope: "target" }],
+      conditions: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "transition.pseudo-state")).toBe(true);
+  });
+
+  it("rejects _start as to state", () => {
+    const spec = minimalSpec();
+    spec.domain.transitions.push({
+      id: "bad-transition",
+      description: "不正",
+      changes: [{ entity: "Todo", state: { from: "active", to: "_start" }, scope: "target" }],
+      conditions: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "transition.pseudo-state")).toBe(true);
+  });
+
+  it("rejects _start as entity state name", () => {
+    const spec = minimalSpec();
+    spec.domain.entities[0].states.push({ name: "_start", field: "status", value: "start" });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "unique.reserved-state-name")).toBe(true);
+  });
+
+  it("rejects _end as entity state name", () => {
+    const spec = minimalSpec();
+    spec.domain.entities[0].states.push({ name: "_end", field: "status", value: "end" });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "unique.reserved-state-name")).toBe(true);
+  });
+});
+
 describe("transitions", () => {
   it("detects missing relation for scope related", () => {
     const spec = minimalSpec();
