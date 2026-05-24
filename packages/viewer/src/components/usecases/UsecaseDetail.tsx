@@ -1,13 +1,15 @@
+import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 
-export function UsecaseDetail({ id }: { id: string }) {
+export function UsecaseDetail() {
+  const { id } = useParams<{ id: string }>();
   const { usecaseMap, reactionsByUsecase, spec } = useSpec();
-  const uc = usecaseMap.get(id);
+  const uc = usecaseMap.get(id!);
   if (!uc) return <p className="text-red-600">Usecase "{id}" not found</p>;
 
-  const reactions = reactionsByUsecase(id);
+  const reactions = reactionsByUsecase(id!);
   const journeys = spec.journeys.filter((j) =>
     j.steps.some((s) => typeof s !== "string" && s.usecase === id),
   );
@@ -29,7 +31,7 @@ export function UsecaseDetail({ id }: { id: string }) {
         </div>
         <div>
           <span className="text-gray-500">Target: </span>
-          <RefLink section="entities" itemId={uc.target.entity}>
+          <RefLink to={`/entities/${uc.target.entity}`}>
             {uc.target.entity}
           </RefLink>
           <Badge variant="gray" >
@@ -38,7 +40,7 @@ export function UsecaseDetail({ id }: { id: string }) {
         </div>
         <div>
           <span className="text-gray-500">Transition: </span>
-          <RefLink section="transitions" itemId={uc.transition}>
+          <RefLink to={`/transitions/${uc.transition}`}>
             {uc.transition}
           </RefLink>
         </div>
@@ -82,7 +84,7 @@ export function UsecaseDetail({ id }: { id: string }) {
           <div className="space-y-1">
             {uc.followUps.map((fu) => (
               <div key={fu.usecase} className="text-sm">
-                <RefLink section="usecases" itemId={fu.usecase}>
+                <RefLink to={`/usecases/${fu.usecase}`}>
                   {fu.usecase}
                 </RefLink>
                 <span className="ml-2 text-gray-500">{fu.description}</span>
@@ -115,7 +117,7 @@ export function UsecaseDetail({ id }: { id: string }) {
           <div className="space-y-1">
             {journeys.map((j) => (
               <div key={j.id} className="text-sm">
-                <RefLink section="journeys" itemId={j.id}>
+                <RefLink to={`/journeys/${j.id}`}>
                   {j.id}
                 </RefLink>
               </div>
@@ -132,7 +134,7 @@ export function UsecaseDetail({ id }: { id: string }) {
           <div className="space-y-1">
             {views.map((v) => (
               <div key={v.id} className="text-sm">
-                <RefLink section="views" itemId={v.id}>
+                <RefLink to={`/views/${v.id}`}>
                   {v.id}
                 </RefLink>
               </div>

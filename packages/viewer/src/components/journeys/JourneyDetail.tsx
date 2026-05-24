@@ -1,10 +1,12 @@
+import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 
-export function JourneyDetail({ id }: { id: string }) {
+export function JourneyDetail() {
+  const { id } = useParams<{ id: string }>();
   const { journeyMap } = useSpec();
-  const journey = journeyMap.get(id);
+  const journey = journeyMap.get(id!);
   if (!journey)
     return <p className="text-red-600">Journey "{id}" not found</p>;
 
@@ -28,12 +30,12 @@ export function JourneyDetail({ id }: { id: string }) {
                 {i + 1}
               </span>
               {typeof step === "string" ? (
-                <RefLink section="journeys" itemId={step}>
+                <RefLink to={`/journeys/${step}`}>
                   {step}
                 </RefLink>
               ) : (
                 <>
-                  <RefLink section="usecases" itemId={step.usecase}>
+                  <RefLink to={`/usecases/${step.usecase}`}>
                     {step.usecase}
                   </RefLink>
                   {step.description && (

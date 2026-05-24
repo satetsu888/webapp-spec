@@ -1,15 +1,17 @@
+import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 import { StateArrow } from "@/components/shared/StateArrow";
 
-export function EntityDetail({ id }: { id: string }) {
+export function EntityDetail() {
+  const { id } = useParams<{ id: string }>();
   const { entityMap, relationsForEntity, transitionsForEntity } = useSpec();
-  const entity = entityMap.get(id);
+  const entity = entityMap.get(id!);
   if (!entity) return <p className="text-red-600">Entity "{id}" not found</p>;
 
-  const relations = relationsForEntity(id);
-  const transitions = transitionsForEntity(id);
+  const relations = relationsForEntity(id!);
+  const transitions = transitionsForEntity(id!);
 
   return (
     <div className="space-y-6">
@@ -45,8 +47,7 @@ export function EntityDetail({ id }: { id: string }) {
                 <td className="py-1 pr-4">
                   {f.type.includes(".") ? (
                     <RefLink
-                      section="entities"
-                      itemId={f.type.split(".")[0]}
+                      to={`/entities/${f.type.split(".")[0]}`}
                       className="font-mono text-xs"
                     >
                       {f.type}
@@ -116,7 +117,7 @@ export function EntityDetail({ id }: { id: string }) {
                   <span className="mx-1 text-gray-400">
                     ({direction})
                   </span>
-                  <RefLink section="entities" itemId={other}>
+                  <RefLink to={`/entities/${other}`}>
                     {other}
                   </RefLink>
                 </div>
@@ -134,7 +135,7 @@ export function EntityDetail({ id }: { id: string }) {
           <div className="space-y-1">
             {transitions.map((t) => (
               <div key={t.id} className="text-sm">
-                <RefLink section="transitions" itemId={t.id}>
+                <RefLink to={`/transitions/${t.id}`}>
                   {t.id}
                 </RefLink>
                 <span className="ml-2">

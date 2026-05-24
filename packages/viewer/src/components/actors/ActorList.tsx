@@ -36,7 +36,7 @@ export function ActorList() {
                   <span className="text-xs text-gray-500">Usecases:</span>
                   {ucs.map((u) => (
                     <div key={u.id} className="ml-2 text-sm">
-                      <RefLink section="usecases" itemId={u.id}>
+                      <RefLink to={`/usecases/${u.id}`}>
                         {u.id}
                       </RefLink>
                     </div>

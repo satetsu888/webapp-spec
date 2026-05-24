@@ -34,7 +34,7 @@ export function ReactionList() {
             >
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">When</span>
-                <RefLink section="usecases" itemId={r.trigger.usecase}>
+                <RefLink to={`/usecases/${r.trigger.usecase}`}>
                   {r.trigger.usecase}
                 </RefLink>
                 <span className="text-gray-400">&rarr;</span>

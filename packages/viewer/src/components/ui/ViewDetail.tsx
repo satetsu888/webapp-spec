@@ -1,10 +1,12 @@
+import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 
-export function ViewDetail({ id }: { id: string }) {
+export function ViewDetail() {
+  const { id } = useParams<{ id: string }>();
   const { viewMap, componentMap } = useSpec();
-  const view = viewMap.get(id);
+  const view = viewMap.get(id!);
   if (!view) return <p className="text-red-600">View "{id}" not found</p>;
 
   return (
@@ -35,7 +37,7 @@ export function ViewDetail({ id }: { id: string }) {
                   <div className="mt-1 flex flex-wrap gap-1">
                     {comp.sources.map((src, i) => (
                       <span key={i} className="text-xs">
-                        <RefLink section="entities" itemId={src.entity}>
+                        <RefLink to={`/entities/${src.entity}`}>
                           {src.entity}
                         </RefLink>
                         {src.matching && (
@@ -71,7 +73,7 @@ export function ViewDetail({ id }: { id: string }) {
                 key={i}
                 className="rounded border border-gray-100 bg-white p-3 text-sm"
               >
-                <RefLink section="usecases" itemId={a.usecase}>
+                <RefLink to={`/usecases/${a.usecase}`}>
                   {a.usecase}
                 </RefLink>
                 <div className="mt-1 space-y-0.5 text-xs text-gray-500">

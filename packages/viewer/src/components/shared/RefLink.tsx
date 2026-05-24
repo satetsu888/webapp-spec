@@ -1,20 +1,18 @@
-import { useNavigation, type Section } from "@/hooks/useNavigation";
+import { Link } from "react-router";
 
 type Props = {
-  section: Section;
-  itemId?: string;
+  to: string;
   children: React.ReactNode;
   className?: string;
 };
 
-export function RefLink({ section, itemId, children, className }: Props) {
-  const { navigate } = useNavigation();
+export function RefLink({ to, children, className }: Props) {
   return (
-    <button
-      onClick={() => navigate(section, itemId)}
+    <Link
+      to={to}
       className={`text-blue-600 hover:underline ${className ?? ""}`}
     >
       {children}
-    </button>
+    </Link>
   );
 }

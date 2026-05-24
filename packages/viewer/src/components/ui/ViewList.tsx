@@ -12,7 +12,7 @@ export function ViewList() {
             key={v.id}
             className="rounded border border-gray-200 bg-white p-4"
           >
-            <RefLink section="views" itemId={v.id}>
+            <RefLink to={`/views/${v.id}`}>
               <span className="font-medium">{v.id}</span>
             </RefLink>
             <div className="mt-1 text-sm text-gray-500">

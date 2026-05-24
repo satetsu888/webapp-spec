@@ -1,11 +1,13 @@
+import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { StateArrow } from "@/components/shared/StateArrow";
 import { Badge } from "@/components/shared/Badge";
 
-export function TransitionDetail({ id }: { id: string }) {
+export function TransitionDetail() {
+  const { id } = useParams<{ id: string }>();
   const { transitionMap, reactionsByUsecase, spec } = useSpec();
-  const transition = transitionMap.get(id);
+  const transition = transitionMap.get(id!);
   if (!transition)
     return <p className="text-red-600">Transition "{id}" not found</p>;
 
@@ -28,7 +30,7 @@ export function TransitionDetail({ id }: { id: string }) {
               key={i}
               className="flex items-center gap-2 rounded border border-gray-100 bg-white p-3 text-sm"
             >
-              <RefLink section="entities" itemId={ch.entity}>
+              <RefLink to={`/entities/${ch.entity}`}>
                 {ch.entity}
               </RefLink>
               <StateArrow from={ch.state.from} to={ch.state.to} />
@@ -59,7 +61,7 @@ export function TransitionDetail({ id }: { id: string }) {
           <div className="space-y-1">
             {usecases.map((u) => (
               <div key={u.id} className="text-sm">
-                <RefLink section="usecases" itemId={u.id}>
+                <RefLink to={`/usecases/${u.id}`}>
                   {u.id}
                 </RefLink>
                 <span className="ml-2 text-gray-500">({u.actor})</span>

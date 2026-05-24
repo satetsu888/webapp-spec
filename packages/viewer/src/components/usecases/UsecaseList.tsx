@@ -14,13 +14,12 @@ export function UsecaseList() {
             className="rounded border border-gray-200 bg-white p-4"
           >
             <div className="flex items-center gap-2">
-              <RefLink section="usecases" itemId={u.id}>
+              <RefLink to={`/usecases/${u.id}`}>
                 <span className="font-medium">{u.id}</span>
               </RefLink>
               <Badge variant="green">{u.actor}</Badge>
               <RefLink
-                section="entities"
-                itemId={u.target.entity}
+                to={`/entities/${u.target.entity}`}
                 className="text-sm"
               >
                 {u.target.entity}
