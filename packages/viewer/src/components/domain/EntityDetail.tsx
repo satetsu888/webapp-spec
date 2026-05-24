@@ -79,16 +79,33 @@ export function EntityDetail() {
       {entity.states.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">States</h3>
-          <div className="flex flex-wrap gap-2">
-            {entity.states.map((s) => (
-              <div
-                key={s.name}
-                className="rounded border border-gray-200 bg-white px-3 py-1.5 text-sm"
-              >
-                <Badge variant="blue">{s.name}</Badge>
-                <span className="ml-2 text-xs text-gray-500">
-                  {s.field}={s.value}
-                </span>
+          <div className="space-y-3">
+            {Object.entries(
+              entity.states.reduce<Record<string, typeof entity.states>>(
+                (acc, s) => {
+                  (acc[s.field] ??= []).push(s);
+                  return acc;
+                },
+                {},
+              ),
+            ).map(([field, states]) => (
+              <div key={field}>
+                <div className="mb-1 text-xs font-medium text-gray-500">
+                  {field}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {states.map((s) => (
+                    <div
+                      key={s.name}
+                      className="rounded border border-gray-200 bg-white px-3 py-1.5 text-sm"
+                    >
+                      <Badge variant="blue">{s.name}</Badge>
+                      <span className="ml-2 text-xs text-gray-500">
+                        {s.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
