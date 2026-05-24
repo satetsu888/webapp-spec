@@ -1,0 +1,21 @@
+{
+  "name": "@webapp-spec/validator",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/validator.js",
+  "types": "dist/validator.d.ts",
+  "bin": {
+    "webapp-spec-validate": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@webapp-spec/types": "*",
+    "ajv": "^8.17.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.1"
+  }
+}

@@ -1,0 +1,503 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://webapp-spec.dev/schema/webapp-spec.schema.json",
+  "title": "WebAppSpec",
+  "type": "object",
+  "required": ["domain", "specs", "actors", "usecases", "reactions", "journeys", "ui"],
+  "additionalProperties": false,
+  "properties": {
+    "domain": { "$ref": "#/$defs/Domain" },
+    "specs": { "type": "array", "items": { "$ref": "#/$defs/Spec" } },
+    "actors": { "type": "array", "items": { "$ref": "#/$defs/Actor" } },
+    "usecases": { "type": "array", "items": { "$ref": "#/$defs/Usecase" } },
+    "reactions": { "type": "array", "items": { "$ref": "#/$defs/Reaction" } },
+    "journeys": { "type": "array", "items": { "$ref": "#/$defs/Journey" } },
+    "ui": { "$ref": "#/$defs/UI" }
+  },
+  "$defs": {
+    "Domain": {
+      "type": "object",
+      "required": ["entities", "relations", "transitions"],
+      "additionalProperties": false,
+      "properties": {
+        "entities": { "type": "array", "items": { "$ref": "#/$defs/Entity" } },
+        "relations": { "type": "array", "items": { "$ref": "#/$defs/Relation" } },
+        "transitions": { "type": "array", "items": { "$ref": "#/$defs/Transition" } }
+      }
+    },
+    "Entity": {
+      "type": "object",
+      "required": ["id", "fields", "ownership", "states", "traits"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/Field" } },
+        "ownership": { "$ref": "#/$defs/Ownership" },
+        "states": { "type": "array", "items": { "$ref": "#/$defs/State" } },
+        "traits": { "type": "array", "items": { "$ref": "#/$defs/Trait" } }
+      }
+    },
+    "Field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "required": { "type": "boolean" }
+      }
+    },
+    "Ownership": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "ownerField"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "personal" },
+            "ownerField": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "groupField"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "group" },
+            "groupField": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "requiredRole"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "role_scoped" },
+            "requiredRole": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "shared" }
+          }
+        }
+      ]
+    },
+    "State": {
+      "type": "object",
+      "required": ["name", "field", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "field": { "type": "string" },
+        "value": { "type": "string" }
+      }
+    },
+    "Trait": {
+      "type": "object",
+      "required": ["name", "description", "derivedFrom"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "derivedFrom": { "$ref": "#/$defs/Condition" }
+      }
+    },
+    "Condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["field", "equals"],
+          "properties": {
+            "field": { "type": "string" },
+            "equals": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["field", "op"],
+          "properties": {
+            "field": { "type": "string" },
+            "op": { "enum": ["lt", "gt", "lte", "gte", "is_null", "is_not_null"] },
+            "value": {}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["entity", "trait"],
+          "properties": {
+            "entity": { "type": "string" },
+            "trait": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["and"],
+          "properties": {
+            "and": { "type": "array", "items": { "$ref": "#/$defs/Condition" } }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["or"],
+          "properties": {
+            "or": { "type": "array", "items": { "$ref": "#/$defs/Condition" } }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Relation": {
+      "type": "object",
+      "required": ["id", "from", "to", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "kind": { "enum": ["hasMany", "belongsTo", "manyToMany"] }
+      }
+    },
+    "Transition": {
+      "type": "object",
+      "required": ["id", "description", "changes", "conditions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "changes": { "type": "array", "items": { "$ref": "#/$defs/StateChange" } },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/Condition" } }
+      }
+    },
+    "StateChange": {
+      "type": "object",
+      "required": ["entity", "state", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "type": "string" },
+        "state": {
+          "type": "object",
+          "required": ["from", "to"],
+          "additionalProperties": false,
+          "properties": {
+            "from": { "type": "string" },
+            "to": { "type": "string" }
+          }
+        },
+        "scope": { "enum": ["target", "related"] }
+      }
+    },
+    "Spec": {
+      "type": "object",
+      "required": ["id", "description", "rules"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "rules": { "type": "array", "items": { "$ref": "#/$defs/Rule" } }
+      }
+    },
+    "Rule": {
+      "type": "object",
+      "required": ["when", "constraint"],
+      "additionalProperties": false,
+      "properties": {
+        "when": { "$ref": "#/$defs/Condition" },
+        "constraint": { "$ref": "#/$defs/Constraint" }
+      }
+    },
+    "Constraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["relation", "maxCount"],
+          "additionalProperties": false,
+          "properties": {
+            "relation": { "type": "string" },
+            "maxCount": { "type": ["integer", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["entity", "ownedBy", "maxCount"],
+          "additionalProperties": false,
+          "properties": {
+            "entity": { "type": "string" },
+            "ownedBy": { "type": "string" },
+            "maxCount": { "type": ["integer", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["entity", "field", "allowedValues"],
+          "additionalProperties": false,
+          "properties": {
+            "entity": { "type": "string" },
+            "field": { "type": "string" },
+            "allowedValues": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "Actor": {
+      "type": "object",
+      "required": ["id", "authState"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "authState": { "$ref": "#/$defs/AuthState" }
+      }
+    },
+    "AuthState": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "anonymous" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "roles"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "authenticated" },
+            "roles": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "identity"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "pending_mfa" },
+            "identity": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "expired" } }
+        }
+      ]
+    },
+    "Usecase": {
+      "type": "object",
+      "required": ["id", "description", "actor", "target", "input", "transition", "errors"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "actor": { "type": "string" },
+        "target": { "$ref": "#/$defs/Target" },
+        "input": { "type": "object", "additionalProperties": { "type": "string" } },
+        "transition": { "type": "string" },
+        "errors": { "type": "array", "items": { "$ref": "#/$defs/ErrorCase" } },
+        "followUps": { "type": "array", "items": { "$ref": "#/$defs/FollowUpUsecase" } }
+      }
+    },
+    "Target": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "entity"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "single" },
+            "entity": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "entity", "matching"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "collection" },
+            "entity": { "type": "string" },
+            "matching": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "FollowUpUsecase": {
+      "type": "object",
+      "required": ["description", "usecase"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string" },
+        "usecase": { "type": "string" }
+      }
+    },
+    "ErrorCase": {
+      "type": "object",
+      "required": ["when", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "when": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "Reaction": {
+      "type": "object",
+      "required": ["trigger", "when", "effect"],
+      "additionalProperties": false,
+      "properties": {
+        "trigger": {
+          "type": "object",
+          "required": ["usecase", "entity"],
+          "additionalProperties": false,
+          "properties": {
+            "usecase": { "type": "string" },
+            "entity": { "type": "string" }
+          }
+        },
+        "when": { "type": "array", "items": { "$ref": "#/$defs/Condition" } },
+        "effect": { "$ref": "#/$defs/SideEffect" }
+      }
+    },
+    "SideEffect": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "to", "template"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "notify" },
+            "to": { "type": "string" },
+            "template": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "message"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "log" },
+            "message": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "url", "payload"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "webhook" },
+            "url": { "type": "string" },
+            "payload": {}
+          }
+        }
+      ]
+    },
+    "Journey": {
+      "type": "object",
+      "required": ["id", "actor", "goal", "steps"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "actor": { "type": "string" },
+        "goal": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/UsecaseStep" },
+              { "type": "string" }
+            ]
+          }
+        },
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/Journey" } }
+      }
+    },
+    "UsecaseStep": {
+      "type": "object",
+      "required": ["usecase"],
+      "additionalProperties": false,
+      "properties": {
+        "usecase": { "type": "string" },
+        "with": { "type": "object" },
+        "description": { "type": "string" }
+      }
+    },
+    "UI": {
+      "type": "object",
+      "required": ["components", "views"],
+      "additionalProperties": false,
+      "properties": {
+        "components": { "type": "array", "items": { "$ref": "#/$defs/Component" } },
+        "views": { "type": "array", "items": { "$ref": "#/$defs/View" } }
+      }
+    },
+    "Component": {
+      "type": "object",
+      "required": ["id", "description", "sources", "inputs", "transforms", "displays", "outputs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/DataSource" } },
+        "inputs": { "type": "array", "items": { "$ref": "#/$defs/Field" } },
+        "transforms": { "type": "array", "items": { "$ref": "#/$defs/Transform" } },
+        "displays": { "type": "array", "items": { "$ref": "#/$defs/Field" } },
+        "outputs": { "type": "array", "items": { "$ref": "#/$defs/Field" } }
+      }
+    },
+    "DataSource": {
+      "type": "object",
+      "required": ["entity", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "type": "string" },
+        "matching": { "type": "array", "items": { "type": "string" } },
+        "fields": { "type": "array", "items": { "type": "string" } },
+        "paginated": { "type": "boolean" },
+        "sort": { "type": "array", "items": { "$ref": "#/$defs/SortField" } }
+      }
+    },
+    "SortField": {
+      "type": "object",
+      "required": ["field", "order"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string" },
+        "order": { "enum": ["asc", "desc"] }
+      }
+    },
+    "Transform": {
+      "type": "object",
+      "required": ["description", "from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string" },
+        "from": { "type": "array", "items": { "type": "string" } },
+        "to": { "type": "string" }
+      }
+    },
+    "View": {
+      "type": "object",
+      "required": ["id", "components", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "components": { "type": "array", "items": { "type": "string" } },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/ViewAction" } }
+      }
+    },
+    "ViewAction": {
+      "type": "object",
+      "required": ["usecase", "inputFrom"],
+      "additionalProperties": false,
+      "properties": {
+        "usecase": { "type": "string" },
+        "inputFrom": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    }
+  }
+}
