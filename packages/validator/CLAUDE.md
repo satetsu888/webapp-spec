@@ -14,7 +14,8 @@ npx webapp-spec-validate <spec.json>  # CLI
 
 ```
 src/
-  validator.ts        # ValidationIssue/ValidationResult 型定義、ルール集約
+  semver.ts           # semver 比較関数（外部依存なし）
+  validator.ts        # ValidationIssue/ValidationResult 型定義、VersionedRule、ルール集約
   rules/
     references.ts     # 参照整合性（entity, field, state, actor, transition 等の存在チェック）
     uniqueness.ts     # ID・名前の一意性、予約語チェック
@@ -30,7 +31,7 @@ tests/
   validator.test.ts   # vitest テスト
 ```
 
-各ルールファイルは `(spec: WebAppSpec) => ValidationIssue[]` を返す関数をエクスポートし、`validator.ts` が集約する。
+各ルールファイルは `(spec: WebAppSpec) => ValidationIssue[]` を返す関数をエクスポートする。`validator.ts` が `VersionedRule`（`fn` + `minVersion` + `maxVersion?`）として登録し、`spec.webappSpec` のバージョンに応じてフィルタして実行する。`SUPPORTED_SPEC_VERSION` より新しい spec はエラーで即 return する。
 
 ## バリデーションルール一覧
 
@@ -38,6 +39,7 @@ tests/
 
 | rule | ファイル | 内容 |
 |------|----------|------|
+| `version.unsupported` | validator.ts | spec.webappSpec が SUPPORTED_SPEC_VERSION より新しい |
 | `ref.entity` | references.ts | 存在しない Entity への参照 |
 | `ref.field` | references.ts | 存在しない Field への参照（ownership, state, datasource, sort, condition 内） |
 | `ref.state` | references.ts | 存在しない State への参照（transition の from/to） |

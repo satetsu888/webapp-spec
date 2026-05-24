@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validate } from "../src/validator.js";
+import { compareSemver } from "../src/semver.js";
 import type { WebAppSpec } from "@webapp-spec/types";
 
 function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
@@ -88,11 +89,45 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
   };
 }
 
+describe("semver", () => {
+  it("compares equal versions", () => {
+    expect(compareSemver("0.1.0", "0.1.0")).toBe(0);
+  });
+  it("compares major", () => {
+    expect(compareSemver("1.0.0", "2.0.0")).toBe(-1);
+    expect(compareSemver("2.0.0", "1.0.0")).toBe(1);
+  });
+  it("compares minor", () => {
+    expect(compareSemver("0.1.0", "0.2.0")).toBe(-1);
+    expect(compareSemver("0.2.0", "0.1.0")).toBe(1);
+  });
+  it("compares patch", () => {
+    expect(compareSemver("0.1.0", "0.1.1")).toBe(-1);
+    expect(compareSemver("0.1.1", "0.1.0")).toBe(1);
+  });
+});
+
 describe("valid spec", () => {
   it("passes with no issues", () => {
     const result = validate(minimalSpec());
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
+  });
+});
+
+describe("version check", () => {
+  it("rejects unsupported spec version", () => {
+    const result = validate(minimalSpec({ webappSpec: "99.0.0" }));
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].rule).toBe("version.unsupported");
+  });
+
+  it("skips rules when spec version is older than all rules", () => {
+    const result = validate(minimalSpec({ webappSpec: "0.0.1" }));
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings).toHaveLength(0);
   });
 });
 
