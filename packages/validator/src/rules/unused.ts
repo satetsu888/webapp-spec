@@ -39,7 +39,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.transition",
-        message: `Transition "${tr.id}" はどの Usecase からも参照されていません`,
+        message: `Transition "${tr.id}" is not referenced by any Usecase`,
         path: `domain.transitions`,
       });
     }
@@ -51,7 +51,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.actor",
-        message: `Actor "${actor.id}" はどの Usecase・Journey からも参照されていません`,
+        message: `Actor "${actor.id}" is not referenced by any Usecase or Journey`,
         path: `actors`,
       });
     }
@@ -63,7 +63,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.usecase",
-        message: `Usecase "${uc.id}" はどの Journey・View・Reaction・followUp からも参照されていません`,
+        message: `Usecase "${uc.id}" is not referenced by any Journey, View, Reaction, or followUp`,
         path: `usecases`,
       });
     }
@@ -75,7 +75,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.component",
-        message: `Component "${comp.id}" はどの View からも参照されていません`,
+        message: `Component "${comp.id}" is not referenced by any View`,
         path: `ui.components`,
       });
     }
@@ -87,7 +87,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.entity",
-        message: `Entity "${entity.id}" はどこからも参照されていません`,
+        message: `Entity "${entity.id}" is not referenced anywhere`,
         path: `domain.entities`,
       });
     }

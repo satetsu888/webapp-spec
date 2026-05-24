@@ -20,7 +20,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "error",
             rule: "ui.transform-input",
-            message: `Component "${comp.id}" の transform の from "${fromField}" は sources/inputs に存在しません`,
+            message: `Component "${comp.id}" transform from "${fromField}" is not available in sources/inputs`,
             path: `ui.components[${i}].transforms[${j}]`,
           });
         }
@@ -36,7 +36,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
         issues.push({
           severity: "error",
           rule: "ui.transform-output",
-          message: `Component "${comp.id}" の transform の to "${tr.to}" は displays/outputs に存在しません`,
+          message: `Component "${comp.id}" transform to "${tr.to}" is not defined in displays/outputs`,
           path: `ui.components[${i}].transforms[${j}]`,
         });
       }
@@ -59,7 +59,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "error",
             rule: "view.input-mapping",
-            message: `View "${view.id}" の inputFrom "${source}" は "componentId.outputName" 形式ではありません`,
+            message: `View "${view.id}" inputFrom value "${source}" must be in "componentId.outputName" format`,
             path: `ui.views[${i}].actions[${j}].inputFrom`,
           });
           continue;
@@ -72,7 +72,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "error",
             rule: "view.input-mapping",
-            message: `View "${view.id}" の inputFrom が参照する component "${compId}" はこの View に配置されていません`,
+            message: `View "${view.id}" inputFrom references component "${compId}" which is not in this View`,
             path: `ui.views[${i}].actions[${j}].inputFrom`,
           });
           continue;
@@ -85,7 +85,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
             issues.push({
               severity: "error",
               rule: "view.input-mapping",
-              message: `View "${view.id}" の inputFrom が参照する output "${outputName}" は Component "${compId}" に定義されていません`,
+              message: `View "${view.id}" inputFrom references undefined output "${outputName}" on Component "${compId}"`,
               path: `ui.views[${i}].actions[${j}].inputFrom`,
             });
           }
@@ -96,7 +96,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "error",
             rule: "view.usecase-input",
-            message: `View "${view.id}" の inputFrom のキー "${ucInput}" は Usecase "${action.usecase}" の input に定義されていません`,
+            message: `View "${view.id}" inputFrom key "${ucInput}" is not defined in Usecase "${action.usecase}" input`,
             path: `ui.views[${i}].actions[${j}].inputFrom`,
           });
         }
@@ -109,7 +109,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
             issues.push({
               severity: "error",
               rule: "view.usecase-input",
-              message: `View "${view.id}" で Usecase "${action.usecase}" の input "${inputKey}" がマッピングされていません`,
+              message: `View "${view.id}" does not map Usecase "${action.usecase}" input "${inputKey}"`,
               path: `ui.views[${i}].actions[${j}]`,
             });
           }

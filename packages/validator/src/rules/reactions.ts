@@ -22,7 +22,7 @@ export function checkReactions(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "error",
         rule: "reaction.entity",
-        message: `Reaction の trigger.entity "${r.trigger.entity}" は Usecase "${r.trigger.usecase}" の target entity "${uc.target.entity}" と一致しません`,
+        message: `Reaction trigger.entity "${r.trigger.entity}" does not match usecase "${r.trigger.usecase}" target entity "${uc.target.entity}"`,
         path: `reactions[${i}]`,
       });
     }
@@ -38,7 +38,7 @@ export function checkReactions(spec: WebAppSpec): ValidationIssue[] {
             issues.push({
               severity: "error",
               rule: "reaction.field",
-              message: `Reaction の when 条件が参照する field "${f}" は Entity "${r.trigger.entity}" に定義されていません`,
+              message: `Reaction when condition references undefined field "${f}" on Entity "${r.trigger.entity}"`,
               path: `reactions[${i}].when[${j}]`,
             });
           }

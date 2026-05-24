@@ -32,7 +32,7 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "error",
         rule: `unique.${label.toLowerCase()}-id`,
-        message: `${label} id "${dup}" が重複しています`,
+        message: `Duplicate ${label} id "${dup}"`,
         path,
       });
     }
@@ -41,13 +41,13 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
   for (const entity of spec.domain.entities) {
     const prefix = `domain.entities[${entity.id}]`;
     for (const dup of duplicates(entity.fields.map((f) => f.name))) {
-      issues.push({ severity: "error", rule: "unique.field-name", message: `Entity "${entity.id}" の field "${dup}" が重複しています`, path: `${prefix}.fields` });
+      issues.push({ severity: "error", rule: "unique.field-name", message: `Duplicate field name "${dup}" in Entity "${entity.id}"`, path: `${prefix}.fields` });
     }
     for (const dup of duplicates(entity.states.map((s) => s.name))) {
-      issues.push({ severity: "error", rule: "unique.state-name", message: `Entity "${entity.id}" の state "${dup}" が重複しています`, path: `${prefix}.states` });
+      issues.push({ severity: "error", rule: "unique.state-name", message: `Duplicate state name "${dup}" in Entity "${entity.id}"`, path: `${prefix}.states` });
     }
     for (const dup of duplicates(entity.traits.map((t) => t.name))) {
-      issues.push({ severity: "error", rule: "unique.trait-name", message: `Entity "${entity.id}" の trait "${dup}" が重複しています`, path: `${prefix}.traits` });
+      issues.push({ severity: "error", rule: "unique.trait-name", message: `Duplicate trait name "${dup}" in Entity "${entity.id}"`, path: `${prefix}.traits` });
     }
 
     const pseudoSet = new Set<string>(PSEUDO_STATES);
@@ -56,7 +56,7 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
         issues.push({
           severity: "error",
           rule: "unique.reserved-state-name",
-          message: `Entity "${entity.id}" の state 名 "${state.name}" は予約語です`,
+          message: `State name "${state.name}" in Entity "${entity.id}" is a reserved pseudo-state`,
           path: `${prefix}.states`,
         });
       }
@@ -68,7 +68,7 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
         issues.push({
           severity: "error",
           rule: "unique.state-trait-collision",
-          message: `Entity "${entity.id}" で state と trait の名前 "${trait.name}" が衝突しています`,
+          message: `State and trait name "${trait.name}" collide in Entity "${entity.id}"`,
           path: `${prefix}.traits`,
         });
       }

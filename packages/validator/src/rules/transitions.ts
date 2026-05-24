@@ -27,7 +27,7 @@ export function checkTransitions(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "error",
             rule: "transition.entity-relation",
-            message: `Transition "${tr.id}" の scope "related" の entity "${change.entity}" は target entity との Relation が定義されていません`,
+            message: `Transition "${tr.id}" uses scope "related" for entity "${change.entity}" but no Relation to target entity is defined`,
             path: `domain.transitions[${i}]`,
           });
         }
@@ -43,7 +43,7 @@ export function checkTransitions(spec: WebAppSpec): ValidationIssue[] {
             issues.push({
               severity: "warning",
               rule: "transition.duplicate",
-              message: `Transition "${tr.id}" と "${other.id}" が同じ遷移 (${c1.entity}: ${c1.state.from} → ${c1.state.to}) を定義しています`,
+              message: `Transitions "${tr.id}" and "${other.id}" define the same state change (${c1.entity}: ${c1.state.from} -> ${c1.state.to})`,
               path: `domain.transitions[${i}]`,
             });
           }
@@ -77,7 +77,7 @@ export function checkTransitions(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "transition.unreachable",
-            message: `Entity "${entity.id}" の state "${s}" はどの Transition からも到達・出発できません`,
+            message: `State "${s}" on Entity "${entity.id}" is unreachable (no transition arrives at or departs from it)`,
             path: `domain.entities[${entity.id}].states`,
           });
         }

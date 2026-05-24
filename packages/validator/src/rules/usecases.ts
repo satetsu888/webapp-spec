@@ -21,7 +21,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
         issues.push({
           severity: "error",
           rule: "usecase.transition-target",
-          message: `Usecase "${uc.id}" の target entity "${uc.target.entity}" は transition "${uc.transition}" の target entity (${targetEntityIds.join(", ")}) と一致しません`,
+          message: `Usecase "${uc.id}" target entity "${uc.target.entity}" does not match transition "${uc.transition}" target entity (${targetEntityIds.join(", ")})`,
           path: `usecases[${i}]`,
         });
       }
@@ -35,7 +35,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
         issues.push({
           severity: "warning",
           rule: "usecase.anonymous-ownership",
-          message: `Usecase "${uc.id}" は anonymous actor で ${entity.ownership.kind} リソース "${uc.target.entity}" にアクセスしています`,
+          message: `Usecase "${uc.id}" uses anonymous actor to access ${entity.ownership.kind} resource "${uc.target.entity}"`,
           path: `usecases[${i}]`,
         });
       }
@@ -59,7 +59,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
               issues.push({
                 severity: "warning",
                 rule: "usecase.followup-actor",
-                message: `Usecase "${uc.id}" の followUp "${followUp.usecase}" は人間 actor "${followUpUc.actor}" で定義されています（通常は外部システム actor）`,
+                message: `Usecase "${uc.id}" followUp "${followUp.usecase}" is defined with human actor "${followUpUc.actor}" (followUps typically use external system actors)`,
                 path: `usecases[${i}].followUps[${j}]`,
               });
             }
@@ -76,7 +76,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "usecase.followup-cycle",
-            message: `Usecase "${uc.id}" の followUps に循環参照があります`,
+            message: `Usecase "${uc.id}" has a circular reference in followUps`,
             path: `usecases[${i}].followUps`,
           });
           break;

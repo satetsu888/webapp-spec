@@ -17,7 +17,7 @@ let raw: string | undefined;
 try {
   raw = readFileSync(filePath, "utf-8");
 } catch {
-  console.error(`Error: ファイル "${filePath}" を読み込めません`);
+  console.error(`Error: cannot read file "${filePath}"`);
   process.exit(1);
 }
 
@@ -25,7 +25,7 @@ let data: unknown;
 try {
   data = JSON.parse(raw!);
 } catch {
-  console.error(`Error: "${filePath}" は有効な JSON ではありません`);
+  console.error(`Error: "${filePath}" is not valid JSON`);
   process.exit(1);
 }
 

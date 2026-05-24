@@ -19,7 +19,7 @@ export function checkJourneys(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "journey.actor-mismatch",
-            message: `Journey "${journey.id}" (actor: ${journey.actor}) が参照する journey "${step}" の actor "${refJourney.actor}" と一致しません`,
+            message: `Journey "${journey.id}" (actor: ${journey.actor}) references journey "${step}" with different actor "${refJourney.actor}"`,
             path: `journeys[${i}].steps[${k}]`,
           });
         }
@@ -30,7 +30,7 @@ export function checkJourneys(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "journey.actor-mismatch",
-            message: `Journey "${journey.id}" (actor: ${journey.actor}) のステップで usecase "${step.usecase}" (actor: ${uc.actor}) を呼んでいます`,
+            message: `Journey "${journey.id}" (actor: ${journey.actor}) step references usecase "${step.usecase}" with different actor "${uc.actor}"`,
             path: `journeys[${i}].steps[${k}]`,
           });
         }
@@ -45,7 +45,7 @@ export function checkJourneys(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "journey.actor-mismatch",
-            message: `Journey "${journey.id}" の variant "${variant.id}" の actor "${variant.actor}" が親と一致しません`,
+            message: `Journey "${journey.id}" variant "${variant.id}" has different actor "${variant.actor}" than parent`,
             path: `journeys[${i}].variants[${v}]`,
           });
         }

@@ -54,7 +54,7 @@ export function checkSpecs(spec: WebAppSpec): ValidationIssue[] {
           issues.push({
             severity: "warning",
             rule: "spec.incomplete-coverage",
-            message: `Spec "${s.id}" は Entity "${entityId}" の trait "${prefix}-*" のうち ${missing.join(", ")} をカバーしていません`,
+            message: `Spec "${s.id}" does not cover traits ${missing.join(", ")} from Entity "${entityId}" trait family "${prefix}-*"`,
             path: `specs[${i}]`,
           });
         }
