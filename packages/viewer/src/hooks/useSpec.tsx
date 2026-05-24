@@ -28,7 +28,19 @@ export type SpecLookups = {
   transitionsForEntity: (entityId: string) => Transition[];
   usecasesByActor: (actorId: string) => Usecase[];
   reactionsByUsecase: (usecaseId: string) => Reaction[];
+  stateColorClass: (entityId: string, stateName: string) => string;
 };
+
+const STATE_COLOR_CLASSES = [
+  "bg-blue-100 text-blue-800",
+  "bg-emerald-100 text-emerald-800",
+  "bg-amber-100 text-amber-800",
+  "bg-purple-100 text-purple-800",
+  "bg-cyan-100 text-cyan-800",
+  "bg-rose-100 text-rose-800",
+  "bg-indigo-100 text-indigo-800",
+  "bg-teal-100 text-teal-800",
+];
 
 const SpecContext = createContext<SpecLookups | null>(null);
 
@@ -75,6 +87,16 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     usecaseReactions.set(r.trigger.usecase, list);
   }
 
+  const stateColorMap = new Map<string, string>();
+  for (const entity of spec.domain.entities) {
+    entity.states.forEach((s, i) => {
+      stateColorMap.set(
+        `${entity.id}:${s.name}`,
+        STATE_COLOR_CLASSES[i % STATE_COLOR_CLASSES.length],
+      );
+    });
+  }
+
   return {
     spec,
     entityMap,
@@ -90,6 +112,11 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     transitionsForEntity: (id) => entityTransitions.get(id) ?? [],
     usecasesByActor: (id) => actorUsecases.get(id) ?? [],
     reactionsByUsecase: (id) => usecaseReactions.get(id) ?? [],
+    stateColorClass: (entityId, stateName) => {
+      if (stateName === "_start") return "bg-gray-200 text-gray-600";
+      if (stateName === "_end") return "bg-red-100 text-red-800";
+      return stateColorMap.get(`${entityId}:${stateName}`) ?? "bg-gray-100 text-gray-800";
+    },
   };
 }
 

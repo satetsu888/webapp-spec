@@ -23,7 +23,7 @@ export function TransitionList() {
                   <RefLink to={`/entities/${ch.entity}`}>
                     {ch.entity}
                   </RefLink>
-                  <StateArrow from={ch.state.from} to={ch.state.to} />
+                  <StateArrow entity={ch.entity} from={ch.state.from} to={ch.state.to} />
                   <span className="text-xs text-gray-400">[{ch.scope}]</span>
                 </div>
               ))}

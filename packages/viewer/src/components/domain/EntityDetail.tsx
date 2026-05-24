@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
+import { StateTag } from "@/components/shared/StateTag";
 import { StateArrow } from "@/components/shared/StateArrow";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
 import { buildStateDiagram } from "./buildStateDiagram";
@@ -95,15 +96,7 @@ export function EntityDetail() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {states.map((s) => (
-                    <div
-                      key={s.name}
-                      className="rounded border border-gray-200 bg-white px-3 py-1.5 text-sm"
-                    >
-                      <Badge variant="blue">{s.name}</Badge>
-                      <span className="ml-2 text-xs text-gray-500">
-                        {s.value}
-                      </span>
-                    </div>
+                    <StateTag key={s.name} entity={entity.id} state={s.name} />
                   ))}
                 </div>
               </div>
@@ -177,6 +170,7 @@ export function EntityDetail() {
                     .map((ch, i) => (
                       <StateArrow
                         key={i}
+                        entity={ch.entity}
                         from={ch.state.from}
                         to={ch.state.to}
                       />

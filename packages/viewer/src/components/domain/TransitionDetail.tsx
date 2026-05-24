@@ -33,7 +33,7 @@ export function TransitionDetail() {
               <RefLink to={`/entities/${ch.entity}`}>
                 {ch.entity}
               </RefLink>
-              <StateArrow from={ch.state.from} to={ch.state.to} />
+              <StateArrow entity={ch.entity} from={ch.state.from} to={ch.state.to} />
               <Badge variant={ch.scope === "target" ? "blue" : "yellow"}>
                 {ch.scope}
               </Badge>
