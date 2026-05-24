@@ -6,6 +6,7 @@ import type { WebAppSpec } from "@webapp-spec/types";
 function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
   return {
     webappSpec: "0.1.0",
+    name: "Test App",
     version: "1.0.0",
     domain: {
       entities: [
@@ -27,6 +28,14 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
       relations: [],
       transitions: [
         {
+          id: "create-todo",
+          description: "TODOを作成する",
+          changes: [
+            { entity: "Todo", state: { from: "_start", to: "active" }, scope: "target" },
+          ],
+          conditions: [],
+        },
+        {
           id: "complete-todo",
           description: "TODOを完了にする",
           changes: [
@@ -41,6 +50,15 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
       { id: "member", authState: { kind: "authenticated", roles: ["member"] } },
     ],
     usecases: [
+      {
+        id: "create-todo",
+        description: "TODOを作成する",
+        actor: "member",
+        target: { kind: "single", entity: "Todo" },
+        input: { title: "string" },
+        transition: "create-todo",
+        errors: [],
+      },
       {
         id: "complete-todo",
         description: "TODOを完了にする",
@@ -57,7 +75,7 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
         id: "manage-todos",
         actor: "member",
         goal: "TODOを管理する",
-        steps: [{ usecase: "complete-todo" }],
+        steps: [{ usecase: "create-todo" }, { usecase: "complete-todo" }],
       },
     ],
     ui: {
@@ -331,7 +349,7 @@ describe("usecases", () => {
 
   it("detects followUp cycle", () => {
     const spec = minimalSpec();
-    spec.usecases[0].followUps = [{ description: "self", usecase: "complete-todo" }];
+    spec.usecases[0].followUps = [{ description: "self", usecase: "create-todo" }];
     const result = validate(spec);
     expect(result.warnings.some((w) => w.rule === "usecase.followup-cycle")).toBe(true);
   });
@@ -427,5 +445,62 @@ describe("journeys", () => {
     spec.journeys[0].steps.push({ usecase: "admin-action" });
     const result = validate(spec);
     expect(result.warnings.some((w) => w.rule === "journey.actor-mismatch")).toBe(true);
+  });
+});
+
+describe("entities", () => {
+  it("detects entity with no states", () => {
+    const spec = minimalSpec();
+    spec.domain.entities.push({
+      id: "Tag",
+      fields: [{ name: "name", type: "string" }],
+      ownership: { kind: "shared" },
+      states: [],
+      traits: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "entity.no-states")).toBe(true);
+  });
+
+  it("passes when all entities have states", () => {
+    const result = validate(minimalSpec());
+    expect(result.errors.filter((e) => e.rule === "entity.no-states")).toHaveLength(0);
+  });
+});
+
+describe("entity lifecycle", () => {
+  it("detects entity with no creation path", () => {
+    const spec = minimalSpec();
+    spec.domain.entities.push({
+      id: "Project",
+      fields: [{ name: "status", type: "string" }],
+      ownership: { kind: "shared" },
+      states: [{ name: "active", field: "status", value: "active" }],
+      traits: [],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "transition.no-creation")).toBe(true);
+  });
+
+  it("passes when entity has creation transition", () => {
+    const result = validate(minimalSpec());
+    expect(result.errors.filter((e) => e.rule === "transition.no-creation")).toHaveLength(0);
+  });
+
+  it("reports info when entity has no deletion path", () => {
+    const result = validate(minimalSpec());
+    expect(result.infos.some((i) => i.rule === "transition.no-deletion")).toBe(true);
+  });
+
+  it("does not report info when entity has deletion transition", () => {
+    const spec = minimalSpec();
+    spec.domain.transitions.push({
+      id: "delete-todo",
+      description: "TODOを削除する",
+      changes: [{ entity: "Todo", state: { from: "active", to: "_end" }, scope: "target" }],
+      conditions: [],
+    });
+    const result = validate(spec);
+    expect(result.infos.filter((i) => i.rule === "transition.no-deletion")).toHaveLength(0);
   });
 });
