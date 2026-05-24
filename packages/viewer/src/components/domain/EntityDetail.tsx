@@ -1,8 +1,11 @@
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 import { StateArrow } from "@/components/shared/StateArrow";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildStateDiagram } from "./buildStateDiagram";
 
 export function EntityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +15,10 @@ export function EntityDetail() {
 
   const relations = relationsForEntity(id!);
   const transitions = transitionsForEntity(id!);
+  const stateDiagram = useMemo(
+    () => buildStateDiagram(id!, transitions),
+    [id, transitions],
+  );
 
   return (
     <div className="space-y-6">
@@ -85,6 +92,15 @@ export function EntityDetail() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {stateDiagram && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            State Diagram
+          </h3>
+          <MermaidDiagram chart={stateDiagram} />
         </section>
       )}
 
