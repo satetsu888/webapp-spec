@@ -37,7 +37,9 @@ export function InputForm({ usecaseId, onSubmit }: Props) {
       {Object.entries(usecase.input).map(([key, type]) => {
         const entityIdMatch = type.match(/^(\w+)\.id$/);
 
-        if (entityIdMatch && !isCreation) {
+        const isTargetCreation =
+          isCreation && entityIdMatch?.[1] === usecase.target.entity;
+        if (entityIdMatch && !isTargetCreation) {
           const entityType = entityIdMatch[1];
           const instances = state.instances[entityType] ?? [];
           return (

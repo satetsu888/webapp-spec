@@ -23,6 +23,7 @@ export function simReducer(state: SimState, action: SimAction): SimState {
             const list = [...(instances[m.entity] ?? [])];
             list.push(m.instance);
             instances[m.entity] = list;
+            nextId[m.entity] = (nextId[m.entity] ?? 0) + 1;
             break;
           }
           case "stateChanged": {
