@@ -9,10 +9,14 @@
         "fields": [
           { "name": "name", "type": "string" },
           { "name": "email", "type": "string" },
-          { "name": "role", "type": "string" }
+          { "name": "role", "type": "string" },
+          { "name": "status", "type": "string" }
         ],
         "ownership": { "kind": "shared" },
-        "states": [],
+        "states": [
+          { "name": "active", "field": "status", "value": "active" },
+          { "name": "deactivated", "field": "status", "value": "deactivated" }
+        ],
         "traits": [
           {
             "name": "is-admin",
@@ -29,7 +33,7 @@
           { "name": "status", "type": "string" },
           { "name": "authorId", "type": "User.id" },
           { "name": "publishedAt", "type": "datetime", "required": false },
-          { "name": "category", "type": "string" }
+          { "name": "category", "type": "Category.id" }
         ],
         "ownership": { "kind": "personal", "ownerField": "authorId" },
         "states": [
@@ -69,10 +73,14 @@
         "id": "Category",
         "fields": [
           { "name": "name", "type": "string" },
-          { "name": "slug", "type": "string" }
+          { "name": "slug", "type": "string" },
+          { "name": "status", "type": "string" }
         ],
         "ownership": { "kind": "shared" },
-        "states": [],
+        "states": [
+          { "name": "active", "field": "status", "value": "active" },
+          { "name": "archived", "field": "status", "value": "archived" }
+        ],
         "traits": []
       }
     ],
@@ -133,6 +141,38 @@
           { "entity": "Comment", "state": { "from": "visible", "to": "hidden" }, "scope": "target" }
         ],
         "conditions": []
+      },
+      {
+        "id": "register-user",
+        "description": "ユーザーを登録する",
+        "changes": [
+          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "deactivate-user",
+        "description": "ユーザーを退会させる",
+        "changes": [
+          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "create-category",
+        "description": "カテゴリを作成する",
+        "changes": [
+          { "entity": "Category", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "archive-category",
+        "description": "カテゴリをアーカイブする",
+        "changes": [
+          { "entity": "Category", "state": { "from": "active", "to": "archived" }, "scope": "target" }
+        ],
+        "conditions": []
       }
     ]
   },
@@ -149,6 +189,7 @@
     }
   ],
   "actors": [
+    { "id": "anonymous", "authState": { "kind": "anonymous" } },
     { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } },
     { "id": "admin", "authState": { "kind": "authenticated", "roles": ["admin"] } }
   ],
@@ -161,7 +202,7 @@
       "input": {
         "title": "string",
         "body": "string",
-        "category": "string"
+        "category": "Category.id"
       },
       "transition": "create-post",
       "errors": []
@@ -221,6 +262,48 @@
       "input": { "commentId": "Comment.id" },
       "transition": "hide-comment",
       "errors": []
+    },
+    {
+      "id": "register-user",
+      "description": "新しいユーザーを登録する",
+      "actor": "anonymous",
+      "target": { "kind": "single", "entity": "User" },
+      "input": {
+        "name": "string",
+        "email": "string"
+      },
+      "transition": "register-user",
+      "errors": []
+    },
+    {
+      "id": "deactivate-user",
+      "description": "ユーザーを退会させる",
+      "actor": "admin",
+      "target": { "kind": "single", "entity": "User" },
+      "input": { "userId": "User.id" },
+      "transition": "deactivate-user",
+      "errors": []
+    },
+    {
+      "id": "create-category",
+      "description": "新しいカテゴリを作成する",
+      "actor": "admin",
+      "target": { "kind": "single", "entity": "Category" },
+      "input": {
+        "name": "string",
+        "slug": "string"
+      },
+      "transition": "create-category",
+      "errors": []
+    },
+    {
+      "id": "archive-category",
+      "description": "カテゴリをアーカイブする",
+      "actor": "admin",
+      "target": { "kind": "single", "entity": "Category" },
+      "input": { "categoryId": "Category.id" },
+      "transition": "archive-category",
+      "errors": []
     }
   ],
   "reactions": [
@@ -238,6 +321,14 @@
     }
   ],
   "journeys": [
+    {
+      "id": "user-onboarding",
+      "actor": "anonymous",
+      "goal": "アカウントを作成する",
+      "steps": [
+        { "usecase": "register-user" }
+      ]
+    },
     {
       "id": "write-and-publish",
       "actor": "member",
@@ -262,7 +353,17 @@
       "goal": "不適切なコンテンツを管理する",
       "steps": [
         { "usecase": "hide-comment" },
-        { "usecase": "archive-post" }
+        { "usecase": "archive-post" },
+        { "usecase": "deactivate-user" }
+      ]
+    },
+    {
+      "id": "manage-categories",
+      "actor": "admin",
+      "goal": "カテゴリを管理する",
+      "steps": [
+        { "usecase": "create-category" },
+        { "usecase": "archive-category" }
       ]
     }
   ],
@@ -326,14 +427,14 @@
         "inputs": [
           { "name": "title", "type": "string" },
           { "name": "body", "type": "string" },
-          { "name": "category", "type": "string" }
+          { "name": "category", "type": "Category.id" }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
           { "name": "title", "type": "string" },
           { "name": "body", "type": "string" },
-          { "name": "category", "type": "string" }
+          { "name": "category", "type": "Category.id" }
         ]
       },
       {
@@ -367,6 +468,75 @@
           { "name": "category", "type": "string" }
         ],
         "outputs": [{ "name": "postId", "type": "Post.id" }]
+      },
+      {
+        "id": "register-form",
+        "description": "ユーザー登録フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ]
+      },
+      {
+        "id": "user-list",
+        "description": "ユーザー一覧",
+        "sources": [
+          {
+            "entity": "User",
+            "matching": ["active"],
+            "fields": ["name", "email", "role"],
+            "paginated": true
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" },
+          { "name": "role", "type": "string" }
+        ],
+        "outputs": [{ "name": "userId", "type": "User.id" }]
+      },
+      {
+        "id": "category-form",
+        "description": "カテゴリ作成フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "name", "type": "string" },
+          { "name": "slug", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "name", "type": "string" },
+          { "name": "slug", "type": "string" }
+        ]
+      },
+      {
+        "id": "category-list",
+        "description": "カテゴリ一覧",
+        "sources": [
+          {
+            "entity": "Category",
+            "matching": ["active"],
+            "fields": ["name", "slug"],
+            "paginated": true
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "name", "type": "string" },
+          { "name": "slug", "type": "string" }
+        ],
+        "outputs": [{ "name": "categoryId", "type": "Category.id" }]
       }
     ],
     "views": [
@@ -417,8 +587,21 @@
         ]
       },
       {
+        "id": "register-page",
+        "components": ["register-form"],
+        "actions": [
+          {
+            "usecase": "register-user",
+            "inputFrom": {
+              "name": "register-form.name",
+              "email": "register-form.email"
+            }
+          }
+        ]
+      },
+      {
         "id": "admin-moderation",
-        "components": ["post-detail"],
+        "components": ["post-detail", "user-list"],
         "actions": [
           {
             "usecase": "hide-comment",
@@ -427,6 +610,27 @@
           {
             "usecase": "archive-post",
             "inputFrom": { "postId": "post-detail.postId" }
+          },
+          {
+            "usecase": "deactivate-user",
+            "inputFrom": { "userId": "user-list.userId" }
+          }
+        ]
+      },
+      {
+        "id": "admin-categories",
+        "components": ["category-list", "category-form"],
+        "actions": [
+          {
+            "usecase": "create-category",
+            "inputFrom": {
+              "name": "category-form.name",
+              "slug": "category-form.slug"
+            }
+          },
+          {
+            "usecase": "archive-category",
+            "inputFrom": { "categoryId": "category-list.categoryId" }
           }
         ]
       }

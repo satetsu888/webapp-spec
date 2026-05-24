@@ -62,8 +62,17 @@ if (result.warnings.length > 0) {
   }
 }
 
+if (result.infos.length > 0) {
+  console.log(`\n${result.infos.length} info(s):`);
+  for (const info of result.infos) {
+    console.log(`  [${info.rule}] ${info.message}`);
+    console.log(`    at ${info.path}`);
+  }
+}
+
 if (result.valid) {
-  console.log(result.warnings.length > 0 ? "\nValidation passed (with warnings)." : "Validation passed.");
+  const hasDiag = result.warnings.length > 0 || result.infos.length > 0;
+  console.log(hasDiag ? "\nValidation passed (with diagnostics)." : "Validation passed.");
   process.exit(0);
 } else {
   console.error("\nValidation failed.");

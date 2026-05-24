@@ -12,7 +12,7 @@ import { checkUnused } from "./rules/unused.js";
 
 export const SUPPORTED_SPEC_VERSION = "0.1.0";
 
-export type Severity = "error" | "warning";
+export type Severity = "error" | "warning" | "info";
 
 export type ValidationIssue = {
   severity: Severity;
@@ -25,6 +25,7 @@ export type ValidationResult = {
   valid: boolean;
   errors: ValidationIssue[];
   warnings: ValidationIssue[];
+  infos: ValidationIssue[];
 };
 
 export type VersionedRule = {
@@ -53,7 +54,7 @@ export function validate(spec: WebAppSpec): ValidationResult {
       message: `webappSpec version "${spec.webappSpec}" is not supported (latest supported: "${SUPPORTED_SPEC_VERSION}")`,
       path: "webappSpec",
     };
-    return { valid: false, errors: [error], warnings: [] };
+    return { valid: false, errors: [error], warnings: [], infos: [] };
   }
 
   const applicableRules = allRules.filter((r) => {
@@ -65,9 +66,11 @@ export function validate(spec: WebAppSpec): ValidationResult {
   const issues = applicableRules.flatMap((r) => r.fn(spec));
   const errors = issues.filter((i) => i.severity === "error");
   const warnings = issues.filter((i) => i.severity === "warning");
+  const infos = issues.filter((i) => i.severity === "info");
   return {
     valid: errors.length === 0,
     errors,
     warnings,
+    infos,
   };
 }

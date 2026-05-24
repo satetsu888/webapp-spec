@@ -36,6 +36,33 @@ export function checkTransitions(spec: WebAppSpec): ValidationIssue[] {
 
   }
 
+  // Entity lifecycle: every entity must be creatable
+  for (const entity of spec.domain.entities) {
+    const changes = spec.domain.transitions.flatMap((t) =>
+      t.changes.filter((c) => c.entity === entity.id),
+    );
+    const hasCreation = changes.some((c) => c.state.from === "_start");
+    const hasDeletion = changes.some((c) => c.state.to === "_end");
+
+    if (!hasCreation) {
+      issues.push({
+        severity: "error",
+        rule: "transition.no-creation",
+        message: `Entity "${entity.id}" has no creation path (no transition with _start)`,
+        path: `domain.entities`,
+      });
+    }
+
+    if (!hasDeletion) {
+      issues.push({
+        severity: "info",
+        rule: "transition.no-deletion",
+        message: `Entity "${entity.id}" has no deletion path (no transition with _end)`,
+        path: `domain.entities`,
+      });
+    }
+  }
+
   // State reachability analysis per entity
   for (const entity of spec.domain.entities) {
     if (entity.states.length === 0) continue;

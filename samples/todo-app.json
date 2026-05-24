@@ -8,10 +8,14 @@
         "id": "User",
         "fields": [
           { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          { "name": "email", "type": "string" },
+          { "name": "status", "type": "string" }
         ],
         "ownership": { "kind": "shared" },
-        "states": [],
+        "states": [
+          { "name": "active", "field": "status", "value": "active" },
+          { "name": "deactivated", "field": "status", "value": "deactivated" }
+        ],
         "traits": []
       },
       {
@@ -77,11 +81,28 @@
           { "entity": "Todo", "state": { "from": "active", "to": "_end" }, "scope": "target" }
         ],
         "conditions": []
+      },
+      {
+        "id": "register-user",
+        "description": "ユーザーを登録する",
+        "changes": [
+          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "deactivate-user",
+        "description": "ユーザーを退会させる",
+        "changes": [
+          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
+        ],
+        "conditions": []
       }
     ]
   },
   "specs": [],
   "actors": [
+    { "id": "anonymous", "authState": { "kind": "anonymous" } },
     { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } }
   ],
   "usecases": [
@@ -128,10 +149,39 @@
       "input": { "todoId": "Todo.id" },
       "transition": "delete-todo",
       "errors": []
+    },
+    {
+      "id": "register-user",
+      "description": "新しいユーザーを登録する",
+      "actor": "anonymous",
+      "target": { "kind": "single", "entity": "User" },
+      "input": {
+        "name": "string",
+        "email": "string"
+      },
+      "transition": "register-user",
+      "errors": []
+    },
+    {
+      "id": "deactivate-user",
+      "description": "ユーザーを退会させる",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "User" },
+      "input": { "userId": "User.id" },
+      "transition": "deactivate-user",
+      "errors": []
     }
   ],
   "reactions": [],
   "journeys": [
+    {
+      "id": "user-onboarding",
+      "actor": "anonymous",
+      "goal": "アカウントを作成してTODO管理を始める",
+      "steps": [
+        { "usecase": "register-user" }
+      ]
+    },
     {
       "id": "manage-todos",
       "actor": "member",
@@ -141,6 +191,14 @@
         { "usecase": "complete-todo" },
         { "usecase": "reopen-todo" },
         { "usecase": "delete-todo" }
+      ]
+    },
+    {
+      "id": "account-management",
+      "actor": "member",
+      "goal": "アカウントを管理する",
+      "steps": [
+        { "usecase": "deactivate-user" }
       ]
     }
   ],
@@ -201,9 +259,55 @@
           { "name": "description", "type": "string" },
           { "name": "dueDate", "type": "date" }
         ]
+      },
+      {
+        "id": "register-form",
+        "description": "ユーザー登録フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ]
+      },
+      {
+        "id": "account-settings",
+        "description": "アカウント設定",
+        "sources": [
+          {
+            "entity": "User",
+            "matching": ["active"],
+            "fields": ["name", "email"]
+          }
+        ],
+        "inputs": [],
+        "transforms": [],
+        "displays": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ],
+        "outputs": [{ "name": "userId", "type": "User.id" }]
       }
     ],
     "views": [
+      {
+        "id": "register-page",
+        "components": ["register-form"],
+        "actions": [
+          {
+            "usecase": "register-user",
+            "inputFrom": {
+              "name": "register-form.name",
+              "email": "register-form.email"
+            }
+          }
+        ]
+      },
       {
         "id": "todo-dashboard",
         "components": ["todo-list", "completed-todo-list", "todo-create-form"],
@@ -227,6 +331,16 @@
           {
             "usecase": "delete-todo",
             "inputFrom": { "todoId": "todo-list.todoId" }
+          }
+        ]
+      },
+      {
+        "id": "account-settings-page",
+        "components": ["account-settings"],
+        "actions": [
+          {
+            "usecase": "deactivate-user",
+            "inputFrom": { "userId": "account-settings.userId" }
           }
         ]
       }
