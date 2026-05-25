@@ -1,12 +1,19 @@
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildErDiagram } from "./buildErDiagram";
 
 export function RelationList() {
   const { spec } = useSpec();
+  const erDiagram = buildErDiagram(spec.domain.entities, spec.domain.relations);
+
   return (
-    <div>
-      <h2 className="mb-4 text-lg font-bold">Relations</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-bold">Relations</h2>
+
+      {erDiagram && <MermaidDiagram chart={erDiagram} />}
+
       <div className="space-y-2">
         {spec.domain.relations.map((r) => (
           <div
