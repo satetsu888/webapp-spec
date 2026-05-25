@@ -141,7 +141,7 @@ export type Usecase = {
   actor: ActorRef;
   target: Target;
   input: Schema;
-  transition: TransitionRef;
+  transition?: TransitionRef;
   errors: ErrorCase[];
   followUps?: FollowUpUsecase[];
 };

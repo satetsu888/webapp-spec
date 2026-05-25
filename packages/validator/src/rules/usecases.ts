@@ -12,7 +12,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
     const uc = spec.usecases[i];
 
     // Transition target consistency
-    const transition = transitionMap.get(uc.transition);
+    const transition = uc.transition ? transitionMap.get(uc.transition) : undefined;
     if (transition) {
       const targetEntityIds = transition.changes
         .filter((c) => c.scope === "target")

@@ -39,10 +39,16 @@ export function UsecaseDetail() {
           </Badge>
         </div>
         <div>
-          <span className="text-gray-500">Transition: </span>
-          <RefLink to={`/transitions/${uc.transition}`}>
-            {uc.transition}
-          </RefLink>
+          {uc.transition ? (
+            <>
+              <span className="text-gray-500">Transition: </span>
+              <RefLink to={`/transitions/${uc.transition}`}>
+                {uc.transition}
+              </RefLink>
+            </>
+          ) : (
+            <Badge variant="purple">Query</Badge>
+          )}
         </div>
       </div>
 

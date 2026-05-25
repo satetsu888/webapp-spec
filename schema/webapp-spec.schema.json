@@ -294,7 +294,7 @@
     },
     "Usecase": {
       "type": "object",
-      "required": ["id", "description", "actor", "target", "input", "transition", "errors"],
+      "required": ["id", "description", "actor", "target", "input", "errors"],
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string" },

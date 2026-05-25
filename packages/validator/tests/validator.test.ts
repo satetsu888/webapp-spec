@@ -131,6 +131,22 @@ describe("valid spec", () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
+
+  it("passes with query usecase (no transition)", () => {
+    const spec = minimalSpec();
+    spec.usecases.push({
+      id: "list-todos",
+      description: "TODO一覧を表示する",
+      actor: "member",
+      target: { kind: "single", entity: "Todo" },
+      input: {},
+      errors: [],
+    });
+    spec.journeys[0].steps.push({ usecase: "list-todos" });
+    const result = validate(spec);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
 });
 
 describe("version check", () => {

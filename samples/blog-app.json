@@ -195,6 +195,22 @@
   ],
   "usecases": [
     {
+      "id": "list-my-posts",
+      "description": "自分の記事を全ステータス含めて一覧する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": {},
+      "errors": []
+    },
+    {
+      "id": "view-post",
+      "description": "記事の詳細を閲覧する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "Post" },
+      "input": { "postId": "Post.id" },
+      "errors": []
+    },
+    {
       "id": "create-post",
       "description": "新しい記事を下書きとして作成する",
       "actor": "member",
@@ -334,6 +350,7 @@
       "actor": "member",
       "goal": "記事を書いて公開する",
       "steps": [
+        { "usecase": "list-my-posts" },
         { "usecase": "create-post" },
         { "usecase": "publish-post" },
         { "usecase": "unpublish-post" }
@@ -344,6 +361,7 @@
       "actor": "member",
       "goal": "記事を読んでコメントする",
       "steps": [
+        { "usecase": "view-post" },
         { "usecase": "create-comment" }
       ]
     },

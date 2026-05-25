@@ -182,7 +182,7 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
         }
       }
     }
-    if (!transitionIds.has(uc.transition)) {
+    if (uc.transition && !transitionIds.has(uc.transition)) {
       issues.push({ severity: "error", rule: "ref.transition", message: `Usecase "${uc.id}" references undefined transition "${uc.transition}"`, path: `usecases[${i}].transition` });
     }
     if (uc.followUps) {

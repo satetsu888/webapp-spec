@@ -15,7 +15,7 @@ export function InputForm({ usecaseId, onSubmit }: Props) {
   const usecase = usecaseMap.get(usecaseId);
   if (!usecase) return null;
 
-  const transition = transitionMap.get(usecase.transition);
+  const transition = usecase.transition ? transitionMap.get(usecase.transition) : undefined;
   const isCreation = transition?.changes.some(
     (ch) => ch.scope === "target" && ch.state.from === "_start",
   );

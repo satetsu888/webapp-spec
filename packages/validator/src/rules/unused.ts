@@ -5,7 +5,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   // Collect all references
-  const referencedTransitions = new Set(spec.usecases.map((u) => u.transition));
+  const referencedTransitions = new Set(spec.usecases.map((u) => u.transition).filter(Boolean));
 
   const referencedActors = new Set([
     ...spec.usecases.map((u) => u.actor),

@@ -24,6 +24,11 @@ export function executeUsecase(
     };
   }
 
+  if (!usecase.transition) {
+    const firedReactions = collectReactions(spec, usecaseId);
+    return { success: true, usecaseId, mutations: [], firedReactions };
+  }
+
   const transition = spec.domain.transitions.find(
     (t) => t.id === usecase.transition,
   );
