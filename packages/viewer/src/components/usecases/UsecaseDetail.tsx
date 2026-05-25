@@ -10,8 +10,13 @@ export function UsecaseDetail() {
   if (!uc) return <p className="text-red-600">Usecase "{id}" not found</p>;
 
   const reactions = reactionsByUsecase(id!);
-  const journeys = spec.journeys.filter((j) =>
-    j.steps.some((s) => typeof s !== "string" && s.usecase === id),
+  const scenarios = spec.scenarios.filter((s) =>
+    s.steps.some(
+      (step) =>
+        typeof step !== "string" &&
+        (("view" in step && step.action === id) ||
+          ("usecase" in step && step.usecase === id)),
+    ),
   );
   const views = spec.ui.views.filter((v) =>
     v.actions.some((a) => a.usecase === id),
@@ -115,16 +120,16 @@ export function UsecaseDetail() {
         </section>
       )}
 
-      {journeys.length > 0 && (
+      {scenarios.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
-            Used in Journeys
+            Used in Scenarios
           </h3>
           <div className="space-y-1">
-            {journeys.map((j) => (
-              <div key={j.id} className="text-sm">
-                <RefLink to={`/journeys/${j.id}`}>
-                  {j.id}
+            {scenarios.map((s) => (
+              <div key={s.id} className="text-sm">
+                <RefLink to={`/scenarios/${s.id}`}>
+                  {s.id}
                 </RefLink>
               </div>
             ))}

@@ -336,13 +336,13 @@
       "description": "記事が公開されたことを記録する"
     }
   ],
-  "journeys": [
+  "scenarios": [
     {
       "id": "user-onboarding",
       "actor": "anonymous",
       "goal": "アカウントを作成する",
       "steps": [
-        { "usecase": "register-user" }
+        { "view": "register-page", "action": "register-user", "description": "登録フォームに入力してアカウントを作成する" }
       ]
     },
     {
@@ -350,10 +350,10 @@
       "actor": "member",
       "goal": "記事を書いて公開する",
       "steps": [
-        { "usecase": "list-my-posts" },
-        { "usecase": "create-post" },
-        { "usecase": "publish-post" },
-        { "usecase": "unpublish-post" }
+        { "view": "my-drafts-page", "action": "list-my-posts", "description": "自分の記事一覧を確認する" },
+        { "view": "new-post", "action": "create-post", "description": "新しい記事を下書きとして作成する" },
+        { "view": "my-drafts-page", "action": "publish-post", "description": "下書きの記事を公開する" },
+        { "view": "my-drafts-page", "action": "unpublish-post", "description": "公開中の記事を非公開に戻す" }
       ]
     },
     {
@@ -361,8 +361,8 @@
       "actor": "member",
       "goal": "記事を読んでコメントする",
       "steps": [
-        { "usecase": "view-post" },
-        { "usecase": "create-comment" }
+        { "view": "home", "action": "view-post", "description": "記事一覧から記事を選んで閲覧する" },
+        { "view": "post-page", "action": "create-comment", "description": "記事にコメントを投稿する" }
       ]
     },
     {
@@ -370,9 +370,9 @@
       "actor": "admin",
       "goal": "不適切なコンテンツを管理する",
       "steps": [
-        { "usecase": "hide-comment" },
-        { "usecase": "archive-post" },
-        { "usecase": "deactivate-user" }
+        { "view": "admin-moderation", "action": "hide-comment", "description": "不適切なコメントを非表示にする" },
+        { "view": "admin-moderation", "action": "archive-post", "description": "不適切な記事をアーカイブする" },
+        { "view": "admin-moderation", "action": "deactivate-user", "description": "違反ユーザーを無効化する" }
       ]
     },
     {
@@ -380,8 +380,8 @@
       "actor": "admin",
       "goal": "カテゴリを管理する",
       "steps": [
-        { "usecase": "create-category" },
-        { "usecase": "archive-category" }
+        { "view": "admin-categories", "action": "create-category", "description": "新しいカテゴリを作成する" },
+        { "view": "admin-categories", "action": "archive-category", "description": "不要なカテゴリをアーカイブする" }
       ]
     }
   ],
@@ -561,7 +561,12 @@
       {
         "id": "home",
         "components": ["post-list"],
-        "actions": []
+        "actions": [
+          {
+            "usecase": "view-post",
+            "inputFrom": { "postId": "post-list.postId" }
+          }
+        ]
       },
       {
         "id": "post-page",
@@ -594,6 +599,10 @@
         "id": "my-drafts-page",
         "components": ["my-drafts"],
         "actions": [
+          {
+            "usecase": "list-my-posts",
+            "inputFrom": {}
+          },
           {
             "usecase": "publish-post",
             "inputFrom": { "postId": "my-drafts.postId" }

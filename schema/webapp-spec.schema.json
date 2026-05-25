@@ -3,7 +3,7 @@
   "$id": "https://webapp-spec.dev/schema/webapp-spec.schema.json",
   "title": "WebAppSpec",
   "type": "object",
-  "required": ["webappSpec", "name", "version", "domain", "specs", "actors", "usecases", "reactions", "journeys", "ui"],
+  "required": ["webappSpec", "name", "version", "domain", "specs", "actors", "usecases", "reactions", "scenarios", "ui"],
   "additionalProperties": false,
   "properties": {
     "webappSpec": { "type": "string", "description": "WebAppSpec format version" },
@@ -14,7 +14,7 @@
     "actors": { "type": "array", "items": { "$ref": "#/$defs/Actor" } },
     "usecases": { "type": "array", "items": { "$ref": "#/$defs/Usecase" } },
     "reactions": { "type": "array", "items": { "$ref": "#/$defs/Reaction" } },
-    "journeys": { "type": "array", "items": { "$ref": "#/$defs/Journey" } },
+    "scenarios": { "type": "array", "items": { "$ref": "#/$defs/Scenario" } },
     "ui": { "$ref": "#/$defs/UI" }
   },
   "$defs": {
@@ -395,7 +395,7 @@
         }
       ]
     },
-    "Journey": {
+    "Scenario": {
       "type": "object",
       "required": ["id", "actor", "goal", "steps"],
       "additionalProperties": false,
@@ -407,21 +407,32 @@
           "type": "array",
           "items": {
             "oneOf": [
-              { "$ref": "#/$defs/UsecaseStep" },
+              { "$ref": "#/$defs/ViewStep" },
+              { "$ref": "#/$defs/BackgroundStep" },
               { "type": "string" }
             ]
           }
         },
-        "variants": { "type": "array", "items": { "$ref": "#/$defs/Journey" } }
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/Scenario" } }
       }
     },
-    "UsecaseStep": {
+    "ViewStep": {
       "type": "object",
-      "required": ["usecase"],
+      "required": ["view", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "view": { "type": "string" },
+        "action": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "BackgroundStep": {
+      "type": "object",
+      "required": ["usecase", "actor", "description"],
       "additionalProperties": false,
       "properties": {
         "usecase": { "type": "string" },
-        "with": { "type": "object" },
+        "actor": { "type": "string" },
         "description": { "type": "string" }
       }
     },

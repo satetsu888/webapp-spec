@@ -14,7 +14,7 @@ const sections: {
   { path: "usecases", label: "Usecases", getItems: (s) => s.spec.usecases },
   { path: "specs", label: "Specs", getItems: () => [] },
   { path: "reactions", label: "Reactions", getItems: () => [] },
-  { path: "journeys", label: "Journeys", getItems: (s) => s.spec.journeys },
+  { path: "scenarios", label: "Scenarios", getItems: (s) => s.spec.scenarios },
   { path: "views", label: "Views", getItems: (s) => s.spec.ui.views },
   { path: "simulation", label: "Simulation", getItems: () => [] },
 ];

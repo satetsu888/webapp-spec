@@ -7,7 +7,8 @@ export type TransitionRef = string;
 export type ActorRef = string;
 export type ComponentRef = string;
 export type RelationRef = string;
-export type JourneyRef = string;
+export type ViewRef = string;
+export type ScenarioRef = string;
 export type SpecRef = string;
 
 export type Condition =
@@ -155,20 +156,26 @@ export type Reaction = {
   description: string;
 };
 
-// --- Journeys ---
+// --- Scenarios ---
 
-export type UsecaseStep = {
-  usecase: UsecaseRef;
-  with?: Record<string, unknown>;
-  description?: string;
+export type ViewStep = {
+  view: ViewRef;
+  action?: UsecaseRef;
+  description: string;
 };
 
-export type Journey = {
+export type BackgroundStep = {
+  usecase: UsecaseRef;
+  actor: ActorRef;
+  description: string;
+};
+
+export type Scenario = {
   id: string;
   actor: ActorRef;
   goal: string;
-  steps: (UsecaseStep | JourneyRef)[];
-  variants?: Journey[];
+  steps: (ViewStep | BackgroundStep | ScenarioRef)[];
+  variants?: Scenario[];
 };
 
 // --- UI ---
@@ -229,6 +236,6 @@ export type WebAppSpec = {
   actors: Actor[];
   usecases: Usecase[];
   reactions: Reaction[];
-  journeys: Journey[];
+  scenarios: Scenario[];
   ui: UI;
 };

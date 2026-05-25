@@ -173,13 +173,13 @@
     }
   ],
   "reactions": [],
-  "journeys": [
+  "scenarios": [
     {
       "id": "user-onboarding",
       "actor": "anonymous",
       "goal": "アカウントを作成してTODO管理を始める",
       "steps": [
-        { "usecase": "register-user" }
+        { "view": "register-page", "action": "register-user", "description": "アカウント登録フォームに入力して送信する" }
       ]
     },
     {
@@ -187,10 +187,10 @@
       "actor": "member",
       "goal": "TODOを管理する",
       "steps": [
-        { "usecase": "create-todo" },
-        { "usecase": "complete-todo" },
-        { "usecase": "reopen-todo" },
-        { "usecase": "delete-todo" }
+        { "view": "todo-dashboard", "action": "create-todo", "description": "新しいTODOを作成する" },
+        { "view": "todo-dashboard", "action": "complete-todo", "description": "TODOを完了にする" },
+        { "view": "todo-dashboard", "action": "reopen-todo", "description": "完了したTODOを再開する" },
+        { "view": "todo-dashboard", "action": "delete-todo", "description": "不要なTODOを削除する" }
       ]
     },
     {
@@ -198,7 +198,7 @@
       "actor": "member",
       "goal": "アカウントを管理する",
       "steps": [
-        { "usecase": "deactivate-user" }
+        { "view": "account-settings-page", "action": "deactivate-user", "description": "アカウントを無効化する" }
       ]
     }
   ],

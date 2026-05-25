@@ -22,7 +22,7 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
     { ids: spec.specs.map((s) => s.id), path: "specs", label: "Spec" },
     { ids: spec.actors.map((a) => a.id), path: "actors", label: "Actor" },
     { ids: spec.usecases.map((u) => u.id), path: "usecases", label: "Usecase" },
-    { ids: spec.journeys.map((j) => j.id), path: "journeys", label: "Journey" },
+    { ids: spec.scenarios.map((s) => s.id), path: "scenarios", label: "Scenario" },
     { ids: spec.ui.components.map((c) => c.id), path: "ui.components", label: "Component" },
     { ids: spec.ui.views.map((v) => v.id), path: "ui.views", label: "View" },
   ];

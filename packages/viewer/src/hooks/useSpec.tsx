@@ -8,7 +8,7 @@ import type {
   Usecase,
   Spec,
   Reaction,
-  Journey,
+  Scenario,
   Component,
   View,
 } from "@webapp-spec/types";
@@ -23,7 +23,7 @@ export type SpecLookups = {
   specMap: Map<string, Spec>;
   componentMap: Map<string, Component>;
   viewMap: Map<string, View>;
-  journeyMap: Map<string, Journey>;
+  scenarioMap: Map<string, Scenario>;
   relationsForEntity: (entityId: string) => Relation[];
   transitionsForEntity: (entityId: string) => Transition[];
   usecasesByActor: (actorId: string) => Usecase[];
@@ -53,7 +53,7 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
   const specMap = new Map(spec.specs.map((s) => [s.id, s]));
   const componentMap = new Map(spec.ui.components.map((c) => [c.id, c]));
   const viewMap = new Map(spec.ui.views.map((v) => [v.id, v]));
-  const journeyMap = new Map(spec.journeys.map((j) => [j.id, j]));
+  const scenarioMap = new Map(spec.scenarios.map((s) => [s.id, s]));
 
   const entityRelations = new Map<string, Relation[]>();
   for (const r of spec.domain.relations) {
@@ -107,7 +107,7 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     specMap,
     componentMap,
     viewMap,
-    journeyMap,
+    scenarioMap,
     relationsForEntity: (id) => entityRelations.get(id) ?? [],
     transitionsForEntity: (id) => entityTransitions.get(id) ?? [],
     usecasesByActor: (id) => actorUsecases.get(id) ?? [],

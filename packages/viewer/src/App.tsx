@@ -15,8 +15,8 @@ import { UsecaseList } from "@/components/usecases/UsecaseList";
 import { UsecaseDetail } from "@/components/usecases/UsecaseDetail";
 import { SpecList } from "@/components/specs/SpecList";
 import { ReactionList } from "@/components/reactions/ReactionList";
-import { JourneyList } from "@/components/journeys/JourneyList";
-import { JourneyDetail } from "@/components/journeys/JourneyDetail";
+import { ScenarioList } from "@/components/scenarios/ScenarioList";
+import { ScenarioDetail } from "@/components/scenarios/ScenarioDetail";
 import { ViewList } from "@/components/ui/ViewList";
 import { ViewDetail } from "@/components/ui/ViewDetail";
 import { SimulationPanel } from "@/components/simulation/SimulationPanel";
@@ -36,8 +36,8 @@ function AppRoutes({ onUnload }: { onUnload: () => void }) {
         <Route path="usecases/:id" element={<UsecaseDetail />} />
         <Route path="specs" element={<SpecList />} />
         <Route path="reactions" element={<ReactionList />} />
-        <Route path="journeys" element={<JourneyList />} />
-        <Route path="journeys/:id" element={<JourneyDetail />} />
+        <Route path="scenarios" element={<ScenarioList />} />
+        <Route path="scenarios/:id" element={<ScenarioDetail />} />
         <Route path="views" element={<ViewList />} />
         <Route path="views/:id" element={<ViewDetail />} />
         <Route path="simulation" element={<SimulationPanel />} />

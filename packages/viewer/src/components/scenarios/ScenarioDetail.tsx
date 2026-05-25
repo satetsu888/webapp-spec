@@ -3,25 +3,25 @@ import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 
-export function JourneyDetail() {
+export function ScenarioDetail() {
   const { id } = useParams<{ id: string }>();
-  const { journeyMap } = useSpec();
-  const journey = journeyMap.get(id!);
-  if (!journey)
-    return <p className="text-red-600">Journey "{id}" not found</p>;
+  const { scenarioMap } = useSpec();
+  const scenario = scenarioMap.get(id!);
+  if (!scenario)
+    return <p className="text-red-600">Scenario "{id}" not found</p>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold">{journey.id}</h2>
-        <Badge variant="green">{journey.actor}</Badge>
-        <p className="mt-1 text-sm text-gray-600">{journey.goal}</p>
+        <h2 className="text-lg font-bold">{scenario.id}</h2>
+        <Badge variant="green">{scenario.actor}</Badge>
+        <p className="mt-1 text-sm text-gray-600">{scenario.goal}</p>
       </div>
 
       <section>
         <h3 className="mb-2 text-sm font-semibold text-gray-700">Steps</h3>
         <ol className="space-y-2">
-          {journey.steps.map((step, i) => (
+          {scenario.steps.map((step, i) => (
             <li
               key={i}
               className="flex items-center gap-2 rounded border border-gray-100 bg-white p-3 text-sm"
@@ -30,14 +30,33 @@ export function JourneyDetail() {
                 {i + 1}
               </span>
               {typeof step === "string" ? (
-                <RefLink to={`/journeys/${step}`}>
+                <RefLink to={`/scenarios/${step}`}>
                   {step}
                 </RefLink>
+              ) : "view" in step ? (
+                <>
+                  <RefLink to={`/views/${step.view}`}>
+                    {step.view}
+                  </RefLink>
+                  {step.action && (
+                    <>
+                      <span className="text-gray-400">&rarr;</span>
+                      <RefLink to={`/usecases/${step.action}`}>
+                        {step.action}
+                      </RefLink>
+                    </>
+                  )}
+                  {step.description && (
+                    <span className="text-gray-500">{step.description}</span>
+                  )}
+                </>
               ) : (
                 <>
+                  <Badge variant="gray">background</Badge>
                   <RefLink to={`/usecases/${step.usecase}`}>
                     {step.usecase}
                   </RefLink>
+                  <Badge variant="green">{step.actor}</Badge>
                   {step.description && (
                     <span className="text-gray-500">{step.description}</span>
                   )}

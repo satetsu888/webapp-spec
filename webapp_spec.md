@@ -9,7 +9,7 @@ Webアプリケーションそのものを機械可読なデータ構造とし�
 ### 想定する用途
 
 - **LLMによる実装**: 定義を渡せば「何を作るか」が一意に決まる仕様書として機能する。グラフ構造なので、特定の usecase に関連する entity, transition, spec だけを切り出して LLM に渡すことができる。
-- **網羅的テスト生成**: entity の ownership, spec の rules, transition の conditions から、テストすべき Journey のバリアント（正常系・異常系・権限境界）を機械的に導出する。
+- **網羅的テスト生成**: entity の ownership, spec の rules, transition の conditions から、テストすべき Scenario のバリアント（正常系・異常系・権限境界）を機械的に導出する。
 
 ### 設計原則
 
@@ -67,7 +67,7 @@ type WebAppSpec = {
   actors: Actor[]         // 認証状態のラベル
   usecases: Usecase[]     // ドメイン操作
   reactions: Reaction[]   // usecase 実行に伴う副作用
-  journeys: Journey[]     // usecase の組み合わせによるシナリオ
+  scenarios: Scenario[]   // View ベースのユーザーシナリオ
   ui: UI                  // 画面表示に関する定義
 }
 
@@ -374,7 +374,7 @@ const actors: Actor[] = [
 ]
 ```
 
-Journey は Actor を指定するだけで、「その Actor になるための認証ステップ」は暗黙の precondition として扱う。テスト生成時には Actor の authState から認証ステップを自動で前置できる。
+Scenario は Actor を指定するだけで、「その Actor になるための認証ステップ」は暗黙の precondition として扱う。テスト生成時には Actor の authState から認証ステップを自動で前置できる。
 
 ---
 
@@ -510,36 +510,41 @@ const notifyOnComplete: Reaction = {
 
 ---
 
-## Journeys — ユーザーシナリオ
+## Scenarios — ユーザーシナリオ
 
-複数の Usecase を組み合わせた、利用者視点のシナリオ。Actor 単位で定義し、ステップは Usecase を参照する（Endpoint ではない）。
+View ベースのユーザーシナリオ。Actor が画面を通じて操作する一連の流れを定義する。各ステップは「どの画面でどの操作をするか」を表す。
 
 ```typescript
-type Journey = {
+type ViewStep = {
+  view: ViewRef
+  action?: UsecaseRef       // 画面上で実行する操作（省略 = 閲覧のみ）
+  description: string
+}
+
+type BackgroundStep = {
+  usecase: UsecaseRef        // ブラウザ外のバックグラウンド処理
+  actor: ActorRef            // 実行主体（Scenario の actor とは別）
+  description: string
+}
+
+type Scenario = {
   id: string
   actor: ActorRef
   goal: string
-  steps: (UsecaseStep | JourneyRef)[]   // 他の Journey を合成可能
-  variants: Journey[]                    // 異常系・分岐バリアント
-}
-
-type UsecaseStep = {
-  usecase: UsecaseRef
-  with?: Record<string, any>
-  description?: string
+  steps: (ViewStep | BackgroundStep | ScenarioRef)[]
+  variants?: Scenario[]
 }
 ```
 
 ```typescript
-const manageTodos: Journey = {
+const manageTodos: Scenario = {
   id: "manage-todos",
   actor: "member",
   goal: "今日のタスクを整理する",
   steps: [
-    { usecase: "list-todos", description: "一覧を確認" },
-    { usecase: "complete-todo", with: { todoId: "..." } },
-    { usecase: "complete-todo", with: { todoId: "..." } },
-    { usecase: "delete-all-completed" },
+    { view: "todo-dashboard", description: "一覧を確認" },
+    { view: "todo-dashboard", action: "complete-todo" },
+    { view: "todo-dashboard", action: "delete-all-completed" },
   ],
   variants: [],
 }
@@ -547,7 +552,7 @@ const manageTodos: Journey = {
 
 ### テストバリアントの自動導出
 
-人間は正常系の Journey だけを書けばよい。異常系・権限境界のバリアントは以下から機械的に導出できる:
+人間は正常系の Scenario だけを書けばよい。異常系・権限境界のバリアントは以下から機械的に導出できる:
 
 **Entity の ownership から:**
 
@@ -720,7 +725,7 @@ Spec:         「このアプリ固有の条件付き制約」を定義する（
 Actor:        「認証状態のラベル」を定義する
 Usecase:      「誰がどの Transition を発動できるか」を定義する
 Reaction:     「Usecase 実行時の副作用」を定義する
-Journey:      「Usecase の組み合わせによるシナリオ」を定義する
+Scenario:     「View ベースのユーザーシナリオ」を定義する
 Component:    「画面上の操作・表示のまとまり」を定義する
 View:         「Component の配置と Usecase への接続」を定義する
 ```
@@ -730,7 +735,7 @@ View:         「Component の配置と Usecase への接続」を定義する
 ```
 「期日が過ぎている」とは何か        → Entity が知っている (trait)
 「期日超過のTODOをどうするか」      → Usecase が知っている (transition の適用)
-「いつそれをやるか」               → Journey が知っている (ステップの順序)
+「いつそれをやるか」               → Scenario が知っている (ステップの順序)
 「何個まで作れるか」               → Spec が知っている (条件付き制約)
 「このリソースは誰のものか」        → Entity が知っている (ownership)
 「このユーザーは何者か」            → Actor が知っている (authState)

@@ -1,4 +1,4 @@
-import type { WebAppSpec } from "@webapp-spec/types";
+import type { WebAppSpec, BackgroundStep, ViewStep } from "@webapp-spec/types";
 import type { ValidationIssue } from "../validator.js";
 
 export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
@@ -9,13 +9,20 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
 
   const referencedActors = new Set([
     ...spec.usecases.map((u) => u.actor),
-    ...spec.journeys.map((j) => j.actor),
+    ...spec.scenarios.map((s) => s.actor),
+    ...spec.scenarios.flatMap((s) =>
+      s.steps.filter((step): step is BackgroundStep => typeof step !== "string" && "usecase" in step).map((step) => step.actor),
+    ),
   ]);
 
   const referencedUsecases = new Set([
     ...spec.usecases.flatMap((u) => u.followUps?.map((f) => f.usecase) ?? []),
-    ...spec.journeys.flatMap((j) =>
-      j.steps.filter((s): s is { usecase: string } => typeof s !== "string").map((s) => s.usecase),
+    ...spec.scenarios.flatMap((s) =>
+      s.steps.flatMap((step) => {
+        if (typeof step === "string") return [];
+        if ("view" in step) return step.action ? [step.action] : [];
+        return [step.usecase];
+      }),
     ),
     ...spec.reactions.map((r) => r.trigger.usecase),
     ...spec.ui.views.flatMap((v) => v.actions.map((a) => a.usecase)),
@@ -31,6 +38,12 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
     ...spec.usecases.map((u) => u.target.entity),
     ...spec.reactions.map((r) => r.trigger.entity),
     ...spec.ui.components.flatMap((c) => c.sources.map((s) => s.entity)),
+  ]);
+
+  const referencedViews = new Set([
+    ...spec.scenarios.flatMap((s) =>
+      s.steps.filter((step): step is ViewStep => typeof step !== "string" && "view" in step).map((step) => step.view),
+    ),
   ]);
 
   // Unused transitions
@@ -51,7 +64,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.actor",
-        message: `Actor "${actor.id}" is not referenced by any Usecase or Journey`,
+        message: `Actor "${actor.id}" is not referenced by any Usecase or Scenario`,
         path: `actors`,
       });
     }
@@ -63,7 +76,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
       issues.push({
         severity: "warning",
         rule: "unused.usecase",
-        message: `Usecase "${uc.id}" is not referenced by any Journey, View, Reaction, or followUp`,
+        message: `Usecase "${uc.id}" is not referenced by any Scenario, View, Reaction, or followUp`,
         path: `usecases`,
       });
     }
@@ -89,6 +102,18 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
         rule: "unused.entity",
         message: `Entity "${entity.id}" is not referenced anywhere`,
         path: `domain.entities`,
+      });
+    }
+  }
+
+  // Unused views
+  for (const view of spec.ui.views) {
+    if (!referencedViews.has(view.id)) {
+      issues.push({
+        severity: "warning",
+        rule: "unused.view",
+        message: `View "${view.id}" is not referenced by any Scenario`,
+        path: `ui.views`,
       });
     }
   }

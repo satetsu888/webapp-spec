@@ -70,12 +70,15 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
       },
     ],
     reactions: [],
-    journeys: [
+    scenarios: [
       {
         id: "manage-todos",
         actor: "member",
         goal: "TODOを管理する",
-        steps: [{ usecase: "create-todo" }, { usecase: "complete-todo" }],
+        steps: [
+          { view: "todo-dashboard", action: "create-todo", description: "TODOを作成する" },
+          { view: "todo-dashboard", action: "complete-todo", description: "TODOを完了にする" },
+        ],
       },
     ],
     ui: {
@@ -89,12 +92,25 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
           displays: [],
           outputs: [{ name: "todoId", type: "Todo.id" }],
         },
+        {
+          id: "todo-form",
+          description: "TODO作成フォーム",
+          sources: [],
+          inputs: [{ name: "title", type: "string" }],
+          transforms: [],
+          displays: [],
+          outputs: [{ name: "title", type: "string" }],
+        },
       ],
       views: [
         {
-          id: "todo-list",
-          components: ["todo-selector"],
+          id: "todo-dashboard",
+          components: ["todo-selector", "todo-form"],
           actions: [
+            {
+              usecase: "create-todo",
+              inputFrom: { title: "todo-form.title" },
+            },
             {
               usecase: "complete-todo",
               inputFrom: { todoId: "todo-selector.todoId" },
@@ -142,7 +158,12 @@ describe("valid spec", () => {
       input: {},
       errors: [],
     });
-    spec.journeys[0].steps.push({ usecase: "list-todos" });
+    spec.ui.views.push({
+      id: "todo-list-view",
+      components: ["todo-selector"],
+      actions: [{ usecase: "list-todos", inputFrom: {} }],
+    });
+    spec.scenarios[0].steps.push({ view: "todo-list-view", action: "list-todos", description: "TODO一覧を表示する" });
     const result = validate(spec);
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -212,16 +233,23 @@ describe("references", () => {
     expect(result.errors.some((e) => e.rule === "ref.transition")).toBe(true);
   });
 
-  it("detects missing usecase in journey", () => {
+  it("detects missing usecase in scenario action", () => {
     const spec = minimalSpec();
-    (spec.journeys[0].steps[0] as { usecase: string }).usecase = "nonexistent";
+    (spec.scenarios[0].steps[0] as { view: string; action: string }).action = "nonexistent";
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.usecase")).toBe(true);
   });
 
+  it("detects missing view in scenario step", () => {
+    const spec = minimalSpec();
+    (spec.scenarios[0].steps[0] as { view: string }).view = "nonexistent";
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "ref.view")).toBe(true);
+  });
+
   it("detects missing component in view", () => {
     const spec = minimalSpec();
-    spec.ui.views[0].components = ["nonexistent"];
+    spec.ui.views[0].components = ["nonexistent", "todo-form"];
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.component")).toBe(true);
   });
@@ -445,8 +473,8 @@ describe("unused", () => {
   });
 });
 
-describe("journeys", () => {
-  it("warns on actor mismatch in journey step", () => {
+describe("scenarios", () => {
+  it("warns on actor mismatch in scenario view step action", () => {
     const spec = minimalSpec();
     spec.actors.push({ id: "admin", authState: { kind: "authenticated", roles: ["admin"] } });
     spec.usecases.push({
@@ -458,9 +486,18 @@ describe("journeys", () => {
       transition: "complete-todo",
       errors: [],
     });
-    spec.journeys[0].steps.push({ usecase: "admin-action" });
+    spec.ui.views[0].actions.push({ usecase: "admin-action", inputFrom: {} });
+    spec.scenarios[0].steps.push({ view: "todo-dashboard", action: "admin-action", description: "管理者操作" });
     const result = validate(spec);
-    expect(result.warnings.some((w) => w.rule === "journey.actor-mismatch")).toBe(true);
+    expect(result.warnings.some((w) => w.rule === "scenario.actor-mismatch")).toBe(true);
+  });
+
+  it("detects view-action mismatch", () => {
+    const spec = minimalSpec();
+    spec.scenarios[0].steps.push({ view: "todo-dashboard", action: "create-todo", description: "TODO作成" });
+    spec.ui.views[0].actions = spec.ui.views[0].actions.filter((a) => a.usecase !== "create-todo");
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "scenario.view-action-mismatch")).toBe(true);
   });
 });
 

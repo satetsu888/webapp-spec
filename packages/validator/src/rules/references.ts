@@ -69,7 +69,8 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
   const usecaseIds = new Set(spec.usecases.map((u) => u.id));
   const relationIds = new Set(spec.domain.relations.map((r) => r.id));
   const componentIds = new Set(spec.ui.components.map((c) => c.id));
-  const journeyIds = new Set(spec.journeys.map((j) => j.id));
+  const scenarioIds = new Set(spec.scenarios.map((s) => s.id));
+  const viewIds = new Set(spec.ui.views.map((v) => v.id));
 
   // Entity internal refs
   for (const entity of spec.domain.entities) {
@@ -205,21 +206,31 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
     }
   }
 
-  // Journey refs
-  for (let i = 0; i < spec.journeys.length; i++) {
-    const j = spec.journeys[i];
-    if (!actorIds.has(j.actor)) {
-      issues.push({ severity: "error", rule: "ref.actor", message: `Journey "${j.id}" references undefined actor "${j.actor}"`, path: `journeys[${i}].actor` });
+  // Scenario refs
+  for (let i = 0; i < spec.scenarios.length; i++) {
+    const s = spec.scenarios[i];
+    if (!actorIds.has(s.actor)) {
+      issues.push({ severity: "error", rule: "ref.actor", message: `Scenario "${s.id}" references undefined actor "${s.actor}"`, path: `scenarios[${i}].actor` });
     }
-    for (let k = 0; k < j.steps.length; k++) {
-      const step = j.steps[k];
+    for (let k = 0; k < s.steps.length; k++) {
+      const step = s.steps[k];
       if (typeof step === "string") {
-        if (!journeyIds.has(step)) {
-          issues.push({ severity: "error", rule: "ref.journey", message: `Journey "${j.id}" references undefined journey "${step}"`, path: `journeys[${i}].steps[${k}]` });
+        if (!scenarioIds.has(step)) {
+          issues.push({ severity: "error", rule: "ref.scenario", message: `Scenario "${s.id}" references undefined scenario "${step}"`, path: `scenarios[${i}].steps[${k}]` });
+        }
+      } else if ("view" in step) {
+        if (!viewIds.has(step.view)) {
+          issues.push({ severity: "error", rule: "ref.view", message: `Scenario "${s.id}" references undefined view "${step.view}"`, path: `scenarios[${i}].steps[${k}]` });
+        }
+        if (step.action && !usecaseIds.has(step.action)) {
+          issues.push({ severity: "error", rule: "ref.usecase", message: `Scenario "${s.id}" references undefined usecase "${step.action}"`, path: `scenarios[${i}].steps[${k}]` });
         }
       } else {
         if (!usecaseIds.has(step.usecase)) {
-          issues.push({ severity: "error", rule: "ref.usecase", message: `Journey "${j.id}" references undefined usecase "${step.usecase}"`, path: `journeys[${i}].steps[${k}]` });
+          issues.push({ severity: "error", rule: "ref.usecase", message: `Scenario "${s.id}" references undefined usecase "${step.usecase}"`, path: `scenarios[${i}].steps[${k}]` });
+        }
+        if (!actorIds.has(step.actor)) {
+          issues.push({ severity: "error", rule: "ref.actor", message: `Scenario "${s.id}" background step references undefined actor "${step.actor}"`, path: `scenarios[${i}].steps[${k}]` });
         }
       }
     }
