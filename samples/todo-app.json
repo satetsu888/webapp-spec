@@ -51,6 +51,22 @@
     ],
     "transitions": [
       {
+        "id": "register-user",
+        "description": "ユーザーを登録する",
+        "changes": [
+          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
+        "id": "deactivate-user",
+        "description": "ユーザーを退会させる",
+        "changes": [
+          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
+        ],
+        "conditions": []
+      },
+      {
         "id": "create-todo",
         "description": "TODOを作成する",
         "changes": [
@@ -81,22 +97,6 @@
           { "entity": "Todo", "state": { "from": "active", "to": "_end" }, "scope": "target" }
         ],
         "conditions": []
-      },
-      {
-        "id": "register-user",
-        "description": "ユーザーを登録する",
-        "changes": [
-          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
-        ],
-        "conditions": []
-      },
-      {
-        "id": "deactivate-user",
-        "description": "ユーザーを退会させる",
-        "changes": [
-          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
-        ],
-        "conditions": []
       }
     ]
   },
@@ -106,6 +106,29 @@
     { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } }
   ],
   "usecases": [
+    {
+      "id": "register-user",
+      "description": "新しいユーザーを登録する",
+      "actor": "anonymous",
+      "target": { "kind": "single", "entity": "User" },
+      "input": {
+        "name": "string",
+        "email": "string"
+      },
+      "transition": "register-user",
+      "errors": [
+        { "when": "email_taken", "description": "すでに登録済みのメールアドレス" }
+      ]
+    },
+    {
+      "id": "deactivate-user",
+      "description": "自分のアカウントを退会する",
+      "actor": "member",
+      "target": { "kind": "single", "entity": "User" },
+      "input": { "userId": "User.id" },
+      "transition": "deactivate-user",
+      "errors": []
+    },
     {
       "id": "create-todo",
       "description": "新しいTODOを作成する",
@@ -149,27 +172,6 @@
       "input": { "todoId": "Todo.id" },
       "transition": "delete-todo",
       "errors": []
-    },
-    {
-      "id": "register-user",
-      "description": "新しいユーザーを登録する",
-      "actor": "anonymous",
-      "target": { "kind": "single", "entity": "User" },
-      "input": {
-        "name": "string",
-        "email": "string"
-      },
-      "transition": "register-user",
-      "errors": []
-    },
-    {
-      "id": "deactivate-user",
-      "description": "ユーザーを退会させる",
-      "actor": "member",
-      "target": { "kind": "single", "entity": "User" },
-      "input": { "userId": "User.id" },
-      "transition": "deactivate-user",
-      "errors": []
     }
   ],
   "reactions": [],
@@ -179,7 +181,7 @@
       "actor": "anonymous",
       "goal": "アカウントを作成してTODO管理を始める",
       "steps": [
-        { "view": "register-page", "action": "register-user", "description": "アカウント登録フォームに入力して送信する" }
+        { "view": "register-page", "action": "register-user", "description": "登録フォームに入力してアカウントを作成する" }
       ]
     },
     {
@@ -198,15 +200,30 @@
       "actor": "member",
       "goal": "アカウントを管理する",
       "steps": [
-        { "view": "account-settings-page", "action": "deactivate-user", "description": "アカウントを無効化する" }
+        { "view": "account-settings-page", "action": "deactivate-user", "description": "アカウントを退会する" }
       ]
     }
   ],
   "ui": {
     "components": [
       {
+        "id": "register-form",
+        "description": "ユーザー登録フォーム",
+        "sources": [],
+        "inputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          { "name": "name", "type": "string" },
+          { "name": "email", "type": "string" }
+        ]
+      },
+      {
         "id": "todo-list",
-        "description": "TODO一覧を表示する",
+        "description": "未完了TODO一覧",
         "sources": [
           {
             "entity": "Todo",
@@ -227,7 +244,7 @@
       },
       {
         "id": "completed-todo-list",
-        "description": "完了済みTODO一覧を表示する",
+        "description": "完了済みTODO一覧",
         "sources": [
           {
             "entity": "Todo",
@@ -244,7 +261,7 @@
         "outputs": [{ "name": "todoId", "type": "Todo.id" }]
       },
       {
-        "id": "todo-create-form",
+        "id": "todo-form",
         "description": "TODO作成フォーム",
         "sources": [],
         "inputs": [
@@ -258,21 +275,6 @@
           { "name": "title", "type": "string" },
           { "name": "description", "type": "string" },
           { "name": "dueDate", "type": "date" }
-        ]
-      },
-      {
-        "id": "register-form",
-        "description": "ユーザー登録フォーム",
-        "sources": [],
-        "inputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
-        ],
-        "transforms": [],
-        "displays": [],
-        "outputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
         ]
       },
       {
@@ -310,14 +312,14 @@
       },
       {
         "id": "todo-dashboard",
-        "components": ["todo-list", "completed-todo-list", "todo-create-form"],
+        "components": ["todo-list", "completed-todo-list", "todo-form"],
         "actions": [
           {
             "usecase": "create-todo",
             "inputFrom": {
-              "title": "todo-create-form.title",
-              "description": "todo-create-form.description",
-              "dueDate": "todo-create-form.dueDate"
+              "title": "todo-form.title",
+              "description": "todo-form.description",
+              "dueDate": "todo-form.dueDate"
             }
           },
           {
