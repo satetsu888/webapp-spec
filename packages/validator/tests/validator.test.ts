@@ -233,6 +233,20 @@ describe("references", () => {
     expect(result.errors.some((e) => e.rule === "ref.transition")).toBe(true);
   });
 
+  it("detects invalid field in usecase conditions", () => {
+    const spec = minimalSpec();
+    spec.usecases[0].conditions = [{ field: "nonexistent", equals: "foo" }];
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "ref.field")).toBe(true);
+  });
+
+  it("accepts valid field in usecase conditions", () => {
+    const spec = minimalSpec();
+    spec.usecases[0].conditions = [{ field: "status", equals: "active" }];
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "ref.field")).toBe(false);
+  });
+
   it("detects missing usecase in scenario action", () => {
     const spec = minimalSpec();
     (spec.scenarios[0].steps[0] as { view: string; action: string }).action = "nonexistent";

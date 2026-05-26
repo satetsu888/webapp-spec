@@ -143,6 +143,7 @@ export type Usecase = {
   target: Target;
   input: Schema;
   transition?: TransitionRef;
+  conditions?: Condition[];
   errors: ErrorCase[];
   followUps?: FollowUpUsecase[];
 };

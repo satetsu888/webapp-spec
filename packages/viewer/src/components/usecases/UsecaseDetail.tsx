@@ -73,6 +73,17 @@ export function UsecaseDetail() {
         </table>
       </section>
 
+      {uc.conditions && uc.conditions.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Conditions
+          </h3>
+          <pre className="rounded bg-gray-50 p-3 text-xs">
+            {JSON.stringify(uc.conditions, null, 2)}
+          </pre>
+        </section>
+      )}
+
       {uc.errors.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">Errors</h3>

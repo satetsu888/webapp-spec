@@ -392,6 +392,7 @@ type Usecase = {
   target: Target
   input: Schema
   transition: TransitionRef
+  conditions?: Condition[]         // この actor がこの操作を実行するための前提条件
   errors: ErrorCase[]
   followUps?: FollowUpUsecase[]   // この usecase の後に外部起点で起きうる usecase
 }
@@ -465,6 +466,41 @@ const paymentFailed: Usecase = {
   target: { kind: "single", entity: "Order" },
   input: { orderId: "Order.id" },
   transition: "payment-failed",
+  errors: [],
+}
+```
+
+### Usecase conditions と Transition conditions の違い
+
+Transition の `conditions` はドメイン不変条件 — 誰が操作しても常に成り立つべきルール。Usecase の `conditions` は actor に依存する操作の前提条件。
+
+```typescript
+// ドメイン不変条件: 公開済みの記事にしかコメントできない（actor 非依存）
+const createComment: Transition = {
+  id: "create-comment",
+  changes: [{ entity: "Comment", state: { from: "_start", to: "visible" }, scope: "target" }],
+  conditions: [{ field: "status", equals: "published" }],
+}
+
+// actor 依存の前提条件: member は locked な TODO を削除できない
+const deleteTodo: Usecase = {
+  id: "delete-todo",
+  actor: "member",
+  target: { kind: "single", entity: "Todo" },
+  input: { todoId: "Todo.id" },
+  transition: "delete-todo",
+  conditions: [{ field: "lockStatus", equals: "released" }],
+  errors: [],
+}
+
+// admin は lock に関係なく削除できる
+const adminDeleteTodo: Usecase = {
+  id: "admin-delete-todo",
+  actor: "admin",
+  target: { kind: "single", entity: "Todo" },
+  input: { todoId: "Todo.id" },
+  transition: "delete-todo",
+  conditions: [],
   errors: [],
 }
 ```

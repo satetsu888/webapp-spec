@@ -303,6 +303,7 @@
         "target": { "$ref": "#/$defs/Target" },
         "input": { "type": "object", "additionalProperties": { "type": "string" } },
         "transition": { "type": "string" },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/Condition" } },
         "errors": { "type": "array", "items": { "$ref": "#/$defs/ErrorCase" } },
         "followUps": { "type": "array", "items": { "$ref": "#/$defs/FollowUpUsecase" } }
       }
