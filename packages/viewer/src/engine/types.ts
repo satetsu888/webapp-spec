@@ -35,10 +35,12 @@ export type SimState = {
   instances: Record<string, EntityInstance[]>;
   nextId: Record<string, number>;
   selectedActor: string | null;
+  selectedView: string | null;
   executionLog: ExecutionResult[];
 };
 
 export type SimAction =
   | { type: "SELECT_ACTOR"; actor: string | null }
+  | { type: "SELECT_VIEW"; view: string | null }
   | { type: "APPLY_RESULT"; result: ExecutionResult }
   | { type: "RESET" };

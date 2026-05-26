@@ -3,7 +3,8 @@ import { useSpec } from "@/hooks/useSpec";
 import { useSimulation } from "@/hooks/useSimulation";
 import type { ExecutionResult } from "@/engine/types";
 import { ActorSelector } from "./ActorSelector";
-import { UsecaseSelector } from "./UsecaseSelector";
+import { ViewSelector } from "./ViewSelector";
+import { ActionSelector } from "./ActionSelector";
 import { InputForm } from "./InputForm";
 import { ExecutionResultView } from "./ExecutionResultView";
 import { InstanceTable } from "./InstanceTable";
@@ -11,21 +12,21 @@ import { InstanceTable } from "./InstanceTable";
 export function SimulationPanel() {
   const { spec } = useSpec();
   const { execute, reset, state } = useSimulation();
-  const [selectedUsecase, setSelectedUsecase] = useState<string | null>(null);
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<ExecutionResult | null>(null);
 
   const handleExecute = useCallback(
     (input: Record<string, unknown>) => {
-      if (!selectedUsecase) return;
-      const result = execute(spec, selectedUsecase, input);
+      if (!selectedAction) return;
+      const result = execute(spec, selectedAction, input);
       setLastResult(result);
     },
-    [spec, selectedUsecase, execute],
+    [spec, selectedAction, execute],
   );
 
   const handleReset = useCallback(() => {
     reset();
-    setSelectedUsecase(null);
+    setSelectedAction(null);
     setLastResult(null);
   }, [reset]);
 
@@ -43,15 +44,17 @@ export function SimulationPanel() {
 
       <ActorSelector />
 
-      {state.selectedActor && (
-        <UsecaseSelector
-          selectedUsecase={selectedUsecase}
-          onSelect={setSelectedUsecase}
+      {state.selectedActor && <ViewSelector />}
+
+      {state.selectedView && (
+        <ActionSelector
+          selectedAction={selectedAction}
+          onSelect={setSelectedAction}
         />
       )}
 
-      {selectedUsecase && (
-        <InputForm usecaseId={selectedUsecase} onSubmit={handleExecute} />
+      {selectedAction && (
+        <InputForm usecaseId={selectedAction} onSubmit={handleExecute} />
       )}
 
       {lastResult && <ExecutionResultView result={lastResult} />}

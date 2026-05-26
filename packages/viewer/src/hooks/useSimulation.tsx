@@ -13,6 +13,7 @@ import { executeUsecase } from "@/engine/executor";
 type SimContextValue = {
   state: SimState;
   selectActor: (actor: string | null) => void;
+  selectView: (viewId: string | null) => void;
   execute: (
     spec: WebAppSpec,
     usecaseId: string,
@@ -28,6 +29,10 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
 
   const selectActor = useCallback((actor: string | null) => {
     dispatch({ type: "SELECT_ACTOR", actor });
+  }, []);
+
+  const selectView = useCallback((viewId: string | null) => {
+    dispatch({ type: "SELECT_VIEW", view: viewId });
   }, []);
 
   const execute = useCallback(
@@ -50,7 +55,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SimContext.Provider value={{ state, selectActor, execute, reset }}>
+    <SimContext.Provider value={{ state, selectActor, selectView, execute, reset }}>
       {children}
     </SimContext.Provider>
   );

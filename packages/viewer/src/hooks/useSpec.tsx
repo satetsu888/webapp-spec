@@ -11,6 +11,7 @@ import type {
   Scenario,
   Component,
   View,
+  ViewStep,
 } from "@webapp-spec/types";
 
 export type SpecLookups = {
@@ -28,6 +29,7 @@ export type SpecLookups = {
   transitionsForEntity: (entityId: string) => Transition[];
   usecasesByActor: (actorId: string) => Usecase[];
   reactionsByUsecase: (usecaseId: string) => Reaction[];
+  viewsForActor: (actorId: string) => View[];
   stateColorClass: (entityId: string, stateName: string) => string;
 };
 
@@ -87,6 +89,37 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     usecaseReactions.set(r.trigger.usecase, list);
   }
 
+  function collectViewIds(scenarioId: string, visited: Set<string>): Set<string> {
+    if (visited.has(scenarioId)) return new Set();
+    visited.add(scenarioId);
+    const scenario = scenarioMap.get(scenarioId);
+    if (!scenario) return new Set();
+    const ids = new Set<string>();
+    for (const step of scenario.steps) {
+      if (typeof step === "string") {
+        for (const id of collectViewIds(step, visited)) ids.add(id);
+      } else if ("view" in step) {
+        ids.add((step as ViewStep).view);
+      }
+    }
+    return ids;
+  }
+
+  const actorViews = new Map<string, View[]>();
+  for (const s of spec.scenarios) {
+    const viewIdSet = collectViewIds(s.id, new Set());
+    const existing = actorViews.get(s.actor) ?? [];
+    const existingIds = new Set(existing.map((v) => v.id));
+    for (const id of viewIdSet) {
+      if (!existingIds.has(id)) {
+        const v = viewMap.get(id);
+        if (v) existing.push(v);
+        existingIds.add(id);
+      }
+    }
+    actorViews.set(s.actor, existing);
+  }
+
   const stateColorMap = new Map<string, string>();
   for (const entity of spec.domain.entities) {
     entity.states.forEach((s, i) => {
@@ -112,6 +145,7 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     transitionsForEntity: (id) => entityTransitions.get(id) ?? [],
     usecasesByActor: (id) => actorUsecases.get(id) ?? [],
     reactionsByUsecase: (id) => usecaseReactions.get(id) ?? [],
+    viewsForActor: (id) => actorViews.get(id) ?? [],
     stateColorClass: (entityId, stateName) => {
       if (stateName === "_start") return "bg-gray-200 text-gray-600";
       if (stateName === "_end") return "bg-red-100 text-red-800";
