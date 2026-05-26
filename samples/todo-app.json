@@ -23,14 +23,16 @@
         "fields": [
           { "name": "title", "type": "string" },
           { "name": "description", "type": "string", "required": false },
-          { "name": "status", "type": "string" },
+          { "name": "completion", "type": "string" },
+          { "name": "availability", "type": "string" },
           { "name": "dueDate", "type": "date", "required": false },
           { "name": "userId", "type": "User.id" }
         ],
         "ownership": { "kind": "personal", "ownerField": "userId" },
         "states": [
-          { "name": "active", "field": "status", "value": "active" },
-          { "name": "completed", "field": "status", "value": "completed" }
+          { "name": "incomplete", "field": "completion", "value": "incomplete" },
+          { "name": "complete", "field": "completion", "value": "complete" },
+          { "name": "available", "field": "availability", "value": "available" }
         ],
         "traits": [
           {
@@ -38,7 +40,7 @@
             "description": "期日を過ぎた未完了のTODO",
             "derivedFrom": {
               "and": [
-                { "field": "status", "equals": "active" },
+                { "field": "completion", "equals": "incomplete" },
                 { "field": "dueDate", "op": "lt", "value": "now" }
               ]
             }
@@ -70,7 +72,8 @@
         "id": "create-todo",
         "description": "TODOを作成する",
         "changes": [
-          { "entity": "Todo", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+          { "entity": "Todo", "state": { "from": "_start", "to": "incomplete" }, "scope": "target" },
+          { "entity": "Todo", "state": { "from": "_start", "to": "available" }, "scope": "target" }
         ],
         "conditions": []
       },
@@ -78,7 +81,7 @@
         "id": "complete-todo",
         "description": "TODOを完了にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "active", "to": "completed" }, "scope": "target" }
+          { "entity": "Todo", "state": { "from": "incomplete", "to": "complete" }, "scope": "target" }
         ],
         "conditions": []
       },
@@ -86,7 +89,7 @@
         "id": "reopen-todo",
         "description": "完了したTODOを再度有効にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "completed", "to": "active" }, "scope": "target" }
+          { "entity": "Todo", "state": { "from": "complete", "to": "incomplete" }, "scope": "target" }
         ],
         "conditions": []
       },
@@ -94,7 +97,7 @@
         "id": "delete-todo",
         "description": "TODOを削除する",
         "changes": [
-          { "entity": "Todo", "state": { "from": "active", "to": "_end" }, "scope": "target" }
+          { "entity": "Todo", "state": { "from": "available", "to": "_end" }, "scope": "target" }
         ],
         "conditions": []
       }
@@ -227,8 +230,8 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["active"],
-            "fields": ["title", "description", "status", "dueDate"],
+            "matching": ["incomplete", "available"],
+            "fields": ["title", "description", "completion", "dueDate"],
             "paginated": true,
             "sort": [{ "field": "dueDate", "order": "asc" }]
           }
@@ -248,8 +251,8 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["completed"],
-            "fields": ["title", "description", "status"],
+            "matching": ["complete", "available"],
+            "fields": ["title", "description", "completion"],
             "paginated": true
           }
         ],

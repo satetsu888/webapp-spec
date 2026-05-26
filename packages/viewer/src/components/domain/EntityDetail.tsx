@@ -17,8 +17,8 @@ export function EntityDetail() {
   const relations = relationsForEntity(id!);
   const transitions = transitionsForEntity(id!);
   const stateDiagram = useMemo(
-    () => buildStateDiagram(id!, transitions),
-    [id, transitions],
+    () => buildStateDiagram(id!, transitions, entity.states),
+    [id, transitions, entity.states],
   );
 
   return (
