@@ -31,9 +31,6 @@ export function InputForm({ usecaseId, onSubmit }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">
-        Input for {usecaseId}
-      </h3>
       {Object.entries(usecase.input).map(([key, type]) => {
         const entityIdMatch = type.match(/^(\w+)\.id$/);
 

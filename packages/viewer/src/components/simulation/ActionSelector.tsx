@@ -1,12 +1,14 @@
 import { useSpec } from "@/hooks/useSpec";
 import { useSimulation } from "@/hooks/useSimulation";
+import { InputForm } from "./InputForm";
 
 type Props = {
   selectedAction: string | null;
   onSelect: (usecaseId: string | null) => void;
+  onExecute: (input: Record<string, unknown>) => void;
 };
 
-export function ActionSelector({ selectedAction, onSelect }: Props) {
+export function ActionSelector({ selectedAction, onSelect, onExecute }: Props) {
   const { viewMap, usecaseMap } = useSpec();
   const { state } = useSimulation();
 
@@ -20,28 +22,53 @@ export function ActionSelector({ selectedAction, onSelect }: Props) {
       <h3 className="mb-2 text-sm font-semibold text-gray-700">
         Actions on {view.id}
       </h3>
-      <div className="space-y-1">
+      <div className="space-y-2">
         {view.actions.map((a) => {
           const uc = usecaseMap.get(a.usecase);
+          const isSelected = selectedAction === a.usecase;
           return (
-            <button
+            <div
               key={a.usecase}
-              onClick={() =>
-                onSelect(selectedAction === a.usecase ? null : a.usecase)
-              }
-              className={`block w-full rounded border px-3 py-2 text-left text-sm transition-colors ${
-                selectedAction === a.usecase
-                  ? "border-blue-500 bg-blue-50 text-blue-800"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+              className={`rounded-lg border transition-colors ${
+                isSelected
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200 bg-white"
               }`}
             >
-              <span className="font-medium">{a.usecase}</span>
-              {uc && (
-                <span className="ml-2 text-xs text-gray-500">
-                  {uc.description}
+              <button
+                onClick={() => onSelect(isSelected ? null : a.usecase)}
+                className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm"
+              >
+                <span
+                  className={`font-medium ${isSelected ? "text-blue-800" : "text-gray-700"}`}
+                >
+                  {a.usecase}
                 </span>
+                <svg
+                  className={`h-4 w-4 transition-transform ${isSelected ? "rotate-180 text-blue-500" : "text-gray-400"}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {isSelected && (
+                <div className="border-t border-blue-200 px-4 py-3">
+                  {uc?.description && (
+                    <p className="mb-3 text-xs text-gray-600">
+                      {uc.description}
+                    </p>
+                  )}
+                  <InputForm usecaseId={a.usecase} onSubmit={onExecute} />
+                </div>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

@@ -5,7 +5,6 @@ import type { ExecutionResult } from "@/engine/types";
 import { ActorSelector } from "./ActorSelector";
 import { ViewSelector } from "./ViewSelector";
 import { ActionSelector } from "./ActionSelector";
-import { InputForm } from "./InputForm";
 import { ExecutionResultView } from "./ExecutionResultView";
 import { InstanceTable } from "./InstanceTable";
 
@@ -50,11 +49,8 @@ export function SimulationPanel() {
         <ActionSelector
           selectedAction={selectedAction}
           onSelect={setSelectedAction}
+          onExecute={handleExecute}
         />
-      )}
-
-      {selectedAction && (
-        <InputForm usecaseId={selectedAction} onSubmit={handleExecute} />
       )}
 
       {lastResult && <ExecutionResultView result={lastResult} />}
