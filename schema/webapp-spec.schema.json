@@ -72,11 +72,11 @@
         },
         {
           "type": "object",
-          "required": ["kind", "requiredRole"],
+          "required": ["kind", "participantFields"],
           "additionalProperties": false,
           "properties": {
-            "kind": { "const": "role_scoped" },
-            "requiredRole": { "type": "string" }
+            "kind": { "const": "participants" },
+            "participantFields": { "type": "array", "items": { "type": "string" } }
           }
         },
         {
@@ -255,7 +255,8 @@
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string" },
-        "authState": { "$ref": "#/$defs/AuthState" }
+        "authState": { "$ref": "#/$defs/AuthState" },
+        "entity": { "type": "string" }
       }
     },
     "AuthState": {
@@ -316,7 +317,8 @@
           "additionalProperties": false,
           "properties": {
             "kind": { "const": "single" },
-            "entity": { "type": "string" }
+            "entity": { "type": "string" },
+            "scopeByActor": { "type": "array", "items": { "type": "string" } }
           }
         },
         {
@@ -326,7 +328,8 @@
           "properties": {
             "kind": { "const": "collection" },
             "entity": { "type": "string" },
-            "matching": { "type": "array", "items": { "type": "string" } }
+            "matching": { "type": "array", "items": { "type": "string" } },
+            "scopeByActor": { "type": "array", "items": { "type": "string" } }
           }
         }
       ]

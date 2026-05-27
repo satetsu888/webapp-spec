@@ -36,6 +36,11 @@ export function EntityDetail() {
             group: {entity.ownership.groupField}
           </span>
         )}
+        {"participantFields" in entity.ownership && (
+          <span className="ml-2 text-sm text-gray-500">
+            participants: {entity.ownership.participantFields.join(", ")}
+          </span>
+        )}
       </div>
 
       <section>

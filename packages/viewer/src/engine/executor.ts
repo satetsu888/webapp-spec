@@ -1,4 +1,4 @@
-import type { WebAppSpec, StateChange } from "@webapp-spec/types";
+import type { WebAppSpec, StateChange, Usecase } from "@webapp-spec/types";
 import type {
   SimState,
   EntityInstance,
@@ -24,6 +24,19 @@ export function executeUsecase(
     };
   }
 
+  const resolved = resolveActorIdInputs(spec, state, usecase, input);
+  if ("error" in resolved) {
+    return {
+      success: false,
+      usecaseId,
+      mutations: [],
+      firedReactions: [],
+      error: resolved.error,
+    };
+  }
+  const resolvedInput = resolved.input;
+  const resolvedSchema = resolved.schema;
+
   if (!usecase.transition) {
     const firedReactions = collectReactions(spec, usecaseId);
     return { success: true, usecaseId, mutations: [], firedReactions };
@@ -46,14 +59,14 @@ export function executeUsecase(
   const targetChange = transition.changes.find((ch) => ch.scope === "target");
 
   if (targetChange && targetChange.state.from === "_start") {
-    const result = handleCreation(spec, state, targetChange, transition, input);
+    const result = handleCreation(spec, state, targetChange, transition, resolvedInput);
     if (!result.success) return { ...result, usecaseId };
     mutations.push(...result.mutations);
   } else {
     const targetEntityType = usecase.target.entity;
     const targetInstanceId = findTargetInstanceId(
-      input,
-      usecase.input,
+      resolvedInput,
+      resolvedSchema,
       targetEntityType,
     );
 
@@ -65,6 +78,25 @@ export function executeUsecase(
         firedReactions: [],
         error: `No target instance selected for ${targetEntityType}`,
       };
+    }
+
+    if (targetInstanceId && usecase.target.scopeByActor) {
+      const scopeError = checkActorScope(
+        spec,
+        state,
+        usecase,
+        targetEntityType,
+        targetInstanceId,
+      );
+      if (scopeError) {
+        return {
+          success: false,
+          usecaseId,
+          mutations: [],
+          firedReactions: [],
+          error: scopeError,
+        };
+      }
     }
 
     for (const change of transition.changes) {
@@ -257,6 +289,83 @@ function getStateField(
     if (key === "status") return key;
   }
   return null;
+}
+
+function checkActorScope(
+  spec: WebAppSpec,
+  state: SimState,
+  usecase: Usecase,
+  targetEntityType: string,
+  targetInstanceId: string,
+): string | null {
+  const scopeFields = usecase.target.scopeByActor;
+  if (!scopeFields) return null;
+
+  const actor = spec.actors.find((a) => a.id === usecase.actor);
+  if (!actor?.entity) {
+    return `Actor "${usecase.actor}" has no entity binding but usecase has scopeByActor`;
+  }
+
+  const actorInstanceId = state.actorInstances[actor.id];
+  if (!actorInstanceId) {
+    return `No instance bound for actor "${actor.id}"`;
+  }
+
+  const instances = state.instances[targetEntityType] ?? [];
+  const instance = instances.find((inst) => inst.id === targetInstanceId);
+  if (!instance) return null;
+
+  const hasAccess = scopeFields.some(
+    (field) => instance.fields[field] === actorInstanceId,
+  );
+  if (!hasAccess) {
+    return `Actor "${actor.id}" does not have access to ${targetEntityType} "${targetInstanceId}" (checked fields: ${scopeFields.join(", ")})`;
+  }
+
+  return null;
+}
+
+function resolveActorIdInputs(
+  spec: WebAppSpec,
+  state: SimState,
+  usecase: Usecase,
+  input: Record<string, unknown>,
+):
+  | { input: Record<string, unknown>; schema: Record<string, string> }
+  | { error: string } {
+  const hasActorIdField = Object.values(usecase.input).some(
+    (t) => t === "actor.id",
+  );
+  if (!hasActorIdField) {
+    return { input, schema: usecase.input };
+  }
+
+  const actor = spec.actors.find((a) => a.id === usecase.actor);
+  if (!actor?.entity) {
+    return {
+      error: `Actor "${usecase.actor}" has no entity binding but usecase uses actor.id`,
+    };
+  }
+
+  const instanceId = state.actorInstances[actor.id];
+  if (!instanceId) {
+    return {
+      error: `No instance bound for actor "${actor.id}"`,
+    };
+  }
+
+  const resolvedInput = { ...input };
+  const resolvedSchema: Record<string, string> = {};
+  for (const [key, type] of Object.entries(usecase.input)) {
+    if (type === "actor.id") {
+      resolvedInput[key] = instanceId;
+      resolvedSchema[key] = `${actor.entity}.id`;
+    } else {
+      resolvedSchema[key] = type;
+    }
+  }
+
+  return { input: resolvedInput, schema: resolvedSchema };
 }
 
 function collectReactions(

@@ -84,6 +84,13 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
     if (entity.ownership.kind === "group" && !fields.has(entity.ownership.groupField)) {
       issues.push({ severity: "error", rule: "ref.field", message: `Entity "${entity.id}" ownership.groupField "${entity.ownership.groupField}" is not defined in fields`, path: `${prefix}.ownership` });
     }
+    if (entity.ownership.kind === "participants") {
+      for (const pf of entity.ownership.participantFields) {
+        if (!fields.has(pf)) {
+          issues.push({ severity: "error", rule: "ref.field", message: `Entity "${entity.id}" ownership.participantFields "${pf}" is not defined in fields`, path: `${prefix}.ownership` });
+        }
+      }
+    }
 
     // state field
     for (let i = 0; i < entity.states.length; i++) {

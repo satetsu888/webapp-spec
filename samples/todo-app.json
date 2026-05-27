@@ -106,7 +106,7 @@
   "specs": [],
   "actors": [
     { "id": "anonymous", "authState": { "kind": "anonymous" } },
-    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } }
+    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] }, "entity": "User" }
   ],
   "usecases": [
     {
@@ -128,7 +128,7 @@
       "description": "自分のアカウントを退会する",
       "actor": "member",
       "target": { "kind": "single", "entity": "User" },
-      "input": { "userId": "User.id" },
+      "input": { "userId": "actor.id" },
       "transition": "deactivate-user",
       "errors": []
     },
@@ -140,7 +140,8 @@
       "input": {
         "title": "string",
         "description": "string",
-        "dueDate": "date"
+        "dueDate": "date",
+        "userId": "actor.id"
       },
       "transition": "create-todo",
       "errors": []
@@ -149,7 +150,7 @@
       "id": "complete-todo",
       "description": "TODOを完了にする",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo" },
+      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
       "input": { "todoId": "Todo.id" },
       "transition": "complete-todo",
       "errors": [
@@ -160,7 +161,7 @@
       "id": "reopen-todo",
       "description": "完了したTODOを再度有効にする",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo" },
+      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
       "input": { "todoId": "Todo.id" },
       "transition": "reopen-todo",
       "errors": [
@@ -171,7 +172,7 @@
       "id": "delete-todo",
       "description": "TODOを削除する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo" },
+      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
       "input": { "todoId": "Todo.id" },
       "transition": "delete-todo",
       "errors": []
@@ -345,7 +346,7 @@
         "actions": [
           {
             "usecase": "deactivate-user",
-            "inputFrom": { "userId": "account-settings.userId" }
+            "inputFrom": {}
           }
         ]
       }

@@ -36,11 +36,13 @@ export type SimState = {
   nextId: Record<string, number>;
   selectedActor: string | null;
   selectedView: string | null;
+  actorInstances: Record<string, string>;
   executionLog: ExecutionResult[];
 };
 
 export type SimAction =
   | { type: "SELECT_ACTOR"; actor: string | null }
   | { type: "SELECT_VIEW"; view: string | null }
+  | { type: "BIND_ACTOR_INSTANCE"; actor: string; instanceId: string }
   | { type: "APPLY_RESULT"; result: ExecutionResult }
   | { type: "RESET" };

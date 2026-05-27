@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function InputForm({ usecaseId, onSubmit }: Props) {
-  const { usecaseMap, transitionMap, spec } = useSpec();
+  const { usecaseMap, transitionMap } = useSpec();
   const { state } = useSimulation();
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -32,6 +32,8 @@ export function InputForm({ usecaseId, onSubmit }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {Object.entries(usecase.input).map(([key, type]) => {
+        if (type === "actor.id") return null;
+
         const entityIdMatch = type.match(/^(\w+)\.id$/);
 
         const isTargetCreation =

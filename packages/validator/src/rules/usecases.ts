@@ -31,7 +31,7 @@ export function checkUsecases(spec: WebAppSpec): ValidationIssue[] {
     const actor = actorMap.get(uc.actor);
     const entity = entityMap.get(uc.target.entity);
     if (actor && entity && actor.authState.kind === "anonymous") {
-      if (entity.ownership.kind === "personal" || entity.ownership.kind === "group") {
+      if (entity.ownership.kind === "personal" || entity.ownership.kind === "group" || entity.ownership.kind === "participants") {
         issues.push({
           severity: "warning",
           rule: "usecase.anonymous-ownership",

@@ -14,6 +14,7 @@ type SimContextValue = {
   state: SimState;
   selectActor: (actor: string | null) => void;
   selectView: (viewId: string | null) => void;
+  bindActorInstance: (actorId: string, instanceId: string) => void;
   execute: (
     spec: WebAppSpec,
     usecaseId: string,
@@ -35,6 +36,13 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SELECT_VIEW", view: viewId });
   }, []);
 
+  const bindActorInstance = useCallback(
+    (actorId: string, instanceId: string) => {
+      dispatch({ type: "BIND_ACTOR_INSTANCE", actor: actorId, instanceId });
+    },
+    [],
+  );
+
   const execute = useCallback(
     (
       spec: WebAppSpec,
@@ -55,7 +63,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SimContext.Provider value={{ state, selectActor, selectView, execute, reset }}>
+    <SimContext.Provider value={{ state, selectActor, selectView, bindActorInstance, execute, reset }}>
       {children}
     </SimContext.Provider>
   );

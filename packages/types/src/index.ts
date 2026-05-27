@@ -50,7 +50,7 @@ export type Field = {
 export type Ownership =
   | { kind: "personal"; ownerField: string }
   | { kind: "group"; groupField: string }
-  | { kind: "role_scoped"; requiredRole: string }
+  | { kind: "participants"; participantFields: string[] }
   | { kind: "shared" };
 
 export type State = {
@@ -123,13 +123,14 @@ export type AuthState =
 export type Actor = {
   id: string;
   authState: AuthState;
+  entity?: EntityRef;
 };
 
 // --- Usecases ---
 
 export type Target =
-  | { kind: "single"; entity: EntityRef }
-  | { kind: "collection"; entity: EntityRef; matching: string[] };
+  | { kind: "single"; entity: EntityRef; scopeByActor?: string[] }
+  | { kind: "collection"; entity: EntityRef; matching: string[]; scopeByActor?: string[] };
 
 export type FollowUpUsecase = {
   description: string;

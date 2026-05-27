@@ -3,13 +3,14 @@ import { useSpec } from "@/hooks/useSpec";
 import { useSimulation } from "@/hooks/useSimulation";
 import type { ExecutionResult } from "@/engine/types";
 import { ActorSelector } from "./ActorSelector";
+import { ActorInstanceSelector } from "./ActorInstanceSelector";
 import { ViewSelector } from "./ViewSelector";
 import { ActionSelector } from "./ActionSelector";
 import { ExecutionResultView } from "./ExecutionResultView";
 import { InstanceTable } from "./InstanceTable";
 
 export function SimulationPanel() {
-  const { spec } = useSpec();
+  const { spec, actorMap } = useSpec();
   const { execute, reset, state } = useSimulation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<ExecutionResult | null>(null);
@@ -29,6 +30,14 @@ export function SimulationPanel() {
     setLastResult(null);
   }, [reset]);
 
+  const selectedActorDef = state.selectedActor
+    ? actorMap.get(state.selectedActor)
+    : undefined;
+  const actorReady =
+    state.selectedActor &&
+    (!selectedActorDef?.entity ||
+      state.actorInstances[state.selectedActor] !== undefined);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -43,7 +52,9 @@ export function SimulationPanel() {
 
       <ActorSelector />
 
-      {state.selectedActor && <ViewSelector />}
+      {state.selectedActor && <ActorInstanceSelector />}
+
+      {actorReady && <ViewSelector />}
 
       {state.selectedView && (
         <ActionSelector

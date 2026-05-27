@@ -5,6 +5,7 @@ export const initialSimState: SimState = {
   nextId: {},
   selectedActor: null,
   selectedView: null,
+  actorInstances: {},
   executionLog: [],
 };
 
@@ -15,6 +16,15 @@ export function simReducer(state: SimState, action: SimAction): SimState {
 
     case "SELECT_VIEW":
       return { ...state, selectedView: action.view };
+
+    case "BIND_ACTOR_INSTANCE":
+      return {
+        ...state,
+        actorInstances: {
+          ...state.actorInstances,
+          [action.actor]: action.instanceId,
+        },
+      };
 
     case "APPLY_RESULT": {
       const { result } = action;

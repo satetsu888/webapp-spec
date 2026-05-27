@@ -275,6 +275,13 @@ describe("references", () => {
     expect(result.errors.some((e) => e.rule === "ref.field")).toBe(true);
   });
 
+  it("detects missing participantField in ownership", () => {
+    const spec = minimalSpec();
+    spec.domain.entities[0].ownership = { kind: "participants", participantFields: ["nonexistent"] };
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "ref.field")).toBe(true);
+  });
+
   it("detects missing field in datasource", () => {
     const spec = minimalSpec();
     spec.ui.components[0].sources[0].fields = ["nonexistent"];
