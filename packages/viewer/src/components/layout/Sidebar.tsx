@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 
 const sections: {
@@ -38,6 +38,7 @@ function itemLinkClass({ isActive }: { isActive: boolean }) {
 export function Sidebar({ onUnload }: { onUnload: () => void }) {
   const spec = useSpec();
   const location = useLocation();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggleSection = (path: string) => {
@@ -54,7 +55,7 @@ export function Sidebar({ onUnload }: { onUnload: () => void }) {
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <span className="text-sm font-bold text-gray-800">{spec.spec.name}</span>
         <button
-          onClick={onUnload}
+          onClick={() => { navigate("/"); onUnload(); }}
           className="text-xs text-gray-500 hover:text-gray-800"
         >
           Close
