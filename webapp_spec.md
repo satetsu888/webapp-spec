@@ -69,6 +69,7 @@ type WebAppSpec = {
   reactions: Reaction[]   // usecase 実行に伴う副作用
   scenarios: Scenario[]   // View ベースのユーザーシナリオ
   ui: UI                  // 画面表示に関する定義
+  fixtures?: Fixture[]    // シミュレーション・テスト用のサンプルデータ
 }
 
 type UI = {
@@ -112,10 +113,10 @@ type Field = {
 
 // リソースがどう所有されうるか。Entity 側が宣言する。
 type Ownership =
-  | { kind: "personal", ownerField: string }     // 特定ユーザーが所有
-  | { kind: "group", groupField: string }         // 特定グループが所有
-  | { kind: "role_scoped", requiredRole: string } // 特定ロールのみ
-  | { kind: "shared" }                            // 誰でもアクセス可能
+  | { kind: "personal", ownerField: string }              // 特定ユーザーが所有
+  | { kind: "group", groupField: string }                 // 特定グループが所有
+  | { kind: "participants", participantFields: string[] }  // 複数の参加者が関与（DM等）
+  | { kind: "shared" }                                    // 誰でもアクセス可能
 
 // 明示的な状態。フィールドの値で決まり、usecase の transition で遷移する。
 type State = {
@@ -353,6 +354,7 @@ Actor は独立した概念ではなく、特定の認証状態になった anon
 type Actor = {
   id: string
   authState: AuthState
+  entity?: EntityRef    // この actor が対応するエンティティ（例: member → User）
 }
 
 type AuthState =
@@ -362,13 +364,17 @@ type AuthState =
   | { kind: "expired" }
 ```
 
+`entity` は optional。人間のユーザーを表す actor は対応するエンティティを持つ（`member` → `User`）。外部システム（webhook 等）の actor はエンティティを持たない。
+
+usecase の input で `"actor.id"` と指定すると、実行時に actor にバインドされたエンティティインスタンスの ID に解決される。これにより「自分の Todo を作成する」のような操作で、actor の User ID を自動的に設定できる。
+
 ```typescript
 const actors: Actor[] = [
-  // 人間のユーザー
+  // 人間のユーザー（entity あり）
   { id: "anonymous", authState: { kind: "anonymous" } },
-  { id: "member",    authState: { kind: "authenticated", roles: ["member"] } },
-  { id: "admin",     authState: { kind: "authenticated", roles: ["admin"] } },
-  // 外部システム
+  { id: "member",    authState: { kind: "authenticated", roles: ["member"] }, entity: "User" },
+  { id: "admin",     authState: { kind: "authenticated", roles: ["admin"] }, entity: "User" },
+  // 外部システム（entity なし）
   { id: "stripe",    authState: { kind: "authenticated", roles: ["payment-provider"] } },
   { id: "carrier",   authState: { kind: "authenticated", roles: ["shipping-provider"] } },
 ]
@@ -403,23 +409,34 @@ type FollowUpUsecase = {
 }
 
 type Target =
-  | { kind: "single", entity: EntityRef }
-  | { kind: "collection", entity: EntityRef, matching: string[] }
+  | { kind: "single", entity: EntityRef, scopeByActor?: string[] }
+  | { kind: "collection", entity: EntityRef, matching: string[], scopeByActor?: string[] }
   //                                         ↑ state/trait の名前のみ
 ```
 
 ```typescript
-// 単一エンティティへの操作
+// 単一エンティティへの操作（scopeByActor で自分の Todo にだけ操作を限定）
 const completeTodo: Usecase = {
   id: "complete-todo",
   description: "TODOを完了にする",
   actor: "member",
-  target: { kind: "single", entity: "Todo" },
+  target: { kind: "single", entity: "Todo", scopeByActor: ["userId"] },
   input: { todoId: "Todo.id" },
   transition: "complete-todo",
   errors: [
     { when: "既に完了済み", description: "完了済みのTODOは再度完了できない" },
   ],
+}
+
+// actor.id で自分の User ID を自動注入する作成操作
+const createTodo: Usecase = {
+  id: "create-todo",
+  description: "新しいTODOを作成する",
+  actor: "member",
+  target: { kind: "single", entity: "Todo" },
+  input: { title: "string", userId: "actor.id" },
+  transition: "create-todo",
+  errors: [],
 }
 
 // コレクションへの操作（trait で対象を選択）
@@ -597,7 +614,7 @@ const manageTodos: Scenario = {
 | personal | owner本人 → 許可 / 別ユーザー → 拒否 / anonymous → 拒否 |
 | group | メンバー → 許可 / 非メンバー → 拒否 |
 | shared | 誰でも → 許可 |
-| role_scoped | 該当ロール → 許可 / 非該当 → 拒否 |
+| participants | 参加者 → 許可 / 非参加者 → 拒否 |
 
 **Spec の rules から:**
 
@@ -751,6 +768,50 @@ const todoListView: View = {
 
 ---
 
+## Fixtures — サンプルデータ
+
+シミュレーションやテスト生成で利用するプリセットデータ。Entity 間の関連を含むデータセットをまとめて定義する。
+
+```typescript
+type FixtureInstance = {
+  entity: EntityRef
+  id: string
+  fields: Record<string, unknown>
+}
+
+type Fixture = {
+  id: string
+  description: string
+  instances: FixtureInstance[]
+}
+```
+
+```typescript
+const basicSetup: Fixture = {
+  id: "basic-setup",
+  description: "ユーザー2名とTODO数件の基本データ",
+  instances: [
+    { entity: "User", id: "User-1", fields: { name: "Alice", email: "alice@example.com", status: "active" } },
+    { entity: "User", id: "User-2", fields: { name: "Bob", email: "bob@example.com", status: "active" } },
+    { entity: "Todo", id: "Todo-1", fields: { title: "Buy groceries", completion: "incomplete", availability: "available", userId: "User-1" } },
+    { entity: "Todo", id: "Todo-2", fields: { title: "Write report", completion: "complete", availability: "available", userId: "User-1" } },
+  ],
+}
+```
+
+### 設計意図
+
+- **Entity 横断のフラットなリスト**: `instances` はエンティティ種別をまたいだフラットな配列。Entity 間の参照関係（`userId: "User-1"` など）が一箇所で見渡せる。
+- **複数 Fixture**: シナリオ別に異なるデータセットを定義できる（正常系、エッジケース、大量データなど）。
+- **ID の明示**: 各インスタンスの `id` はフィールドではなくトップレベルで指定する。Fixture 内の他インスタンスから参照できるよう、人間が読みやすい固定 ID を使う。
+- **状態フィールドの明示**: Entity の state に対応するフィールド（`status: "active"`, `completion: "incomplete"` など）を直接指定する。Transition を経由せず、任意の状態のインスタンスを直接作成できる。
+
+### シミュレーションでの利用
+
+Fixture を読み込むと、定義されたインスタンスが初期データとしてセットされる。シミュレーションのリセット時は Fixture の状態に戻る（空の状態ではなく）。Actor を Entity インスタンスにバインドすることで、`scopeByActor` による操作権限の検証も Fixture データ上で即座に確認できる。
+
+---
+
 ## レイヤー間の責務分離
 
 ```
@@ -764,6 +825,7 @@ Reaction:     「Usecase 実行時の副作用」を定義する
 Scenario:     「View ベースのユーザーシナリオ」を定義する
 Component:    「画面上の操作・表示のまとまり」を定義する
 View:         「Component の配置と Usecase への接続」を定義する
+Fixture:      「シミュレーション・テスト用のサンプルデータ」を定義する
 ```
 
 知識の所在:

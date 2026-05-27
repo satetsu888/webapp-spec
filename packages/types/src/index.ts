@@ -227,6 +227,20 @@ export type UI = {
   views: View[];
 };
 
+// --- Fixtures ---
+
+export type FixtureInstance = {
+  entity: EntityRef;
+  id: string;
+  fields: Record<string, unknown>;
+};
+
+export type Fixture = {
+  id: string;
+  description: string;
+  instances: FixtureInstance[];
+};
+
 // --- Root ---
 
 export type WebAppSpec = {
@@ -240,4 +254,5 @@ export type WebAppSpec = {
   reactions: Reaction[];
   scenarios: Scenario[];
   ui: UI;
+  fixtures?: Fixture[];
 };

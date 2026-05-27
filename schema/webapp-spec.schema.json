@@ -15,7 +15,8 @@
     "usecases": { "type": "array", "items": { "$ref": "#/$defs/Usecase" } },
     "reactions": { "type": "array", "items": { "$ref": "#/$defs/Reaction" } },
     "scenarios": { "type": "array", "items": { "$ref": "#/$defs/Scenario" } },
-    "ui": { "$ref": "#/$defs/UI" }
+    "ui": { "$ref": "#/$defs/UI" },
+    "fixtures": { "type": "array", "items": { "$ref": "#/$defs/Fixture" } }
   },
   "$defs": {
     "Domain": {
@@ -511,6 +512,26 @@
       "properties": {
         "usecase": { "type": "string" },
         "inputFrom": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "Fixture": {
+      "type": "object",
+      "required": ["id", "description", "instances"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "instances": { "type": "array", "items": { "$ref": "#/$defs/FixtureInstance" } }
+      }
+    },
+    "FixtureInstance": {
+      "type": "object",
+      "required": ["entity", "id", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "type": "string" },
+        "id": { "type": "string" },
+        "fields": { "type": "object", "additionalProperties": {} }
       }
     }
   }

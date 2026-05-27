@@ -11,9 +11,11 @@ import { InstanceTable } from "./InstanceTable";
 
 export function SimulationPanel() {
   const { spec, actorMap } = useSpec();
-  const { execute, reset, state } = useSimulation();
+  const { execute, reset, loadFixture, state } = useSimulation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<ExecutionResult | null>(null);
+
+  const fixtures = spec.fixtures ?? [];
 
   const handleExecute = useCallback(
     (input: Record<string, unknown>) => {
@@ -49,6 +51,30 @@ export function SimulationPanel() {
           Reset
         </button>
       </div>
+
+      {fixtures.length > 0 && (
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Fixture
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {fixtures.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => {
+                  loadFixture(spec, f.id);
+                  setSelectedAction(null);
+                  setLastResult(null);
+                }}
+                className="rounded border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                title={f.description}
+              >
+                {f.id}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ActorSelector />
 

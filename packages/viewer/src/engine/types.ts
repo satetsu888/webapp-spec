@@ -31,6 +31,11 @@ export type ExecutionResult = {
   error?: string;
 };
 
+export type FixtureSnapshot = {
+  instances: Record<string, EntityInstance[]>;
+  nextId: Record<string, number>;
+};
+
 export type SimState = {
   instances: Record<string, EntityInstance[]>;
   nextId: Record<string, number>;
@@ -38,6 +43,7 @@ export type SimState = {
   selectedView: string | null;
   actorInstances: Record<string, string>;
   executionLog: ExecutionResult[];
+  fixtureState: FixtureSnapshot | null;
 };
 
 export type SimAction =
@@ -45,4 +51,5 @@ export type SimAction =
   | { type: "SELECT_VIEW"; view: string | null }
   | { type: "BIND_ACTOR_INSTANCE"; actor: string; instanceId: string }
   | { type: "APPLY_RESULT"; result: ExecutionResult }
+  | { type: "LOAD_FIXTURE"; instances: Record<string, EntityInstance[]>; nextId: Record<string, number> }
   | { type: "RESET" };

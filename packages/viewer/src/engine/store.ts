@@ -7,6 +7,7 @@ export const initialSimState: SimState = {
   selectedView: null,
   actorInstances: {},
   executionLog: [],
+  fixtureState: null,
 };
 
 export function simReducer(state: SimState, action: SimAction): SimState {
@@ -69,7 +70,25 @@ export function simReducer(state: SimState, action: SimAction): SimState {
       };
     }
 
+    case "LOAD_FIXTURE": {
+      const snapshot = { instances: action.instances, nextId: action.nextId };
+      return {
+        ...initialSimState,
+        instances: action.instances,
+        nextId: action.nextId,
+        fixtureState: snapshot,
+      };
+    }
+
     case "RESET":
+      if (state.fixtureState) {
+        return {
+          ...initialSimState,
+          instances: state.fixtureState.instances,
+          nextId: state.fixtureState.nextId,
+          fixtureState: state.fixtureState,
+        };
+      }
       return initialSimState;
   }
 }

@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import type { WebAppSpec } from "@webapp-spec/types";
-import type { SimState, ExecutionResult } from "@/engine/types";
+import type { SimState, ExecutionResult, EntityInstance } from "@/engine/types";
 import { simReducer, initialSimState } from "@/engine/store";
 import { executeUsecase } from "@/engine/executor";
 
@@ -15,6 +15,7 @@ type SimContextValue = {
   selectActor: (actor: string | null) => void;
   selectView: (viewId: string | null) => void;
   bindActorInstance: (actorId: string, instanceId: string) => void;
+  loadFixture: (spec: WebAppSpec, fixtureId: string) => void;
   execute: (
     spec: WebAppSpec,
     usecaseId: string,
@@ -43,6 +44,28 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const loadFixture = useCallback((spec: WebAppSpec, fixtureId: string) => {
+    const fixture = spec.fixtures?.find((f) => f.id === fixtureId);
+    if (!fixture) return;
+
+    const instances: Record<string, EntityInstance[]> = {};
+    const nextId: Record<string, number> = {};
+
+    for (const fi of fixture.instances) {
+      const list = instances[fi.entity] ?? [];
+      list.push({ id: fi.id, entityType: fi.entity, fields: fi.fields });
+      instances[fi.entity] = list;
+
+      const numMatch = fi.id.match(/-(\d+)$/);
+      if (numMatch) {
+        const num = parseInt(numMatch[1], 10);
+        nextId[fi.entity] = Math.max(nextId[fi.entity] ?? 0, num);
+      }
+    }
+
+    dispatch({ type: "LOAD_FIXTURE", instances, nextId });
+  }, []);
+
   const execute = useCallback(
     (
       spec: WebAppSpec,
@@ -63,7 +86,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SimContext.Provider value={{ state, selectActor, selectView, bindActorInstance, execute, reset }}>
+    <SimContext.Provider value={{ state, selectActor, selectView, bindActorInstance, loadFixture, execute, reset }}>
       {children}
     </SimContext.Provider>
   );
