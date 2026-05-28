@@ -11,6 +11,7 @@ import { checkReactions } from "./rules/reactions.js";
 import { checkUnused } from "./rules/unused.js";
 import { checkEntities } from "./rules/entities.js";
 import { checkActors } from "./rules/actors.js";
+import { checkFixtures } from "./rules/fixtures.js";
 
 export const SUPPORTED_SPEC_VERSION = "0.1.0";
 
@@ -48,6 +49,7 @@ const allRules: VersionedRule[] = [
   { fn: checkUnused, minVersion: "0.1.0" },
   { fn: checkEntities, minVersion: "0.1.0" },
   { fn: checkActors, minVersion: "0.1.0" },
+  { fn: checkFixtures, minVersion: "0.1.0" },
 ];
 
 export function validate(spec: WebAppSpec): ValidationResult {

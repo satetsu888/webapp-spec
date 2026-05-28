@@ -538,6 +538,137 @@ describe("actors", () => {
   });
 });
 
+describe("fixtures", () => {
+  it("passes with valid fixture", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "basic",
+          description: "基本データ",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "Buy groceries", status: "active", userId: "User-1" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.errors.filter((e) => e.rule.startsWith("fixture."))).toHaveLength(0);
+  });
+
+  it("passes with no fixtures", () => {
+    const result = validate(minimalSpec());
+    expect(result.errors.filter((e) => e.rule.startsWith("fixture."))).toHaveLength(0);
+  });
+
+  it("detects undefined entity in fixture instance", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "bad",
+          description: "不正なentity",
+          instances: [
+            { entity: "NonExistent", id: "NE-1", fields: { name: "test" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "fixture.entity-ref")).toBe(true);
+  });
+
+  it("detects unknown field in fixture instance", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "bad",
+          description: "不正なfield",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "test", nonexistent: "value" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "fixture.unknown-field")).toBe(true);
+  });
+
+  it("warns on invalid state value", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "bad",
+          description: "不正なstate value",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "test", status: "invalid_status" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.warnings.some((w) => w.rule === "fixture.invalid-state-value")).toBe(true);
+  });
+
+  it("does not warn on valid state value", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "ok",
+          description: "正常なstate value",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "test", status: "active" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.warnings.filter((w) => w.rule === "fixture.invalid-state-value")).toHaveLength(0);
+  });
+
+  it("warns on missing referenced instance", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "bad",
+          description: "参照先なし",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "test", userId: "User-999" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.warnings.some((w) => w.rule === "fixture.instance-ref")).toBe(true);
+  });
+
+  it("detects duplicate instance id within fixture", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        {
+          id: "bad",
+          description: "重複ID",
+          instances: [
+            { entity: "Todo", id: "Todo-1", fields: { title: "first" } },
+            { entity: "Todo", id: "Todo-1", fields: { title: "second" } },
+          ],
+        },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "fixture.duplicate-instance-id")).toBe(true);
+  });
+
+  it("detects duplicate fixture id", () => {
+    const spec = minimalSpec({
+      fixtures: [
+        { id: "dup", description: "one", instances: [] },
+        { id: "dup", description: "two", instances: [] },
+      ],
+    });
+    const result = validate(spec);
+    expect(result.errors.some((e) => e.rule === "unique.fixture-id")).toBe(true);
+  });
+});
+
 describe("entities", () => {
   it("detects entity with no states", () => {
     const spec = minimalSpec();

@@ -105,6 +105,17 @@
       ]
     }
   ],
+  "fixtures": [
+    {
+      "id": "basic-setup",
+      "description": "TODO数件の基本データ",
+      "instances": [
+        { "entity": "Todo", "id": "Todo-1", "fields": { "title": "Buy groceries", "status": "active" } },
+        { "entity": "Todo", "id": "Todo-2", "fields": { "title": "Clean the house", "status": "active" } },
+        { "entity": "Todo", "id": "Todo-3", "fields": { "title": "Read a book", "status": "completed" } }
+      ]
+    }
+  ],
   "ui": {
     "components": [
       {

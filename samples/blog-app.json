@@ -385,6 +385,26 @@
       ]
     }
   ],
+  "fixtures": [
+    {
+      "id": "basic-setup",
+      "description": "ユーザー3名・カテゴリ2件・記事4件・コメント3件の基本データ",
+      "instances": [
+        { "entity": "User", "id": "User-1", "fields": { "name": "Alice", "email": "alice@example.com", "role": "admin", "status": "active" } },
+        { "entity": "User", "id": "User-2", "fields": { "name": "Bob", "email": "bob@example.com", "role": "member", "status": "active" } },
+        { "entity": "User", "id": "User-3", "fields": { "name": "Charlie", "email": "charlie@example.com", "role": "member", "status": "active" } },
+        { "entity": "Category", "id": "Category-1", "fields": { "name": "Technology", "slug": "technology", "status": "active" } },
+        { "entity": "Category", "id": "Category-2", "fields": { "name": "Lifestyle", "slug": "lifestyle", "status": "active" } },
+        { "entity": "Post", "id": "Post-1", "fields": { "title": "Getting Started with TypeScript", "body": "TypeScript is a typed superset of JavaScript...", "status": "published", "authorId": "User-2", "publishedAt": "2025-05-20T10:00:00Z", "category": "Category-1" } },
+        { "entity": "Post", "id": "Post-2", "fields": { "title": "My Morning Routine", "body": "Every morning I start with a cup of coffee...", "status": "published", "authorId": "User-3", "publishedAt": "2025-05-22T08:00:00Z", "category": "Category-2" } },
+        { "entity": "Post", "id": "Post-3", "fields": { "title": "Advanced React Patterns", "body": "In this article we explore render props and hooks...", "status": "draft", "authorId": "User-2", "category": "Category-1" } },
+        { "entity": "Post", "id": "Post-4", "fields": { "title": "Deprecated API Guide", "body": "This guide covers the old API...", "status": "archived", "authorId": "User-1", "category": "Category-1" } },
+        { "entity": "Comment", "id": "Comment-1", "fields": { "body": "Great introduction!", "status": "visible", "postId": "Post-1", "authorId": "User-3" } },
+        { "entity": "Comment", "id": "Comment-2", "fields": { "body": "Thanks, very helpful.", "status": "visible", "postId": "Post-1", "authorId": "User-1" } },
+        { "entity": "Comment", "id": "Comment-3", "fields": { "body": "Love this routine!", "status": "visible", "postId": "Post-2", "authorId": "User-2" } }
+      ]
+    }
+  ],
   "ui": {
     "components": [
       {

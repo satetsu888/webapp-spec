@@ -25,6 +25,7 @@ export function checkUniqueness(spec: WebAppSpec): ValidationIssue[] {
     { ids: spec.scenarios.map((s) => s.id), path: "scenarios", label: "Scenario" },
     { ids: spec.ui.components.map((c) => c.id), path: "ui.components", label: "Component" },
     { ids: spec.ui.views.map((v) => v.id), path: "ui.views", label: "View" },
+    { ids: (spec.fixtures ?? []).map((f) => f.id), path: "fixtures", label: "Fixture" },
   ];
 
   for (const { ids, path, label } of topLevelChecks) {
