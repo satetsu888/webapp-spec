@@ -61,6 +61,24 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 - `/ui/views`, `/ui/views/:id` — View 一覧・詳細
 - `/simulation` — シミュレーション
 
+## Mermaid ダイアグラムのノード形状ルール
+
+ダイアグラム間で spec オブジェクトの形状を統一する。新しいダイアグラムを追加する際はこのルールに従うこと。
+
+| 概念 | 形状 | Mermaid 構文 |
+|------|------|-------------|
+| Actor | 人型アイコン | `@{ shape: icon, icon: "spec:actor", label: "..." }` |
+| Usecase | スタジアム（丸角） | `(["..."])` |
+| Entity / 状態変化 | 矩形 | `["..."]` |
+| Component | 矩形 | `["..."]` |
+| Scenario 参照 | 六角形 | `{{"..."}}` |
+| Reaction | スタジアム + 破線接続 | `(["..."])` + `-.->` |
+| View / Variant | subgraph | コンテナとして使用 |
+
+- `spec:actor` アイコンは `MermaidDiagram.tsx` で `registerIconPacks` により登録済み
+- クリック可能なノードには `click nodeId href "/path"` を付与。`MermaidDiagram` が `bindFunctions` + キャプチャフェーズのイベント委譲で React Router 遷移に変換する
+- ラベル内の `"` は `#quot;` にエスケープ（`escapeLabel` ヘルパー）
+
 ## シミュレーションエンジン
 
 Fixture データを初期状態として読み込み、Actor を選択して Usecase を実行する。`engine/executor.ts` が Transition の状態遷移を適用し、`engine/store.ts` が Entity インスタンスを管理する。
