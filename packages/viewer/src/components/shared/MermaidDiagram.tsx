@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import mermaid from "mermaid";
 
-mermaid.initialize({ startOnLoad: false, theme: "default" });
+mermaid.initialize({ startOnLoad: false, theme: "default", securityLevel: "loose" });
 
 type Props = {
   chart: string;
@@ -10,16 +11,19 @@ type Props = {
 export function MermaidDiagram({ chart }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
+
     const render = async () => {
       if (!containerRef.current) return;
       try {
         const id = `mermaid-${Math.random().toString(36).slice(2)}`;
-        const { svg } = await mermaid.render(id, chart);
+        const { svg, bindFunctions } = await mermaid.render(id, chart);
         if (cancelled) return;
         containerRef.current.innerHTML = svg;
+        bindFunctions?.(containerRef.current);
         setError(null);
       } catch (e) {
         if (cancelled) return;
@@ -31,6 +35,25 @@ export function MermaidDiagram({ chart }: Props) {
       cancelled = true;
     };
   }, [chart]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as Element).closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttributeNS("http://www.w3.org/1999/xlink", "href")
+        ?? anchor.getAttribute("href");
+      if (href?.startsWith("/")) {
+        e.preventDefault();
+        navigate(href);
+      }
+    };
+
+    el.addEventListener("click", handleClick, true);
+    return () => el.removeEventListener("click", handleClick, true);
+  }, [navigate]);
 
   return (
     <div className="space-y-2">

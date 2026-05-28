@@ -38,6 +38,7 @@ function buildFlowFromSteps(
   const groups = groupStepsByView(steps);
   const lines: string[] = [];
   const allIds: string[] = [];
+  const clicks: string[] = [];
   let sgIndex = 0;
 
   for (const group of groups) {
@@ -48,17 +49,23 @@ function buildFlowFromSteps(
         const id = `${idPrefix}s${index}`;
         allIds.push(id);
         lines.push(`        ${id}["${escapeLabel(step.description)}"]`);
+        if (step.action) {
+          clicks.push(`    click ${id} href "/usecases/${step.action}"`);
+        }
       }
       lines.push(`    end`);
+      clicks.push(`    click ${sgId} href "/views/${group.view}"`);
     } else if (group.kind === "background") {
       const id = `${idPrefix}s${group.index}`;
       allIds.push(id);
       const label = `${group.step.actor}: ${group.step.description}`;
       lines.push(`    ${id}(["${escapeLabel(label)}"])`);
+      clicks.push(`    click ${id} href "/usecases/${group.step.usecase}"`);
     } else {
       const id = `${idPrefix}s${group.index}`;
       allIds.push(id);
       lines.push(`    ${id}{{"${escapeLabel(group.scenarioId)}"}}`);
+      clicks.push(`    click ${id} href "/scenarios/${group.scenarioId}"`);
     }
   }
 
@@ -66,6 +73,7 @@ function buildFlowFromSteps(
     lines.push(`    ${allIds[i]} --> ${allIds[i + 1]}`);
   }
 
+  lines.push(...clicks);
   return lines;
 }
 

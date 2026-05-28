@@ -1,7 +1,10 @@
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildViewCompositionDiagram } from "./buildViewCompositionDiagram";
 
 export function ViewDetail() {
   const { id } = useParams<{ id: string }>();
@@ -9,9 +12,23 @@ export function ViewDetail() {
   const view = viewMap.get(id!);
   if (!view) return <p className="text-red-600">View "{id}" not found</p>;
 
+  const compositionDiagram = useMemo(
+    () => buildViewCompositionDiagram(view, componentMap),
+    [view, componentMap],
+  );
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold">{view.id}</h2>
+
+      {compositionDiagram && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Data Flow
+          </h3>
+          <MermaidDiagram chart={compositionDiagram} />
+        </section>
+      )}
 
       <section>
         <h3 className="mb-2 text-sm font-semibold text-gray-700">
