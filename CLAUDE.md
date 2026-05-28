@@ -10,7 +10,7 @@ WebAppSpec — Webアプリケーション自体を機械可読なデータ構�
 
 ## 構成
 
-npm workspaces によるモノレポ。将来 viewer 等のツールを追加する想定。
+npm workspaces によるモノレポ。
 
 ```
 webapp-spec/
@@ -21,6 +21,7 @@ webapp-spec/
   packages/
     types/                    # @webapp-spec/types — TypeScript 型定義
     validator/                # @webapp-spec/validator — 意味的バリデーター + CLI
+    viewer/                   # @webapp-spec/viewer — ブラウザベースの仕様ビューア + シミュレーター
 ```
 
 ## 設計原則
@@ -32,7 +33,7 @@ webapp-spec/
 ## ビルドとテスト
 
 ```sh
-# 型パッケージのビルド（validator が依存するため先にビルド）
+# 型パッケージのビルド（validator, viewer が依存するため先にビルド）
 cd packages/types && npx tsc
 
 # validator のビルドとテスト
@@ -40,6 +41,9 @@ cd packages/validator && npx tsc && npx vitest run
 
 # CLI でサンプルを検証
 npx webapp-spec-validate samples/todo-app.json
+
+# viewer の開発サーバ
+cd packages/viewer && npm run dev
 ```
 
 ## WebAppSpec のレイヤー構造
@@ -49,7 +53,7 @@ npx webapp-spec-validate samples/todo-app.json
 - **Actors** — 認証状態で定義（human + 外部システム）
 - **Usecases** — ドメイン操作（エンドポイントではない）。followUps で外部システム連携
 - **Reactions** — Usecase 実行後の副作用（通知、ログ、webhook）
-- **Journeys** — Actor 視点の複数ステップシナリオ
+- **Scenarios** — View ベースのユーザーシナリオ
 - **UI** — Components（データ取得 + 入力 + 変換 + 出力）と Views（配置 + Usecase 接続）
 
 ## 擬似状態 `_start` / `_end`

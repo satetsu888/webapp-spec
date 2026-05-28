@@ -360,7 +360,7 @@ type Actor = {
 type AuthState =
   | { kind: "anonymous" }
   | { kind: "authenticated", roles: string[] }
-  | { kind: "pending_mfa", identity: IdentityRef }
+  | { kind: "pending_mfa", identity: string }
   | { kind: "expired" }
 ```
 
@@ -397,7 +397,7 @@ type Usecase = {
   actor: ActorRef
   target: Target
   input: Schema
-  transition: TransitionRef
+  transition?: TransitionRef       // 状態遷移を伴わない参照系 usecase では省略可
   conditions?: Condition[]         // この actor がこの操作を実行するための前提条件
   errors: ErrorCase[]
   followUps?: FollowUpUsecase[]   // この usecase の後に外部起点で起きうる usecase
@@ -547,19 +547,26 @@ Usecase の実行に伴う副作用（通知、ログ、外部連携など）。
 type Reaction = {
   trigger: { usecase: UsecaseRef, entity: EntityRef }
   when: Condition[]
-  effect: SideEffect
+  notify: NotificationTarget
+  description: string
 }
+
+type NotificationTarget =
+  | { actor: ActorRef }
+  | { owner: EntityRef }
+  | { external: string }
 ```
 
 ```typescript
 const notifyOnComplete: Reaction = {
   trigger: { usecase: "complete-todo", entity: "Todo" },
   when: [{ field: "assigneeId", op: "is_not_null" }],
-  effect: { kind: "notify", to: "$entity.assigneeId", template: "todo-completed" },
+  notify: { owner: "Todo" },
+  description: "担当者にTODO完了を通知する",
 }
 ```
 
-実装上はドメインサービスとイベントハンドラの分離に対応する。
+通知先は actor（特定のロール）、owner（Entity の所有者）、external（外部サービス）の3種から指定する。実装上はドメインサービスとイベントハンドラの分離に対応する。
 
 ---
 
@@ -851,6 +858,10 @@ type UsecaseRef = string
 type TransitionRef = string
 type ActorRef = string
 type ComponentRef = string
+type RelationRef = string
+type ViewRef = string
+type ScenarioRef = string
+type SpecRef = string
 
 type Condition =
   | { field: string, equals: string }
@@ -864,10 +875,10 @@ type Constraint =
   | { entity: EntityRef, ownedBy: string, maxCount: number | null }
   | { entity: EntityRef, field: string, allowedValues: string[] }
 
-type SideEffect =
-  | { kind: "notify", to: string, template: string }
-  | { kind: "log", message: string }
-  | { kind: "webhook", url: string, payload: any }
+type NotificationTarget =
+  | { actor: ActorRef }
+  | { owner: EntityRef }
+  | { external: string }
 
 type Schema = Record<string, string>
 type ErrorCase = { when: string, description: string }

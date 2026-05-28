@@ -7,32 +7,93 @@
       {
         "id": "User",
         "fields": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" },
-          { "name": "status", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "shared" },
+        "ownership": {
+          "kind": "shared"
+        },
         "states": [
-          { "name": "active", "field": "status", "value": "active" },
-          { "name": "deactivated", "field": "status", "value": "deactivated" }
+          {
+            "name": "active",
+            "field": "status",
+            "value": "active"
+          },
+          {
+            "name": "deactivated",
+            "field": "status",
+            "value": "deactivated"
+          }
         ],
         "traits": []
       },
       {
         "id": "Todo",
         "fields": [
-          { "name": "title", "type": "string" },
-          { "name": "description", "type": "string", "required": false },
-          { "name": "completion", "type": "string" },
-          { "name": "availability", "type": "string" },
-          { "name": "dueDate", "type": "date", "required": false },
-          { "name": "userId", "type": "User.id" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "completion",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "availability",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "required": false
+          },
+          {
+            "name": "userId",
+            "type": "User.id",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "personal", "ownerField": "userId" },
+        "ownership": {
+          "kind": "personal",
+          "ownerField": "userId"
+        },
         "states": [
-          { "name": "incomplete", "field": "completion", "value": "incomplete" },
-          { "name": "complete", "field": "completion", "value": "complete" },
-          { "name": "available", "field": "availability", "value": "available" }
+          {
+            "name": "incomplete",
+            "field": "completion",
+            "value": "incomplete"
+          },
+          {
+            "name": "complete",
+            "field": "completion",
+            "value": "complete"
+          },
+          {
+            "name": "available",
+            "field": "availability",
+            "value": "available"
+          }
         ],
         "traits": [
           {
@@ -40,8 +101,15 @@
             "description": "期日を過ぎた未完了のTODO",
             "derivedFrom": {
               "and": [
-                { "field": "completion", "equals": "incomplete" },
-                { "field": "dueDate", "op": "lt", "value": "now" }
+                {
+                  "field": "completion",
+                  "equals": "incomplete"
+                },
+                {
+                  "field": "dueDate",
+                  "op": "lt",
+                  "value": "now"
+                }
               ]
             }
           }
@@ -49,14 +117,26 @@
       }
     ],
     "relations": [
-      { "id": "user-todos", "from": "User", "to": "Todo", "kind": "hasMany" }
+      {
+        "id": "user-todos",
+        "from": "User",
+        "to": "Todo",
+        "kind": "hasMany"
+      }
     ],
     "transitions": [
       {
         "id": "register-user",
         "description": "ユーザーを登録する",
         "changes": [
-          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+          {
+            "entity": "User",
+            "state": {
+              "from": "_start",
+              "to": "active"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -64,7 +144,14 @@
         "id": "deactivate-user",
         "description": "ユーザーを退会させる",
         "changes": [
-          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
+          {
+            "entity": "User",
+            "state": {
+              "from": "active",
+              "to": "deactivated"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -72,8 +159,22 @@
         "id": "create-todo",
         "description": "TODOを作成する",
         "changes": [
-          { "entity": "Todo", "state": { "from": "_start", "to": "incomplete" }, "scope": "target" },
-          { "entity": "Todo", "state": { "from": "_start", "to": "available" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "_start",
+              "to": "incomplete"
+            },
+            "scope": "target"
+          },
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "_start",
+              "to": "available"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -81,7 +182,14 @@
         "id": "complete-todo",
         "description": "TODOを完了にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "incomplete", "to": "complete" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "incomplete",
+              "to": "complete"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -89,7 +197,14 @@
         "id": "reopen-todo",
         "description": "完了したTODOを再度有効にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "complete", "to": "incomplete" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "complete",
+              "to": "incomplete"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -97,7 +212,14 @@
         "id": "delete-todo",
         "description": "TODOを削除する",
         "changes": [
-          { "entity": "Todo", "state": { "from": "available", "to": "_end" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "available",
+              "to": "_end"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       }
@@ -105,30 +227,55 @@
   },
   "specs": [],
   "actors": [
-    { "id": "anonymous", "authState": { "kind": "anonymous" } },
-    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] }, "entity": "User" }
+    {
+      "id": "anonymous",
+      "authState": {
+        "kind": "anonymous"
+      }
+    },
+    {
+      "id": "member",
+      "authState": {
+        "kind": "authenticated",
+        "roles": [
+          "member"
+        ]
+      },
+      "entity": "User"
+    }
   ],
   "usecases": [
     {
       "id": "register-user",
       "description": "新しいユーザーを登録する",
       "actor": "anonymous",
-      "target": { "kind": "single", "entity": "User" },
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
       "input": {
         "name": "string",
         "email": "string"
       },
       "transition": "register-user",
       "errors": [
-        { "when": "email_taken", "description": "すでに登録済みのメールアドレス" }
+        {
+          "when": "email_taken",
+          "description": "すでに登録済みのメールアドレス"
+        }
       ]
     },
     {
       "id": "deactivate-user",
       "description": "自分のアカウントを退会する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "User" },
-      "input": { "userId": "actor.id" },
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
+      "input": {
+        "userId": "actor.id"
+      },
       "transition": "deactivate-user",
       "errors": []
     },
@@ -136,7 +283,10 @@
       "id": "create-todo",
       "description": "新しいTODOを作成する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo"
+      },
       "input": {
         "title": "string",
         "description": "string",
@@ -150,30 +300,60 @@
       "id": "complete-todo",
       "description": "TODOを完了にする",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
-      "input": { "todoId": "Todo.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo",
+        "scopeByActor": [
+          "userId"
+        ]
+      },
+      "input": {
+        "todoId": "Todo.id"
+      },
       "transition": "complete-todo",
       "errors": [
-        { "when": "already_completed", "description": "すでに完了済みのTODO" }
+        {
+          "when": "already_completed",
+          "description": "すでに完了済みのTODO"
+        }
       ]
     },
     {
       "id": "reopen-todo",
       "description": "完了したTODOを再度有効にする",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
-      "input": { "todoId": "Todo.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo",
+        "scopeByActor": [
+          "userId"
+        ]
+      },
+      "input": {
+        "todoId": "Todo.id"
+      },
       "transition": "reopen-todo",
       "errors": [
-        { "when": "not_completed", "description": "完了していないTODO" }
+        {
+          "when": "not_completed",
+          "description": "完了していないTODO"
+        }
       ]
     },
     {
       "id": "delete-todo",
       "description": "TODOを削除する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Todo", "scopeByActor": ["userId"] },
-      "input": { "todoId": "Todo.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo",
+        "scopeByActor": [
+          "userId"
+        ]
+      },
+      "input": {
+        "todoId": "Todo.id"
+      },
       "transition": "delete-todo",
       "errors": []
     }
@@ -185,7 +365,11 @@
       "actor": "anonymous",
       "goal": "アカウントを作成してTODO管理を始める",
       "steps": [
-        { "view": "register-page", "action": "register-user", "description": "登録フォームに入力してアカウントを作成する" }
+        {
+          "view": "register-page",
+          "action": "register-user",
+          "description": "登録フォームに入力してアカウントを作成する"
+        }
       ]
     },
     {
@@ -193,10 +377,26 @@
       "actor": "member",
       "goal": "TODOを管理する",
       "steps": [
-        { "view": "todo-dashboard", "action": "create-todo", "description": "新しいTODOを作成する" },
-        { "view": "todo-dashboard", "action": "complete-todo", "description": "TODOを完了にする" },
-        { "view": "todo-dashboard", "action": "reopen-todo", "description": "完了したTODOを再開する" },
-        { "view": "todo-dashboard", "action": "delete-todo", "description": "不要なTODOを削除する" }
+        {
+          "view": "todo-dashboard",
+          "action": "create-todo",
+          "description": "新しいTODOを作成する"
+        },
+        {
+          "view": "todo-dashboard",
+          "action": "complete-todo",
+          "description": "TODOを完了にする"
+        },
+        {
+          "view": "todo-dashboard",
+          "action": "reopen-todo",
+          "description": "完了したTODOを再開する"
+        },
+        {
+          "view": "todo-dashboard",
+          "action": "delete-todo",
+          "description": "不要なTODOを削除する"
+        }
       ]
     },
     {
@@ -204,7 +404,11 @@
       "actor": "member",
       "goal": "アカウントを管理する",
       "steps": [
-        { "view": "account-settings-page", "action": "deactivate-user", "description": "アカウントを退会する" }
+        {
+          "view": "account-settings-page",
+          "action": "deactivate-user",
+          "description": "アカウントを退会する"
+        }
       ]
     }
   ],
@@ -215,14 +419,30 @@
         "description": "ユーザー登録フォーム",
         "sources": [],
         "inputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          }
         ]
       },
       {
@@ -231,20 +451,51 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["incomplete", "available"],
-            "fields": ["title", "description", "completion", "dueDate"],
+            "matching": [
+              "incomplete",
+              "available"
+            ],
+            "fields": [
+              "title",
+              "description",
+              "completion",
+              "dueDate"
+            ],
             "paginated": true,
-            "sort": [{ "field": "dueDate", "order": "asc" }]
+            "sort": [
+              {
+                "field": "dueDate",
+                "order": "asc"
+              }
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" },
-          { "name": "dueDate", "type": "date" },
-          { "name": "isOverdue", "type": "boolean" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "isOverdue",
+            "type": "boolean",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+        "outputs": [
+          {
+            "name": "todoId",
+            "type": "Todo.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "completed-todo-list",
@@ -252,33 +503,74 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["complete", "available"],
-            "fields": ["title", "description", "completion"],
+            "matching": [
+              "complete",
+              "available"
+            ],
+            "fields": [
+              "title",
+              "description",
+              "completion"
+            ],
             "paginated": true
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+        "outputs": [
+          {
+            "name": "todoId",
+            "type": "Todo.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "todo-form",
         "description": "TODO作成フォーム",
         "sources": [],
         "inputs": [
-          { "name": "title", "type": "string" },
-          { "name": "description", "type": "string" },
-          { "name": "dueDate", "type": "date" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "title", "type": "string" },
-          { "name": "description", "type": "string" },
-          { "name": "dueDate", "type": "date" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "required": true
+          }
         ]
       },
       {
@@ -287,23 +579,44 @@
         "sources": [
           {
             "entity": "User",
-            "matching": ["active"],
-            "fields": ["name", "email"]
+            "matching": [
+              "active"
+            ],
+            "fields": [
+              "name",
+              "email"
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "userId", "type": "User.id" }]
+        "outputs": [
+          {
+            "name": "userId",
+            "type": "User.id",
+            "required": true
+          }
+        ]
       }
     ],
     "views": [
       {
         "id": "register-page",
-        "components": ["register-form"],
+        "components": [
+          "register-form"
+        ],
         "actions": [
           {
             "usecase": "register-user",
@@ -316,7 +629,11 @@
       },
       {
         "id": "todo-dashboard",
-        "components": ["todo-list", "completed-todo-list", "todo-form"],
+        "components": [
+          "todo-list",
+          "completed-todo-list",
+          "todo-form"
+        ],
         "actions": [
           {
             "usecase": "create-todo",
@@ -328,21 +645,29 @@
           },
           {
             "usecase": "complete-todo",
-            "inputFrom": { "todoId": "todo-list.todoId" }
+            "inputFrom": {
+              "todoId": "todo-list.todoId"
+            }
           },
           {
             "usecase": "reopen-todo",
-            "inputFrom": { "todoId": "completed-todo-list.todoId" }
+            "inputFrom": {
+              "todoId": "completed-todo-list.todoId"
+            }
           },
           {
             "usecase": "delete-todo",
-            "inputFrom": { "todoId": "todo-list.todoId" }
+            "inputFrom": {
+              "todoId": "todo-list.todoId"
+            }
           }
         ]
       },
       {
         "id": "account-settings-page",
-        "components": ["account-settings"],
+        "components": [
+          "account-settings"
+        ],
         "actions": [
           {
             "usecase": "deactivate-user",
@@ -357,12 +682,68 @@
       "id": "basic-setup",
       "description": "ユーザー2名とTODO数件の基本データ",
       "instances": [
-        { "entity": "User", "id": "User-1", "fields": { "name": "Alice", "email": "alice@example.com", "status": "active" } },
-        { "entity": "User", "id": "User-2", "fields": { "name": "Bob", "email": "bob@example.com", "status": "active" } },
-        { "entity": "Todo", "id": "Todo-1", "fields": { "title": "Buy groceries", "description": "Milk, eggs, bread", "completion": "incomplete", "availability": "available", "userId": "User-1" } },
-        { "entity": "Todo", "id": "Todo-2", "fields": { "title": "Write report", "description": "Q2 summary", "completion": "incomplete", "availability": "available", "userId": "User-1" } },
-        { "entity": "Todo", "id": "Todo-3", "fields": { "title": "Review PR", "description": "#142", "completion": "complete", "availability": "available", "userId": "User-1" } },
-        { "entity": "Todo", "id": "Todo-4", "fields": { "title": "Deploy staging", "description": "v2.1.0", "completion": "incomplete", "availability": "available", "userId": "User-2" } }
+        {
+          "entity": "User",
+          "id": "User-1",
+          "fields": {
+            "name": "Alice",
+            "email": "alice@example.com",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "User",
+          "id": "User-2",
+          "fields": {
+            "name": "Bob",
+            "email": "bob@example.com",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-1",
+          "fields": {
+            "title": "Buy groceries",
+            "description": "Milk, eggs, bread",
+            "completion": "incomplete",
+            "availability": "available",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-2",
+          "fields": {
+            "title": "Write report",
+            "description": "Q2 summary",
+            "completion": "incomplete",
+            "availability": "available",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-3",
+          "fields": {
+            "title": "Review PR",
+            "description": "#142",
+            "completion": "complete",
+            "availability": "available",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-4",
+          "fields": {
+            "title": "Deploy staging",
+            "description": "v2.1.0",
+            "completion": "incomplete",
+            "availability": "available",
+            "userId": "User-2"
+          }
+        }
       ]
     }
   ]

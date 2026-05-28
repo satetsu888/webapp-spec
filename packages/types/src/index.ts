@@ -44,7 +44,7 @@ export type ErrorCase = {
 export type Field = {
   name: string;
   type: string;
-  required?: boolean;
+  required: boolean;
 };
 
 export type Ownership =

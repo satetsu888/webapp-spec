@@ -19,13 +19,16 @@ src/
   rules/
     references.ts     # 参照整合性（entity, field, state, actor, transition 等の存在チェック）
     uniqueness.ts     # ID・名前の一意性、予約語チェック
-    transitions.ts    # 状態遷移の整合性（scope:related の Relation 要件、到達不能状態）
+    transitions.ts    # 状態遷移の整合性（scope:related の Relation 要件、到達不能状態、ライフサイクル）
     usecases.ts       # Usecase の整合性（target-transition 一致、anonymous アクセス、followUp）
     specs.ts          # Spec のカバレッジ（trait family の網羅性ヒューリスティック）
-    journeys.ts       # Journey の actor 一致チェック
+    scenarios.ts      # Scenario の actor 一致チェック、view-action 整合性
     ui.ts             # Component の transform 整合性、View の inputFrom マッピング
     reactions.ts      # Reaction の trigger entity 一致、when 条件の field 参照
     unused.ts         # 未使用定義の検出
+    entities.ts       # Entity の構造チェック（states 必須）
+    actors.ts         # Actor の構造チェック（anonymous 存在）
+    fixtures.ts       # Fixture の整合性（entity 参照、field 存在、state 値、インスタンス参照）
   index.ts            # CLI エントリポイント（JSON Schema + 意味バリデーション）
 tests/
   validator.test.ts   # vitest テスト
@@ -50,10 +53,12 @@ tests/
 | `ref.usecase` | references.ts | 存在しない Usecase への参照 |
 | `ref.component` | references.ts | 存在しない Component への参照 |
 | `ref.relation` | references.ts | 存在しない Relation への参照 |
-| `ref.journey` | references.ts | 存在しない Journey への参照 |
+| `ref.scenario` | references.ts | 存在しない Scenario への参照 |
+| `ref.view` | references.ts | 存在しない View への参照 |
 | `transition.pseudo-state` | references.ts | `_start` を to に、`_end` を from に使用 |
 | `transition.entity-relation` | transitions.ts | scope:"related" で Relation が未定義 |
-| `unique.*-id` | uniqueness.ts | 各定義の ID 重複 |
+| `transition.no-creation` | transitions.ts | Entity に `_start` からの遷移がない（作成パスなし） |
+| `unique.*-id` | uniqueness.ts | 各定義の ID 重複（entity, relation, transition, spec, actor, usecase, scenario, component, view, fixture） |
 | `unique.field-name` | uniqueness.ts | Entity 内の field 名重複 |
 | `unique.state-name` | uniqueness.ts | Entity 内の state 名重複 |
 | `unique.trait-name` | uniqueness.ts | Entity 内の trait 名重複 |
@@ -66,22 +71,37 @@ tests/
 | `ui.transform-output` | ui.ts | Transform の to が displays/outputs に存在しない |
 | `view.input-mapping` | ui.ts | inputFrom の形式不正、参照先 component/output の不在 |
 | `view.usecase-input` | ui.ts | Usecase の input が View でマッピングされていない |
+| `entity.no-states` | entities.ts | Entity に states が定義されていない |
+| `scenario.view-action-mismatch` | scenarios.ts | Scenario step の action が View の actions に定義されていない |
+| `fixture.entity-ref` | fixtures.ts | Fixture instance が存在しない Entity を参照 |
+| `fixture.unknown-field` | fixtures.ts | Fixture instance に Entity に未定義のフィールドがある |
+| `fixture.duplicate-instance-id` | fixtures.ts | 同一 Fixture 内でインスタンス ID が重複 |
 
 ### Warning（疑わしい定義）
 
 | rule | ファイル | 内容 |
 |------|----------|------|
 | `unused.transition` | unused.ts | どの Usecase からも参照されない Transition |
-| `unused.actor` | unused.ts | どの Usecase・Journey からも参照されない Actor |
-| `unused.usecase` | unused.ts | どの Journey・View・Reaction・followUp からも参照されない Usecase |
+| `unused.actor` | unused.ts | どの Usecase・Scenario からも参照されない Actor |
+| `unused.usecase` | unused.ts | どの Scenario・View・Reaction・followUp からも参照されない Usecase |
 | `unused.component` | unused.ts | どの View からも参照されない Component |
 | `unused.entity` | unused.ts | どこからも参照されない Entity |
+| `unused.view` | unused.ts | どの Scenario からも参照されない View |
 | `transition.unreachable` | transitions.ts | どの Transition からも到達・出発できない State |
 | `usecase.anonymous-ownership` | usecases.ts | anonymous actor で personal/group リソースにアクセス |
 | `usecase.followup-actor` | usecases.ts | followUp が人間 actor で定義されている |
 | `usecase.followup-cycle` | usecases.ts | followUps の循環参照 |
 | `spec.incomplete-coverage` | specs.ts | trait family の一部しかカバーしていない Spec |
-| `journey.actor-mismatch` | journeys.ts | Journey の actor と step の usecase/journey の actor 不一致 |
+| `scenario.actor-mismatch` | scenarios.ts | Scenario の actor と step の usecase/scenario の actor 不一致 |
+| `actor.no-anonymous` | actors.ts | anonymous actor が定義されていない |
+| `fixture.invalid-state-value` | fixtures.ts | state 用フィールドの値が定義済み state value と不一致 |
+| `fixture.instance-ref` | fixtures.ts | Entity.id 型フィールドの値が同一 Fixture 内のインスタンスに存在しない |
+
+### Info（参考情報）
+
+| rule | ファイル | 内容 |
+|------|----------|------|
+| `transition.no-deletion` | transitions.ts | Entity に `_end` への遷移がない（削除パスなし） |
 
 ## ルール追加時の手順
 

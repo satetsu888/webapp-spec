@@ -7,39 +7,107 @@
       {
         "id": "User",
         "fields": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" },
-          { "name": "role", "type": "string" },
-          { "name": "status", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "shared" },
+        "ownership": {
+          "kind": "shared"
+        },
         "states": [
-          { "name": "active", "field": "status", "value": "active" },
-          { "name": "deactivated", "field": "status", "value": "deactivated" }
+          {
+            "name": "active",
+            "field": "status",
+            "value": "active"
+          },
+          {
+            "name": "deactivated",
+            "field": "status",
+            "value": "deactivated"
+          }
         ],
         "traits": [
           {
             "name": "is-admin",
             "description": "管理者権限を持つユーザー",
-            "derivedFrom": { "field": "role", "equals": "admin" }
+            "derivedFrom": {
+              "field": "role",
+              "equals": "admin"
+            }
           }
         ]
       },
       {
         "id": "Post",
         "fields": [
-          { "name": "title", "type": "string" },
-          { "name": "body", "type": "string" },
-          { "name": "status", "type": "string" },
-          { "name": "authorId", "type": "User.id" },
-          { "name": "publishedAt", "type": "datetime", "required": false },
-          { "name": "category", "type": "Category.id" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "authorId",
+            "type": "User.id",
+            "required": true
+          },
+          {
+            "name": "publishedAt",
+            "type": "datetime",
+            "required": false
+          },
+          {
+            "name": "category",
+            "type": "Category.id",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "personal", "ownerField": "authorId" },
+        "ownership": {
+          "kind": "personal",
+          "ownerField": "authorId"
+        },
         "states": [
-          { "name": "draft", "field": "status", "value": "draft" },
-          { "name": "published", "field": "status", "value": "published" },
-          { "name": "archived", "field": "status", "value": "archived" }
+          {
+            "name": "draft",
+            "field": "status",
+            "value": "draft"
+          },
+          {
+            "name": "published",
+            "field": "status",
+            "value": "published"
+          },
+          {
+            "name": "archived",
+            "field": "status",
+            "value": "archived"
+          }
         ],
         "traits": [
           {
@@ -47,8 +115,15 @@
             "description": "直近7日以内に公開された記事",
             "derivedFrom": {
               "and": [
-                { "field": "status", "equals": "published" },
-                { "field": "publishedAt", "op": "gte", "value": "7_days_ago" }
+                {
+                  "field": "status",
+                  "equals": "published"
+                },
+                {
+                  "field": "publishedAt",
+                  "op": "gte",
+                  "value": "7_days_ago"
+                }
               ]
             }
           }
@@ -57,45 +132,121 @@
       {
         "id": "Comment",
         "fields": [
-          { "name": "body", "type": "string" },
-          { "name": "status", "type": "string" },
-          { "name": "postId", "type": "Post.id" },
-          { "name": "authorId", "type": "User.id" }
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "postId",
+            "type": "Post.id",
+            "required": true
+          },
+          {
+            "name": "authorId",
+            "type": "User.id",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "personal", "ownerField": "authorId" },
+        "ownership": {
+          "kind": "personal",
+          "ownerField": "authorId"
+        },
         "states": [
-          { "name": "visible", "field": "status", "value": "visible" },
-          { "name": "hidden", "field": "status", "value": "hidden" }
+          {
+            "name": "visible",
+            "field": "status",
+            "value": "visible"
+          },
+          {
+            "name": "hidden",
+            "field": "status",
+            "value": "hidden"
+          }
         ],
         "traits": []
       },
       {
         "id": "Category",
         "fields": [
-          { "name": "name", "type": "string" },
-          { "name": "slug", "type": "string" },
-          { "name": "status", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "shared" },
+        "ownership": {
+          "kind": "shared"
+        },
         "states": [
-          { "name": "active", "field": "status", "value": "active" },
-          { "name": "archived", "field": "status", "value": "archived" }
+          {
+            "name": "active",
+            "field": "status",
+            "value": "active"
+          },
+          {
+            "name": "archived",
+            "field": "status",
+            "value": "archived"
+          }
         ],
         "traits": []
       }
     ],
     "relations": [
-      { "id": "user-posts", "from": "User", "to": "Post", "kind": "hasMany" },
-      { "id": "post-comments", "from": "Post", "to": "Comment", "kind": "hasMany" },
-      { "id": "user-comments", "from": "User", "to": "Comment", "kind": "hasMany" },
-      { "id": "category-posts", "from": "Category", "to": "Post", "kind": "hasMany" }
+      {
+        "id": "user-posts",
+        "from": "User",
+        "to": "Post",
+        "kind": "hasMany"
+      },
+      {
+        "id": "post-comments",
+        "from": "Post",
+        "to": "Comment",
+        "kind": "hasMany"
+      },
+      {
+        "id": "user-comments",
+        "from": "User",
+        "to": "Comment",
+        "kind": "hasMany"
+      },
+      {
+        "id": "category-posts",
+        "from": "Category",
+        "to": "Post",
+        "kind": "hasMany"
+      }
     ],
     "transitions": [
       {
         "id": "create-post",
         "description": "記事を下書きとして作成する",
         "changes": [
-          { "entity": "Post", "state": { "from": "_start", "to": "draft" }, "scope": "target" }
+          {
+            "entity": "Post",
+            "state": {
+              "from": "_start",
+              "to": "draft"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -103,7 +254,14 @@
         "id": "publish-post",
         "description": "記事を公開する",
         "changes": [
-          { "entity": "Post", "state": { "from": "draft", "to": "published" }, "scope": "target" }
+          {
+            "entity": "Post",
+            "state": {
+              "from": "draft",
+              "to": "published"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -111,7 +269,14 @@
         "id": "unpublish-post",
         "description": "公開中の記事を下書きに戻す",
         "changes": [
-          { "entity": "Post", "state": { "from": "published", "to": "draft" }, "scope": "target" }
+          {
+            "entity": "Post",
+            "state": {
+              "from": "published",
+              "to": "draft"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -119,8 +284,22 @@
         "id": "archive-post",
         "description": "記事をアーカイブする（関連コメントも非表示にする）",
         "changes": [
-          { "entity": "Post", "state": { "from": "published", "to": "archived" }, "scope": "target" },
-          { "entity": "Comment", "state": { "from": "visible", "to": "hidden" }, "scope": "related" }
+          {
+            "entity": "Post",
+            "state": {
+              "from": "published",
+              "to": "archived"
+            },
+            "scope": "target"
+          },
+          {
+            "entity": "Comment",
+            "state": {
+              "from": "visible",
+              "to": "hidden"
+            },
+            "scope": "related"
+          }
         ],
         "conditions": []
       },
@@ -128,17 +307,34 @@
         "id": "create-comment",
         "description": "記事にコメントを投稿する",
         "changes": [
-          { "entity": "Comment", "state": { "from": "_start", "to": "visible" }, "scope": "target" }
+          {
+            "entity": "Comment",
+            "state": {
+              "from": "_start",
+              "to": "visible"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": [
-          { "field": "status", "equals": "published" }
+          {
+            "field": "status",
+            "equals": "published"
+          }
         ]
       },
       {
         "id": "hide-comment",
         "description": "コメントを非表示にする",
         "changes": [
-          { "entity": "Comment", "state": { "from": "visible", "to": "hidden" }, "scope": "target" }
+          {
+            "entity": "Comment",
+            "state": {
+              "from": "visible",
+              "to": "hidden"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -146,7 +342,14 @@
         "id": "register-user",
         "description": "ユーザーを登録する",
         "changes": [
-          { "entity": "User", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+          {
+            "entity": "User",
+            "state": {
+              "from": "_start",
+              "to": "active"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -154,7 +357,14 @@
         "id": "deactivate-user",
         "description": "ユーザーを退会させる",
         "changes": [
-          { "entity": "User", "state": { "from": "active", "to": "deactivated" }, "scope": "target" }
+          {
+            "entity": "User",
+            "state": {
+              "from": "active",
+              "to": "deactivated"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -162,7 +372,14 @@
         "id": "create-category",
         "description": "カテゴリを作成する",
         "changes": [
-          { "entity": "Category", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+          {
+            "entity": "Category",
+            "state": {
+              "from": "_start",
+              "to": "active"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -170,7 +387,14 @@
         "id": "archive-category",
         "description": "カテゴリをアーカイブする",
         "changes": [
-          { "entity": "Category", "state": { "from": "active", "to": "archived" }, "scope": "target" }
+          {
+            "entity": "Category",
+            "state": {
+              "from": "active",
+              "to": "archived"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       }
@@ -182,23 +406,54 @@
       "description": "記事のタイトルは空にできない",
       "rules": [
         {
-          "when": { "field": "title", "op": "is_not_null" },
-          "constraint": { "entity": "Post", "field": "title", "allowedValues": [] }
+          "when": {
+            "field": "title",
+            "op": "is_not_null"
+          },
+          "constraint": {
+            "entity": "Post",
+            "field": "title",
+            "allowedValues": []
+          }
         }
       ]
     }
   ],
   "actors": [
-    { "id": "anonymous", "authState": { "kind": "anonymous" } },
-    { "id": "member", "authState": { "kind": "authenticated", "roles": ["member"] } },
-    { "id": "admin", "authState": { "kind": "authenticated", "roles": ["admin"] } }
+    {
+      "id": "anonymous",
+      "authState": {
+        "kind": "anonymous"
+      }
+    },
+    {
+      "id": "member",
+      "authState": {
+        "kind": "authenticated",
+        "roles": [
+          "member"
+        ]
+      }
+    },
+    {
+      "id": "admin",
+      "authState": {
+        "kind": "authenticated",
+        "roles": [
+          "admin"
+        ]
+      }
+    }
   ],
   "usecases": [
     {
       "id": "list-my-posts",
       "description": "自分の記事を全ステータス含めて一覧する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Post" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
       "input": {},
       "errors": []
     },
@@ -206,15 +461,23 @@
       "id": "view-post",
       "description": "記事の詳細を閲覧する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Post" },
-      "input": { "postId": "Post.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
+      "input": {
+        "postId": "Post.id"
+      },
       "errors": []
     },
     {
       "id": "create-post",
       "description": "新しい記事を下書きとして作成する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Post" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
       "input": {
         "title": "string",
         "body": "string",
@@ -227,55 +490,90 @@
       "id": "publish-post",
       "description": "下書きの記事を公開する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Post" },
-      "input": { "postId": "Post.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
+      "input": {
+        "postId": "Post.id"
+      },
       "transition": "publish-post",
       "errors": [
-        { "when": "not_draft", "description": "下書き状態でない記事は公開できない" }
+        {
+          "when": "not_draft",
+          "description": "下書き状態でない記事は公開できない"
+        }
       ]
     },
     {
       "id": "unpublish-post",
       "description": "公開中の記事を下書きに戻す",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Post" },
-      "input": { "postId": "Post.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
+      "input": {
+        "postId": "Post.id"
+      },
       "transition": "unpublish-post",
       "errors": [
-        { "when": "not_published", "description": "公開中でない記事は非公開にできない" }
+        {
+          "when": "not_published",
+          "description": "公開中でない記事は非公開にできない"
+        }
       ]
     },
     {
       "id": "archive-post",
       "description": "記事をアーカイブする",
       "actor": "admin",
-      "target": { "kind": "single", "entity": "Post" },
-      "input": { "postId": "Post.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Post"
+      },
+      "input": {
+        "postId": "Post.id"
+      },
       "transition": "archive-post",
       "errors": [
-        { "when": "not_published", "description": "公開中でない記事はアーカイブできない" }
+        {
+          "when": "not_published",
+          "description": "公開中でない記事はアーカイブできない"
+        }
       ]
     },
     {
       "id": "create-comment",
       "description": "記事にコメントを投稿する",
       "actor": "member",
-      "target": { "kind": "single", "entity": "Comment" },
+      "target": {
+        "kind": "single",
+        "entity": "Comment"
+      },
       "input": {
         "postId": "Post.id",
         "body": "string"
       },
       "transition": "create-comment",
       "errors": [
-        { "when": "post_not_published", "description": "公開中でない記事にはコメントできない" }
+        {
+          "when": "post_not_published",
+          "description": "公開中でない記事にはコメントできない"
+        }
       ]
     },
     {
       "id": "hide-comment",
       "description": "不適切なコメントを非表示にする",
       "actor": "admin",
-      "target": { "kind": "single", "entity": "Comment" },
-      "input": { "commentId": "Comment.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Comment"
+      },
+      "input": {
+        "commentId": "Comment.id"
+      },
       "transition": "hide-comment",
       "errors": []
     },
@@ -283,7 +581,10 @@
       "id": "register-user",
       "description": "新しいユーザーを登録する",
       "actor": "anonymous",
-      "target": { "kind": "single", "entity": "User" },
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
       "input": {
         "name": "string",
         "email": "string"
@@ -295,8 +596,13 @@
       "id": "deactivate-user",
       "description": "ユーザーを退会させる",
       "actor": "admin",
-      "target": { "kind": "single", "entity": "User" },
-      "input": { "userId": "User.id" },
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
+      "input": {
+        "userId": "User.id"
+      },
       "transition": "deactivate-user",
       "errors": []
     },
@@ -304,7 +610,10 @@
       "id": "create-category",
       "description": "新しいカテゴリを作成する",
       "actor": "admin",
-      "target": { "kind": "single", "entity": "Category" },
+      "target": {
+        "kind": "single",
+        "entity": "Category"
+      },
       "input": {
         "name": "string",
         "slug": "string"
@@ -316,23 +625,38 @@
       "id": "archive-category",
       "description": "カテゴリをアーカイブする",
       "actor": "admin",
-      "target": { "kind": "single", "entity": "Category" },
-      "input": { "categoryId": "Category.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Category"
+      },
+      "input": {
+        "categoryId": "Category.id"
+      },
       "transition": "archive-category",
       "errors": []
     }
   ],
   "reactions": [
     {
-      "trigger": { "usecase": "create-comment", "entity": "Comment" },
+      "trigger": {
+        "usecase": "create-comment",
+        "entity": "Comment"
+      },
       "when": [],
-      "notify": { "owner": "Post" },
+      "notify": {
+        "owner": "Post"
+      },
       "description": "コメントが投稿されたことを記事の著者に通知する"
     },
     {
-      "trigger": { "usecase": "publish-post", "entity": "Post" },
+      "trigger": {
+        "usecase": "publish-post",
+        "entity": "Post"
+      },
       "when": [],
-      "notify": { "external": "activity-log" },
+      "notify": {
+        "external": "activity-log"
+      },
       "description": "記事が公開されたことを記録する"
     }
   ],
@@ -342,7 +666,11 @@
       "actor": "anonymous",
       "goal": "アカウントを作成する",
       "steps": [
-        { "view": "register-page", "action": "register-user", "description": "登録フォームに入力してアカウントを作成する" }
+        {
+          "view": "register-page",
+          "action": "register-user",
+          "description": "登録フォームに入力してアカウントを作成する"
+        }
       ]
     },
     {
@@ -350,10 +678,26 @@
       "actor": "member",
       "goal": "記事を書いて公開する",
       "steps": [
-        { "view": "my-drafts-page", "action": "list-my-posts", "description": "自分の記事一覧を確認する" },
-        { "view": "new-post", "action": "create-post", "description": "新しい記事を下書きとして作成する" },
-        { "view": "my-drafts-page", "action": "publish-post", "description": "下書きの記事を公開する" },
-        { "view": "my-drafts-page", "action": "unpublish-post", "description": "公開中の記事を非公開に戻す" }
+        {
+          "view": "my-drafts-page",
+          "action": "list-my-posts",
+          "description": "自分の記事一覧を確認する"
+        },
+        {
+          "view": "new-post",
+          "action": "create-post",
+          "description": "新しい記事を下書きとして作成する"
+        },
+        {
+          "view": "my-drafts-page",
+          "action": "publish-post",
+          "description": "下書きの記事を公開する"
+        },
+        {
+          "view": "my-drafts-page",
+          "action": "unpublish-post",
+          "description": "公開中の記事を非公開に戻す"
+        }
       ]
     },
     {
@@ -361,8 +705,16 @@
       "actor": "member",
       "goal": "記事を読んでコメントする",
       "steps": [
-        { "view": "home", "action": "view-post", "description": "記事一覧から記事を選んで閲覧する" },
-        { "view": "post-page", "action": "create-comment", "description": "記事にコメントを投稿する" }
+        {
+          "view": "home",
+          "action": "view-post",
+          "description": "記事一覧から記事を選んで閲覧する"
+        },
+        {
+          "view": "post-page",
+          "action": "create-comment",
+          "description": "記事にコメントを投稿する"
+        }
       ]
     },
     {
@@ -370,9 +722,21 @@
       "actor": "admin",
       "goal": "不適切なコンテンツを管理する",
       "steps": [
-        { "view": "admin-moderation", "action": "hide-comment", "description": "不適切なコメントを非表示にする" },
-        { "view": "admin-moderation", "action": "archive-post", "description": "不適切な記事をアーカイブする" },
-        { "view": "admin-moderation", "action": "deactivate-user", "description": "違反ユーザーを無効化する" }
+        {
+          "view": "admin-moderation",
+          "action": "hide-comment",
+          "description": "不適切なコメントを非表示にする"
+        },
+        {
+          "view": "admin-moderation",
+          "action": "archive-post",
+          "description": "不適切な記事をアーカイブする"
+        },
+        {
+          "view": "admin-moderation",
+          "action": "deactivate-user",
+          "description": "違反ユーザーを無効化する"
+        }
       ]
     },
     {
@@ -380,8 +744,16 @@
       "actor": "admin",
       "goal": "カテゴリを管理する",
       "steps": [
-        { "view": "admin-categories", "action": "create-category", "description": "新しいカテゴリを作成する" },
-        { "view": "admin-categories", "action": "archive-category", "description": "不要なカテゴリをアーカイブする" }
+        {
+          "view": "admin-categories",
+          "action": "create-category",
+          "description": "新しいカテゴリを作成する"
+        },
+        {
+          "view": "admin-categories",
+          "action": "archive-category",
+          "description": "不要なカテゴリをアーカイブする"
+        }
       ]
     }
   ],
@@ -390,18 +762,130 @@
       "id": "basic-setup",
       "description": "ユーザー3名・カテゴリ2件・記事4件・コメント3件の基本データ",
       "instances": [
-        { "entity": "User", "id": "User-1", "fields": { "name": "Alice", "email": "alice@example.com", "role": "admin", "status": "active" } },
-        { "entity": "User", "id": "User-2", "fields": { "name": "Bob", "email": "bob@example.com", "role": "member", "status": "active" } },
-        { "entity": "User", "id": "User-3", "fields": { "name": "Charlie", "email": "charlie@example.com", "role": "member", "status": "active" } },
-        { "entity": "Category", "id": "Category-1", "fields": { "name": "Technology", "slug": "technology", "status": "active" } },
-        { "entity": "Category", "id": "Category-2", "fields": { "name": "Lifestyle", "slug": "lifestyle", "status": "active" } },
-        { "entity": "Post", "id": "Post-1", "fields": { "title": "Getting Started with TypeScript", "body": "TypeScript is a typed superset of JavaScript...", "status": "published", "authorId": "User-2", "publishedAt": "2025-05-20T10:00:00Z", "category": "Category-1" } },
-        { "entity": "Post", "id": "Post-2", "fields": { "title": "My Morning Routine", "body": "Every morning I start with a cup of coffee...", "status": "published", "authorId": "User-3", "publishedAt": "2025-05-22T08:00:00Z", "category": "Category-2" } },
-        { "entity": "Post", "id": "Post-3", "fields": { "title": "Advanced React Patterns", "body": "In this article we explore render props and hooks...", "status": "draft", "authorId": "User-2", "category": "Category-1" } },
-        { "entity": "Post", "id": "Post-4", "fields": { "title": "Deprecated API Guide", "body": "This guide covers the old API...", "status": "archived", "authorId": "User-1", "category": "Category-1" } },
-        { "entity": "Comment", "id": "Comment-1", "fields": { "body": "Great introduction!", "status": "visible", "postId": "Post-1", "authorId": "User-3" } },
-        { "entity": "Comment", "id": "Comment-2", "fields": { "body": "Thanks, very helpful.", "status": "visible", "postId": "Post-1", "authorId": "User-1" } },
-        { "entity": "Comment", "id": "Comment-3", "fields": { "body": "Love this routine!", "status": "visible", "postId": "Post-2", "authorId": "User-2" } }
+        {
+          "entity": "User",
+          "id": "User-1",
+          "fields": {
+            "name": "Alice",
+            "email": "alice@example.com",
+            "role": "admin",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "User",
+          "id": "User-2",
+          "fields": {
+            "name": "Bob",
+            "email": "bob@example.com",
+            "role": "member",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "User",
+          "id": "User-3",
+          "fields": {
+            "name": "Charlie",
+            "email": "charlie@example.com",
+            "role": "member",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Category",
+          "id": "Category-1",
+          "fields": {
+            "name": "Technology",
+            "slug": "technology",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Category",
+          "id": "Category-2",
+          "fields": {
+            "name": "Lifestyle",
+            "slug": "lifestyle",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Post",
+          "id": "Post-1",
+          "fields": {
+            "title": "Getting Started with TypeScript",
+            "body": "TypeScript is a typed superset of JavaScript...",
+            "status": "published",
+            "authorId": "User-2",
+            "publishedAt": "2025-05-20T10:00:00Z",
+            "category": "Category-1"
+          }
+        },
+        {
+          "entity": "Post",
+          "id": "Post-2",
+          "fields": {
+            "title": "My Morning Routine",
+            "body": "Every morning I start with a cup of coffee...",
+            "status": "published",
+            "authorId": "User-3",
+            "publishedAt": "2025-05-22T08:00:00Z",
+            "category": "Category-2"
+          }
+        },
+        {
+          "entity": "Post",
+          "id": "Post-3",
+          "fields": {
+            "title": "Advanced React Patterns",
+            "body": "In this article we explore render props and hooks...",
+            "status": "draft",
+            "authorId": "User-2",
+            "category": "Category-1"
+          }
+        },
+        {
+          "entity": "Post",
+          "id": "Post-4",
+          "fields": {
+            "title": "Deprecated API Guide",
+            "body": "This guide covers the old API...",
+            "status": "archived",
+            "authorId": "User-1",
+            "category": "Category-1"
+          }
+        },
+        {
+          "entity": "Comment",
+          "id": "Comment-1",
+          "fields": {
+            "body": "Great introduction!",
+            "status": "visible",
+            "postId": "Post-1",
+            "authorId": "User-3"
+          }
+        },
+        {
+          "entity": "Comment",
+          "id": "Comment-2",
+          "fields": {
+            "body": "Thanks, very helpful.",
+            "status": "visible",
+            "postId": "Post-1",
+            "authorId": "User-1"
+          }
+        },
+        {
+          "entity": "Comment",
+          "id": "Comment-3",
+          "fields": {
+            "body": "Love this routine!",
+            "status": "visible",
+            "postId": "Post-2",
+            "authorId": "User-2"
+          }
+        }
       ]
     }
   ],
@@ -413,21 +897,55 @@
         "sources": [
           {
             "entity": "Post",
-            "matching": ["published"],
-            "fields": ["title", "category", "publishedAt", "authorId"],
+            "matching": [
+              "published"
+            ],
+            "fields": [
+              "title",
+              "category",
+              "publishedAt",
+              "authorId"
+            ],
             "paginated": true,
-            "sort": [{ "field": "publishedAt", "order": "desc" }]
+            "sort": [
+              {
+                "field": "publishedAt",
+                "order": "desc"
+              }
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" },
-          { "name": "category", "type": "string" },
-          { "name": "publishedAt", "type": "datetime" },
-          { "name": "authorName", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "publishedAt",
+            "type": "datetime",
+            "required": true
+          },
+          {
+            "name": "authorName",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "postId", "type": "Post.id" }]
+        "outputs": [
+          {
+            "name": "postId",
+            "type": "Post.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "post-detail",
@@ -435,27 +953,65 @@
         "sources": [
           {
             "entity": "Post",
-            "matching": ["published"],
-            "fields": ["title", "body", "category", "publishedAt", "authorId"]
+            "matching": [
+              "published"
+            ],
+            "fields": [
+              "title",
+              "body",
+              "category",
+              "publishedAt",
+              "authorId"
+            ]
           },
           {
             "entity": "Comment",
-            "matching": ["visible"],
-            "fields": ["body", "authorId"],
+            "matching": [
+              "visible"
+            ],
+            "fields": [
+              "body",
+              "authorId"
+            ],
             "paginated": true,
-            "sort": [{ "field": "body", "order": "asc" }]
+            "sort": [
+              {
+                "field": "body",
+                "order": "asc"
+              }
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" },
-          { "name": "body", "type": "string" },
-          { "name": "comments", "type": "Comment[]" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "comments",
+            "type": "Comment[]",
+            "required": true
+          }
         ],
         "outputs": [
-          { "name": "postId", "type": "Post.id" },
-          { "name": "commentId", "type": "Comment.id" }
+          {
+            "name": "postId",
+            "type": "Post.id",
+            "required": true
+          },
+          {
+            "name": "commentId",
+            "type": "Comment.id",
+            "required": true
+          }
         ]
       },
       {
@@ -463,16 +1019,40 @@
         "description": "記事の作成・編集フォーム",
         "sources": [],
         "inputs": [
-          { "name": "title", "type": "string" },
-          { "name": "body", "type": "string" },
-          { "name": "category", "type": "Category.id" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "Category.id",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "title", "type": "string" },
-          { "name": "body", "type": "string" },
-          { "name": "category", "type": "Category.id" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "Category.id",
+            "required": true
+          }
         ]
       },
       {
@@ -480,12 +1060,20 @@
         "description": "コメント投稿フォーム",
         "sources": [],
         "inputs": [
-          { "name": "body", "type": "string" }
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "body", "type": "string" }
+          {
+            "name": "body",
+            "type": "string",
+            "required": true
+          }
         ]
       },
       {
@@ -494,32 +1082,67 @@
         "sources": [
           {
             "entity": "Post",
-            "matching": ["draft"],
-            "fields": ["title", "category"],
+            "matching": [
+              "draft"
+            ],
+            "fields": [
+              "title",
+              "category"
+            ],
             "paginated": true
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" },
-          { "name": "category", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "postId", "type": "Post.id" }]
+        "outputs": [
+          {
+            "name": "postId",
+            "type": "Post.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "register-form",
         "description": "ユーザー登録フォーム",
         "sources": [],
         "inputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          }
         ]
       },
       {
@@ -528,33 +1151,73 @@
         "sources": [
           {
             "entity": "User",
-            "matching": ["active"],
-            "fields": ["name", "email", "role"],
+            "matching": [
+              "active"
+            ],
+            "fields": [
+              "name",
+              "email",
+              "role"
+            ],
             "paginated": true
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" },
-          { "name": "role", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "userId", "type": "User.id" }]
+        "outputs": [
+          {
+            "name": "userId",
+            "type": "User.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "category-form",
         "description": "カテゴリ作成フォーム",
         "sources": [],
         "inputs": [
-          { "name": "name", "type": "string" },
-          { "name": "slug", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "name", "type": "string" },
-          { "name": "slug", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "required": true
+          }
         ]
       },
       {
@@ -563,34 +1226,60 @@
         "sources": [
           {
             "entity": "Category",
-            "matching": ["active"],
-            "fields": ["name", "slug"],
+            "matching": [
+              "active"
+            ],
+            "fields": [
+              "name",
+              "slug"
+            ],
             "paginated": true
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "name", "type": "string" },
-          { "name": "slug", "type": "string" }
+          {
+            "name": "name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "categoryId", "type": "Category.id" }]
+        "outputs": [
+          {
+            "name": "categoryId",
+            "type": "Category.id",
+            "required": true
+          }
+        ]
       }
     ],
     "views": [
       {
         "id": "home",
-        "components": ["post-list"],
+        "components": [
+          "post-list"
+        ],
         "actions": [
           {
             "usecase": "view-post",
-            "inputFrom": { "postId": "post-list.postId" }
+            "inputFrom": {
+              "postId": "post-list.postId"
+            }
           }
         ]
       },
       {
         "id": "post-page",
-        "components": ["post-detail", "comment-form"],
+        "components": [
+          "post-detail",
+          "comment-form"
+        ],
         "actions": [
           {
             "usecase": "create-comment",
@@ -603,7 +1292,9 @@
       },
       {
         "id": "new-post",
-        "components": ["post-editor"],
+        "components": [
+          "post-editor"
+        ],
         "actions": [
           {
             "usecase": "create-post",
@@ -617,7 +1308,9 @@
       },
       {
         "id": "my-drafts-page",
-        "components": ["my-drafts"],
+        "components": [
+          "my-drafts"
+        ],
         "actions": [
           {
             "usecase": "list-my-posts",
@@ -625,17 +1318,23 @@
           },
           {
             "usecase": "publish-post",
-            "inputFrom": { "postId": "my-drafts.postId" }
+            "inputFrom": {
+              "postId": "my-drafts.postId"
+            }
           },
           {
             "usecase": "unpublish-post",
-            "inputFrom": { "postId": "my-drafts.postId" }
+            "inputFrom": {
+              "postId": "my-drafts.postId"
+            }
           }
         ]
       },
       {
         "id": "register-page",
-        "components": ["register-form"],
+        "components": [
+          "register-form"
+        ],
         "actions": [
           {
             "usecase": "register-user",
@@ -648,25 +1347,37 @@
       },
       {
         "id": "admin-moderation",
-        "components": ["post-detail", "user-list"],
+        "components": [
+          "post-detail",
+          "user-list"
+        ],
         "actions": [
           {
             "usecase": "hide-comment",
-            "inputFrom": { "commentId": "post-detail.commentId" }
+            "inputFrom": {
+              "commentId": "post-detail.commentId"
+            }
           },
           {
             "usecase": "archive-post",
-            "inputFrom": { "postId": "post-detail.postId" }
+            "inputFrom": {
+              "postId": "post-detail.postId"
+            }
           },
           {
             "usecase": "deactivate-user",
-            "inputFrom": { "userId": "user-list.userId" }
+            "inputFrom": {
+              "userId": "user-list.userId"
+            }
           }
         ]
       },
       {
         "id": "admin-categories",
-        "components": ["category-list", "category-form"],
+        "components": [
+          "category-list",
+          "category-form"
+        ],
         "actions": [
           {
             "usecase": "create-category",
@@ -677,7 +1388,9 @@
           },
           {
             "usecase": "archive-category",
-            "inputFrom": { "categoryId": "category-list.categoryId" }
+            "inputFrom": {
+              "categoryId": "category-list.categoryId"
+            }
           }
         ]
       }

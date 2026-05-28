@@ -7,13 +7,31 @@
       {
         "id": "Todo",
         "fields": [
-          { "name": "title", "type": "string" },
-          { "name": "status", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true
+          }
         ],
-        "ownership": { "kind": "shared" },
+        "ownership": {
+          "kind": "shared"
+        },
         "states": [
-          { "name": "active", "field": "status", "value": "active" },
-          { "name": "completed", "field": "status", "value": "completed" }
+          {
+            "name": "active",
+            "field": "status",
+            "value": "active"
+          },
+          {
+            "name": "completed",
+            "field": "status",
+            "value": "completed"
+          }
         ],
         "traits": []
       }
@@ -24,7 +42,14 @@
         "id": "create-todo",
         "description": "TODOを作成する",
         "changes": [
-          { "entity": "Todo", "state": { "from": "_start", "to": "active" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "_start",
+              "to": "active"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -32,7 +57,14 @@
         "id": "complete-todo",
         "description": "TODOを完了にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "active", "to": "completed" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "active",
+              "to": "completed"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       },
@@ -40,7 +72,14 @@
         "id": "reopen-todo",
         "description": "完了したTODOを再度有効にする",
         "changes": [
-          { "entity": "Todo", "state": { "from": "completed", "to": "active" }, "scope": "target" }
+          {
+            "entity": "Todo",
+            "state": {
+              "from": "completed",
+              "to": "active"
+            },
+            "scope": "target"
+          }
         ],
         "conditions": []
       }
@@ -48,14 +87,26 @@
   },
   "specs": [],
   "actors": [
-    { "id": "user", "authState": { "kind": "anonymous" } }
+    {
+      "id": "user",
+      "authState": {
+        "kind": "anonymous"
+      }
+    }
   ],
   "usecases": [
     {
       "id": "list-todos",
       "description": "TODO一覧を表示する",
       "actor": "user",
-      "target": { "kind": "collection", "entity": "Todo", "matching": ["active", "completed"] },
+      "target": {
+        "kind": "collection",
+        "entity": "Todo",
+        "matching": [
+          "active",
+          "completed"
+        ]
+      },
       "input": {},
       "errors": []
     },
@@ -63,8 +114,13 @@
       "id": "create-todo",
       "description": "新しいTODOを作成する",
       "actor": "user",
-      "target": { "kind": "single", "entity": "Todo" },
-      "input": { "title": "string" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo"
+      },
+      "input": {
+        "title": "string"
+      },
       "transition": "create-todo",
       "errors": []
     },
@@ -72,22 +128,38 @@
       "id": "complete-todo",
       "description": "TODOを完了にする",
       "actor": "user",
-      "target": { "kind": "single", "entity": "Todo" },
-      "input": { "todoId": "Todo.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo"
+      },
+      "input": {
+        "todoId": "Todo.id"
+      },
       "transition": "complete-todo",
       "errors": [
-        { "when": "already_completed", "description": "すでに完了済みのTODO" }
+        {
+          "when": "already_completed",
+          "description": "すでに完了済みのTODO"
+        }
       ]
     },
     {
       "id": "reopen-todo",
       "description": "完了したTODOを再度有効にする",
       "actor": "user",
-      "target": { "kind": "single", "entity": "Todo" },
-      "input": { "todoId": "Todo.id" },
+      "target": {
+        "kind": "single",
+        "entity": "Todo"
+      },
+      "input": {
+        "todoId": "Todo.id"
+      },
       "transition": "reopen-todo",
       "errors": [
-        { "when": "not_completed", "description": "完了していないTODO" }
+        {
+          "when": "not_completed",
+          "description": "完了していないTODO"
+        }
       ]
     }
   ],
@@ -98,10 +170,26 @@
       "actor": "user",
       "goal": "TODOを管理する",
       "steps": [
-        { "view": "todo-page", "action": "list-todos", "description": "TODO一覧を確認する" },
-        { "view": "todo-page", "action": "create-todo", "description": "新しいTODOを作成する" },
-        { "view": "todo-page", "action": "complete-todo", "description": "TODOを完了にする" },
-        { "view": "todo-page", "action": "reopen-todo", "description": "完了したTODOを再開する" }
+        {
+          "view": "todo-page",
+          "action": "list-todos",
+          "description": "TODO一覧を確認する"
+        },
+        {
+          "view": "todo-page",
+          "action": "create-todo",
+          "description": "新しいTODOを作成する"
+        },
+        {
+          "view": "todo-page",
+          "action": "complete-todo",
+          "description": "TODOを完了にする"
+        },
+        {
+          "view": "todo-page",
+          "action": "reopen-todo",
+          "description": "完了したTODOを再開する"
+        }
       ]
     }
   ],
@@ -110,9 +198,30 @@
       "id": "basic-setup",
       "description": "TODO数件の基本データ",
       "instances": [
-        { "entity": "Todo", "id": "Todo-1", "fields": { "title": "Buy groceries", "status": "active" } },
-        { "entity": "Todo", "id": "Todo-2", "fields": { "title": "Clean the house", "status": "active" } },
-        { "entity": "Todo", "id": "Todo-3", "fields": { "title": "Read a book", "status": "completed" } }
+        {
+          "entity": "Todo",
+          "id": "Todo-1",
+          "fields": {
+            "title": "Buy groceries",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-2",
+          "fields": {
+            "title": "Clean the house",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-3",
+          "fields": {
+            "title": "Read a book",
+            "status": "completed"
+          }
+        }
       ]
     }
   ],
@@ -124,16 +233,31 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["active"],
-            "fields": ["title", "status"]
+            "matching": [
+              "active"
+            ],
+            "fields": [
+              "title",
+              "status"
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+        "outputs": [
+          {
+            "name": "todoId",
+            "type": "Todo.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "completed-todo-list",
@@ -141,35 +265,61 @@
         "sources": [
           {
             "entity": "Todo",
-            "matching": ["completed"],
-            "fields": ["title"]
+            "matching": [
+              "completed"
+            ],
+            "fields": [
+              "title"
+            ]
           }
         ],
         "inputs": [],
         "transforms": [],
         "displays": [
-          { "name": "title", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          }
         ],
-        "outputs": [{ "name": "todoId", "type": "Todo.id" }]
+        "outputs": [
+          {
+            "name": "todoId",
+            "type": "Todo.id",
+            "required": true
+          }
+        ]
       },
       {
         "id": "todo-form",
         "description": "TODO作成フォーム",
         "sources": [],
         "inputs": [
-          { "name": "title", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          }
         ],
         "transforms": [],
         "displays": [],
         "outputs": [
-          { "name": "title", "type": "string" }
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          }
         ]
       }
     ],
     "views": [
       {
         "id": "todo-page",
-        "components": ["todo-list", "completed-todo-list", "todo-form"],
+        "components": [
+          "todo-list",
+          "completed-todo-list",
+          "todo-form"
+        ],
         "actions": [
           {
             "usecase": "list-todos",
@@ -177,15 +327,21 @@
           },
           {
             "usecase": "create-todo",
-            "inputFrom": { "title": "todo-form.title" }
+            "inputFrom": {
+              "title": "todo-form.title"
+            }
           },
           {
             "usecase": "complete-todo",
-            "inputFrom": { "todoId": "todo-list.todoId" }
+            "inputFrom": {
+              "todoId": "todo-list.todoId"
+            }
           },
           {
             "usecase": "reopen-todo",
-            "inputFrom": { "todoId": "completed-todo-list.todoId" }
+            "inputFrom": {
+              "todoId": "completed-todo-list.todoId"
+            }
           }
         ]
       }
