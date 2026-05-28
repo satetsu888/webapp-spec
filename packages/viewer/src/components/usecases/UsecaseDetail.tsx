@@ -1,15 +1,23 @@
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildUsecaseImpactDiagram } from "./buildUsecaseImpactDiagram";
 
 export function UsecaseDetail() {
   const { id } = useParams<{ id: string }>();
-  const { usecaseMap, reactionsByUsecase, spec } = useSpec();
+  const { usecaseMap, transitionMap, reactionsByUsecase, spec } = useSpec();
   const uc = usecaseMap.get(id!);
   if (!uc) return <p className="text-red-600">Usecase "{id}" not found</p>;
 
   const reactions = reactionsByUsecase(id!);
+
+  const impactDiagram = useMemo(
+    () => buildUsecaseImpactDiagram(uc, transitionMap, reactions),
+    [uc, transitionMap, reactions],
+  );
   const scenarios = spec.scenarios.filter((s) =>
     s.steps.some(
       (step) =>
@@ -28,6 +36,15 @@ export function UsecaseDetail() {
         <h2 className="text-lg font-bold">{uc.id}</h2>
         <p className="text-sm text-gray-600">{uc.description}</p>
       </div>
+
+      {impactDiagram && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Impact Flow
+          </h3>
+          <MermaidDiagram chart={impactDiagram} />
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-4 text-sm">
         <div>
