@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildReactionFlowDiagram } from "./buildReactionFlowDiagram";
 import type { NotificationTarget } from "@webapp-spec/types";
 
 function formatTarget(target: NotificationTarget): { label: string; variant: "blue" | "green" | "purple" } {
@@ -21,9 +24,19 @@ export function ReactionList() {
     );
   }
 
+  const diagram = useMemo(
+    () => buildReactionFlowDiagram(spec.reactions),
+    [spec.reactions],
+  );
+
   return (
     <div>
       <h2 className="mb-4 text-lg font-bold">Reactions</h2>
+      {diagram && (
+        <div className="mb-4">
+          <MermaidDiagram chart={diagram} />
+        </div>
+      )}
       <div className="space-y-2">
         {spec.reactions.map((r, i) => {
           const { label, variant } = formatTarget(r.notify);

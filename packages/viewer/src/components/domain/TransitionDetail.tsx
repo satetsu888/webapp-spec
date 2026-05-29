@@ -1,8 +1,11 @@
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { StateArrow } from "@/components/shared/StateArrow";
 import { Badge } from "@/components/shared/Badge";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { buildTransitionDiagram } from "./buildTransitionDiagram";
 
 export function TransitionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -13,12 +16,26 @@ export function TransitionDetail() {
 
   const usecases = spec.usecases.filter((u) => u.transition === id);
 
+  const diagram = useMemo(
+    () => buildTransitionDiagram(transition),
+    [transition],
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">{transition.id}</h2>
         <p className="text-sm text-gray-600">{transition.description}</p>
       </div>
+
+      {diagram && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            State Diagram
+          </h3>
+          <MermaidDiagram chart={diagram} />
+        </section>
+      )}
 
       <section>
         <h3 className="mb-2 text-sm font-semibold text-gray-700">
