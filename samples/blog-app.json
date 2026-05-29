@@ -433,7 +433,10 @@
         "roles": [
           "member"
         ]
-      }
+      },
+      "authMethods": [
+        { "kind": "email-password" }
+      ]
     },
     {
       "id": "admin",
@@ -442,7 +445,10 @@
         "roles": [
           "admin"
         ]
-      }
+      },
+      "authMethods": [
+        { "kind": "email-password" }
+      ]
     }
   ],
   "usecases": [

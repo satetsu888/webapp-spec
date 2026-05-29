@@ -241,6 +241,9 @@
           "member"
         ]
       },
+      "authMethods": [
+        { "kind": "email-password" }
+      ],
       "entity": "User"
     }
   ],

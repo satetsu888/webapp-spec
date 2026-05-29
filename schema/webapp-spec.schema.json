@@ -257,8 +257,61 @@
       "properties": {
         "id": { "type": "string" },
         "authState": { "$ref": "#/$defs/AuthState" },
+        "authMethods": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AuthMethod" }
+        },
         "entity": { "type": "string" }
       }
+    },
+    "AuthMethod": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "email-password" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "oauth" },
+            "providers": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "magic-link" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "passkey" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "api-key" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "webhook-signature" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "client-certificate" } }
+        }
+      ]
     },
     "AuthState": {
       "oneOf": [

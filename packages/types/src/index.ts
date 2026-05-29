@@ -120,9 +120,19 @@ export type AuthState =
   | { kind: "pending_mfa"; identity: string }
   | { kind: "expired" };
 
+export type AuthMethod =
+  | { kind: "email-password" }
+  | { kind: "oauth"; providers?: string[] }
+  | { kind: "magic-link" }
+  | { kind: "passkey" }
+  | { kind: "api-key" }
+  | { kind: "webhook-signature" }
+  | { kind: "client-certificate" };
+
 export type Actor = {
   id: string;
   authState: AuthState;
+  authMethods?: AuthMethod[];
   entity?: EntityRef;
 };
 

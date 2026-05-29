@@ -354,7 +354,8 @@ Actor は独立した概念ではなく、特定の認証状態になった anon
 type Actor = {
   id: string
   authState: AuthState
-  entity?: EntityRef    // この actor が対応するエンティティ（例: member → User）
+  authMethods?: AuthMethod[]  // この actor になるための認証手段
+  entity?: EntityRef          // この actor が対応するエンティティ（例: member → User）
 }
 
 type AuthState =
@@ -362,9 +363,20 @@ type AuthState =
   | { kind: "authenticated", roles: string[] }
   | { kind: "pending_mfa", identity: string }
   | { kind: "expired" }
+
+type AuthMethod =
+  | { kind: "email-password" }
+  | { kind: "oauth", providers?: string[] }
+  | { kind: "magic-link" }
+  | { kind: "passkey" }
+  | { kind: "api-key" }
+  | { kind: "webhook-signature" }
+  | { kind: "client-certificate" }
 ```
 
 `entity` は optional。人間のユーザーを表す actor は対応するエンティティを持つ（`member` → `User`）。外部システム（webhook 等）の actor はエンティティを持たない。
+
+`authMethods` は、この actor の認証状態に到達するための手段を定義する。「ユーザーはメールとパスワードでログインする」「Stripe は webhook 署名で認証する」といったプロダクトレベルの決定を表現する。セッション管理方式（JWT / Cookie 等）やパスワードハッシュアルゴリズムといった実装詳細は含まない。
 
 usecase の input で `"actor.id"` と指定すると、実行時に actor にバインドされたエンティティインスタンスの ID に解決される。これにより「自分の Todo を作成する」のような操作で、actor の User ID を自動的に設定できる。
 
@@ -372,15 +384,33 @@ usecase の input で `"actor.id"` と指定すると、実行時に actor に�
 const actors: Actor[] = [
   // 人間のユーザー（entity あり）
   { id: "anonymous", authState: { kind: "anonymous" } },
-  { id: "member",    authState: { kind: "authenticated", roles: ["member"] }, entity: "User" },
-  { id: "admin",     authState: { kind: "authenticated", roles: ["admin"] }, entity: "User" },
+  {
+    id: "member",
+    authState: { kind: "authenticated", roles: ["member"] },
+    authMethods: [{ kind: "email-password" }, { kind: "oauth", providers: ["google"] }],
+    entity: "User",
+  },
+  {
+    id: "admin",
+    authState: { kind: "authenticated", roles: ["admin"] },
+    authMethods: [{ kind: "email-password" }],
+    entity: "User",
+  },
   // 外部システム（entity なし）
-  { id: "stripe",    authState: { kind: "authenticated", roles: ["payment-provider"] } },
-  { id: "carrier",   authState: { kind: "authenticated", roles: ["shipping-provider"] } },
+  {
+    id: "stripe",
+    authState: { kind: "authenticated", roles: ["payment-provider"] },
+    authMethods: [{ kind: "webhook-signature" }],
+  },
+  {
+    id: "carrier",
+    authState: { kind: "authenticated", roles: ["shipping-provider"] },
+    authMethods: [{ kind: "api-key" }],
+  },
 ]
 ```
 
-Scenario は Actor を指定するだけで、「その Actor になるための認証ステップ」は暗黙の precondition として扱う。テスト生成時には Actor の authState から認証ステップを自動で前置できる。
+Scenario は Actor を指定するだけで、「その Actor になるための認証ステップ」は暗黙の precondition として扱う。テスト生成時には Actor の authState と authMethods から認証ステップを自動で前置できる。
 
 ---
 

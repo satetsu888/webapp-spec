@@ -105,6 +105,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
       // Check all usecase inputs are mapped
       if (uc) {
         for (const inputKey of Object.keys(uc.input)) {
+          if (uc.input[inputKey].startsWith("actor.")) continue;
           if (!(inputKey in action.inputFrom)) {
             issues.push({
               severity: "error",
