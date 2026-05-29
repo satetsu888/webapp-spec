@@ -61,7 +61,24 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 - `/ui/views`, `/ui/views/:id` — View 一覧・詳細
 - `/simulation` — シミュレーション
 
-## Mermaid ダイアグラムのノード形状ルール
+## Mermaid ダイアグラム
+
+### ダイアグラム一覧
+
+各画面に対応するビルダー関数がダイアグラム文字列を生成し、`MermaidDiagram` コンポーネントで描画する。
+ビルダーはデータが不足する場合（changes が空など）に `null` を返し、その場合ダイアグラムは非表示になる。
+
+| 画面 | ビルダー | Mermaid 種別 | 内容 |
+|------|----------|-------------|------|
+| EntityDetail | `buildStateDiagram` | stateDiagram-v2 | Entity の全状態と Transition による遷移 |
+| RelationList | `buildErDiagram` | erDiagram | Entity 間のリレーション |
+| TransitionDetail | `buildTransitionDiagram` | stateDiagram-v2 | 単一 Transition の状態変化（Entity ごとにサブグラフ） |
+| UsecaseDetail | `buildUsecaseImpactDiagram` | flowchart LR | Actor → Usecase → 状態変化 / Reaction / Follow-up |
+| ScenarioDetail | `buildScenarioFlowDiagram` | flowchart TD | Scenario のステップフロー |
+| ReactionList | `buildReactionFlowDiagram` | flowchart LR | 全 Reaction の Usecase → 通知先ネットワーク |
+| ViewDetail | `buildViewCompositionDiagram` | flowchart LR | View の Component 構成 |
+
+### ノード形状ルール
 
 ダイアグラム間で spec オブジェクトの形状を統一する。新しいダイアグラムを追加する際はこのルールに従うこと。
 
@@ -75,9 +92,12 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 | Reaction | スタジアム + 破線接続 | `(["..."])` + `-.->` |
 | View / Variant | subgraph | コンテナとして使用 |
 
+### 共通実装ルール
+
 - `spec:actor` アイコンは `MermaidDiagram.tsx` で `registerIconPacks` により登録済み
 - クリック可能なノードには `click nodeId href "/path"` を付与。`MermaidDiagram` が `bindFunctions` + キャプチャフェーズのイベント委譲で React Router 遷移に変換する
 - ラベル内の `"` は `#quot;` にエスケープ（`escapeLabel` ヘルパー）
+- stateDiagram-v2 のグループノード（`state alias { ... }`）にはラベル（description）を付けられない。`state "label" as alias { ... }` は Mermaid がエラーを出すため、alias のみで定義する
 
 ## シミュレーションエンジン
 
