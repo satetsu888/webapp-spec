@@ -2,7 +2,7 @@ export const PSEUDO_STATES = ["_start", "_end"] as const;
 export type PseudoState = (typeof PSEUDO_STATES)[number];
 
 export type EntityRef = string;
-export type UsecaseRef = string;
+export type OperationRef = string;
 export type TransitionRef = string;
 export type ActorRef = string;
 export type ComponentRef = string;
@@ -136,18 +136,18 @@ export type Actor = {
   entity?: EntityRef;
 };
 
-// --- Usecases ---
+// --- Operations ---
 
 export type Target =
   | { kind: "single"; entity: EntityRef; scopeByActor?: string[] }
   | { kind: "collection"; entity: EntityRef; matching: string[]; scopeByActor?: string[] };
 
-export type FollowUpUsecase = {
+export type FollowUpOperation = {
   description: string;
-  usecase: UsecaseRef;
+  operation: OperationRef;
 };
 
-export type Usecase = {
+export type Operation = {
   id: string;
   description: string;
   actor: ActorRef;
@@ -156,13 +156,13 @@ export type Usecase = {
   transition?: TransitionRef;
   conditions?: Condition[];
   errors: ErrorCase[];
-  followUps?: FollowUpUsecase[];
+  followUps?: FollowUpOperation[];
 };
 
-// --- Reactions ---
+// --- Side Effects ---
 
-export type Reaction = {
-  trigger: { usecase: UsecaseRef; entity: EntityRef };
+export type SideEffect = {
+  trigger: { operation: OperationRef; entity: EntityRef };
   when: Condition[];
   notify: NotificationTarget;
   description: string;
@@ -172,12 +172,12 @@ export type Reaction = {
 
 export type ViewStep = {
   view: ViewRef;
-  action?: UsecaseRef;
+  action?: OperationRef;
   description: string;
 };
 
 export type BackgroundStep = {
-  usecase: UsecaseRef;
+  operation: OperationRef;
   actor: ActorRef;
   description: string;
 };
@@ -222,7 +222,7 @@ export type Component = {
 };
 
 export type ViewAction = {
-  usecase: UsecaseRef;
+  operation: OperationRef;
   inputFrom: Record<string, string>;
 };
 
@@ -253,15 +253,19 @@ export type Fixture = {
 
 // --- Root ---
 
+export type Usecases = {
+  actors: Actor[];
+  operations: Operation[];
+  sideEffects: SideEffect[];
+};
+
 export type WebAppSpec = {
   webappSpec: string;
   name: string;
   version: string;
   domain: Domain;
   specs: Spec[];
-  actors: Actor[];
-  usecases: Usecase[];
-  reactions: Reaction[];
+  usecases: Usecases;
   scenarios: Scenario[];
   ui: UI;
   fixtures?: Fixture[];

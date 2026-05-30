@@ -9,12 +9,12 @@ import { buildTransitionDiagram } from "./buildTransitionDiagram";
 
 export function TransitionDetail() {
   const { id } = useParams<{ id: string }>();
-  const { transitionMap, reactionsByUsecase, spec } = useSpec();
+  const { transitionMap, sideEffectsByOperation, spec } = useSpec();
   const transition = transitionMap.get(id!);
   if (!transition)
     return <p className="text-red-600">Transition "{id}" not found</p>;
 
-  const usecases = spec.usecases.filter((u) => u.transition === id);
+  const usecases = spec.usecases.operations.filter((u) => u.transition === id);
 
   const diagram = useMemo(
     () => buildTransitionDiagram(transition),
@@ -73,12 +73,12 @@ export function TransitionDetail() {
       {usecases.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
-            Used by Usecases
+            Used by Operations
           </h3>
           <div className="space-y-1">
             {usecases.map((u) => (
               <div key={u.id} className="text-sm">
-                <RefLink to={`/usecases/${u.id}`}>
+                <RefLink to={`/operations/${u.id}`}>
                   {u.id}
                 </RefLink>
                 <span className="ml-2 text-gray-500">({u.actor})</span>

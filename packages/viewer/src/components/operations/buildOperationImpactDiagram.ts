@@ -1,4 +1,4 @@
-import type { Usecase, Transition, Reaction, NotificationTarget } from "@webapp-spec/types";
+import type { Operation, Transition, SideEffect, NotificationTarget } from "@webapp-spec/types";
 
 function escapeLabel(text: string): string {
   return text.replace(/"/g, "#quot;");
@@ -16,20 +16,20 @@ function formatNotifyTarget(notify: NotificationTarget): string {
   return `external: ${notify.external}`;
 }
 
-export function buildUsecaseImpactDiagram(
-  usecase: Usecase,
+export function buildOperationImpactDiagram(
+  operation: Operation,
   transitionMap: Map<string, Transition>,
-  reactions: Reaction[],
+  sideEffects: SideEffect[],
 ): string | null {
-  const transition = usecase.transition
-    ? transitionMap.get(usecase.transition)
+  const transition = operation.transition
+    ? transitionMap.get(operation.transition)
     : undefined;
 
   const lines = ["flowchart LR"];
   const clicks: string[] = [];
 
-  lines.push(`    actor@{ shape: icon, icon: "spec:actor", label: "${escapeLabel(usecase.actor)}" }`);
-  lines.push(`    uc(["${escapeLabel(usecase.id)}"])`);
+  lines.push(`    actor@{ shape: icon, icon: "spec:actor", label: "${escapeLabel(operation.actor)}" }`);
+  lines.push(`    uc(["${escapeLabel(operation.id)}"])`);
 
   if (transition && transition.changes.length > 0) {
     for (let i = 0; i < transition.changes.length; i++) {
@@ -41,21 +41,21 @@ export function buildUsecaseImpactDiagram(
       clicks.push(`    click c${i} href "/entities/${ch.entity}"`);
     }
   } else {
-    lines.push(`    target["${escapeLabel(usecase.target.entity)}"]`);
-    clicks.push(`    click target href "/entities/${usecase.target.entity}"`);
+    lines.push(`    target["${escapeLabel(operation.target.entity)}"]`);
+    clicks.push(`    click target href "/entities/${operation.target.entity}"`);
   }
 
-  for (let i = 0; i < reactions.length; i++) {
-    const r = reactions[i];
-    const target = formatNotifyTarget(r.notify);
-    lines.push(`    r${i}(["${escapeLabel(target)}\\n${escapeLabel(r.description)}"])`);
+  for (let i = 0; i < sideEffects.length; i++) {
+    const se = sideEffects[i];
+    const target = formatNotifyTarget(se.notify);
+    lines.push(`    r${i}(["${escapeLabel(target)}\\n${escapeLabel(se.description)}"])`);
   }
 
-  if (usecase.followUps) {
-    for (let i = 0; i < usecase.followUps.length; i++) {
-      const fu = usecase.followUps[i];
-      lines.push(`    fu${i}(["${escapeLabel(fu.usecase)}\\n${escapeLabel(fu.description)}"])`);
-      clicks.push(`    click fu${i} href "/usecases/${fu.usecase}"`);
+  if (operation.followUps) {
+    for (let i = 0; i < operation.followUps.length; i++) {
+      const fu = operation.followUps[i];
+      lines.push(`    fu${i}(["${escapeLabel(fu.operation)}\\n${escapeLabel(fu.description)}"])`);
+      clicks.push(`    click fu${i} href "/operations/${fu.operation}"`);
     }
   }
 
@@ -67,11 +67,11 @@ export function buildUsecaseImpactDiagram(
   } else {
     lines.push(`    uc --> target`);
   }
-  for (let i = 0; i < reactions.length; i++) {
+  for (let i = 0; i < sideEffects.length; i++) {
     lines.push(`    uc -.-> r${i}`);
   }
-  if (usecase.followUps) {
-    for (let i = 0; i < usecase.followUps.length; i++) {
+  if (operation.followUps) {
+    for (let i = 0; i < operation.followUps.length; i++) {
       lines.push(`    uc -.-> fu${i}`);
     }
   }

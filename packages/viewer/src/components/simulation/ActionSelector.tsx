@@ -4,12 +4,12 @@ import { InputForm } from "./InputForm";
 
 type Props = {
   selectedAction: string | null;
-  onSelect: (usecaseId: string | null) => void;
+  onSelect: (operationId: string | null) => void;
   onExecute: (input: Record<string, unknown>) => void;
 };
 
 export function ActionSelector({ selectedAction, onSelect, onExecute }: Props) {
-  const { viewMap, usecaseMap } = useSpec();
+  const { viewMap, operationMap } = useSpec();
   const { state } = useSimulation();
 
   if (!state.selectedView) return null;
@@ -24,11 +24,11 @@ export function ActionSelector({ selectedAction, onSelect, onExecute }: Props) {
       </h3>
       <div className="space-y-2">
         {view.actions.map((a) => {
-          const uc = usecaseMap.get(a.usecase);
-          const isSelected = selectedAction === a.usecase;
+          const op = operationMap.get(a.operation);
+          const isSelected = selectedAction === a.operation;
           return (
             <div
-              key={a.usecase}
+              key={a.operation}
               className={`rounded-lg border transition-colors ${
                 isSelected
                   ? "border-blue-400 bg-blue-50"
@@ -36,13 +36,13 @@ export function ActionSelector({ selectedAction, onSelect, onExecute }: Props) {
               }`}
             >
               <button
-                onClick={() => onSelect(isSelected ? null : a.usecase)}
+                onClick={() => onSelect(isSelected ? null : a.operation)}
                 className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm"
               >
                 <span
                   className={`font-medium ${isSelected ? "text-blue-800" : "text-gray-700"}`}
                 >
-                  {a.usecase}
+                  {a.operation}
                 </span>
                 <svg
                   className={`h-4 w-4 transition-transform ${isSelected ? "rotate-180 text-blue-500" : "text-gray-400"}`}
@@ -60,12 +60,12 @@ export function ActionSelector({ selectedAction, onSelect, onExecute }: Props) {
               </button>
               {isSelected && (
                 <div className="border-t border-blue-200 px-4 py-3">
-                  {uc?.description && (
+                  {op?.description && (
                     <p className="mb-3 text-xs text-gray-600">
-                      {uc.description}
+                      {op.description}
                     </p>
                   )}
-                  <InputForm usecaseId={a.usecase} onSubmit={onExecute} />
+                  <InputForm operationId={a.operation} onSubmit={onExecute} />
                 </div>
               )}
             </div>

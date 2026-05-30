@@ -86,84 +86,86 @@
     ]
   },
   "specs": [],
-  "actors": [
-    {
-      "id": "user",
-      "authState": {
-        "kind": "anonymous"
+  "usecases": {
+    "actors": [
+      {
+        "id": "user",
+        "authState": {
+          "kind": "anonymous"
+        }
       }
-    }
-  ],
-  "usecases": [
-    {
-      "id": "list-todos",
-      "description": "TODO一覧を表示する",
-      "actor": "user",
-      "target": {
-        "kind": "collection",
-        "entity": "Todo",
-        "matching": [
-          "active",
-          "completed"
+    ],
+    "operations": [
+      {
+        "id": "list-todos",
+        "description": "TODO一覧を表示する",
+        "actor": "user",
+        "target": {
+          "kind": "collection",
+          "entity": "Todo",
+          "matching": [
+            "active",
+            "completed"
+          ]
+        },
+        "input": {},
+        "errors": []
+      },
+      {
+        "id": "create-todo",
+        "description": "新しいTODOを作成する",
+        "actor": "user",
+        "target": {
+          "kind": "single",
+          "entity": "Todo"
+        },
+        "input": {
+          "title": "string"
+        },
+        "transition": "create-todo",
+        "errors": []
+      },
+      {
+        "id": "complete-todo",
+        "description": "TODOを完了にする",
+        "actor": "user",
+        "target": {
+          "kind": "single",
+          "entity": "Todo"
+        },
+        "input": {
+          "todoId": "Todo.id"
+        },
+        "transition": "complete-todo",
+        "errors": [
+          {
+            "when": "already_completed",
+            "description": "すでに完了済みのTODO"
+          }
         ]
       },
-      "input": {},
-      "errors": []
-    },
-    {
-      "id": "create-todo",
-      "description": "新しいTODOを作成する",
-      "actor": "user",
-      "target": {
-        "kind": "single",
-        "entity": "Todo"
-      },
-      "input": {
-        "title": "string"
-      },
-      "transition": "create-todo",
-      "errors": []
-    },
-    {
-      "id": "complete-todo",
-      "description": "TODOを完了にする",
-      "actor": "user",
-      "target": {
-        "kind": "single",
-        "entity": "Todo"
-      },
-      "input": {
-        "todoId": "Todo.id"
-      },
-      "transition": "complete-todo",
-      "errors": [
-        {
-          "when": "already_completed",
-          "description": "すでに完了済みのTODO"
-        }
-      ]
-    },
-    {
-      "id": "reopen-todo",
-      "description": "完了したTODOを再度有効にする",
-      "actor": "user",
-      "target": {
-        "kind": "single",
-        "entity": "Todo"
-      },
-      "input": {
-        "todoId": "Todo.id"
-      },
-      "transition": "reopen-todo",
-      "errors": [
-        {
-          "when": "not_completed",
-          "description": "完了していないTODO"
-        }
-      ]
-    }
-  ],
-  "reactions": [],
+      {
+        "id": "reopen-todo",
+        "description": "完了したTODOを再度有効にする",
+        "actor": "user",
+        "target": {
+          "kind": "single",
+          "entity": "Todo"
+        },
+        "input": {
+          "todoId": "Todo.id"
+        },
+        "transition": "reopen-todo",
+        "errors": [
+          {
+            "when": "not_completed",
+            "description": "完了していないTODO"
+          }
+        ]
+      }
+    ],
+    "sideEffects": []
+  },
   "scenarios": [
     {
       "id": "manage-todos",
@@ -322,23 +324,23 @@
         ],
         "actions": [
           {
-            "usecase": "list-todos",
+            "operation": "list-todos",
             "inputFrom": {}
           },
           {
-            "usecase": "create-todo",
+            "operation": "create-todo",
             "inputFrom": {
               "title": "todo-form.title"
             }
           },
           {
-            "usecase": "complete-todo",
+            "operation": "complete-todo",
             "inputFrom": {
               "todoId": "todo-list.todoId"
             }
           },
           {
-            "usecase": "reopen-todo",
+            "operation": "reopen-todo",
             "inputFrom": {
               "todoId": "completed-todo-list.todoId"
             }

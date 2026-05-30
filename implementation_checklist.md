@@ -107,7 +107,7 @@ spec の `authMethods` は「どの手段で認証するか」を定義してい
 |---|------|-----------|------|
 | 8.1 | ログ基盤は？ | 構造化ログ (JSON) / テキストログ | |
 | 8.2 | エラー監視サービスは？ | Sentry / Datadog / CloudWatch / なし | |
-| 8.3 | Usecase 実行の監査ログを残すか？ | yes / no | |
+| 8.3 | Operation 実行の監査ログを残すか？ | yes / no | |
 | 8.4 | DB バックアップの頻度は？ | 日次 / 週次 / リアルタイムレプリカ | |
 | 8.5 | 論理削除データの保持期間は？ | 30日 / 90日 / 無期限 | |
 | 8.6 | プライバシーポリシー / 利用規約は必要か？ | yes / no | |
@@ -207,15 +207,15 @@ type EntityTableMapping = {
 
 ---
 
-## M3. Usecase → エンドポイントマッピング
+## M3. Operation → エンドポイントマッピング
 
-spec の Usecase ごとに、HTTP エンドポイントへの対応を定義する。
+spec の Operation ごとに、HTTP エンドポイントへの対応を定義する。
 
 `"actor.id"` 型の input はサーバー側でセッションから解決するため、pathParams / queryParams / requestBody のいずれにも含めない。
 
 ```typescript
 type EndpointMapping = {
-  usecaseId: string         // spec の Usecase.id
+  operationId: string       // spec の Operation.id
 
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
   path: string              // URL パス（例: "/api/todos/:todoId/complete"）
@@ -240,7 +240,7 @@ type EndpointMapping = {
 ```json
 [
   {
-    "usecaseId": "register-user",
+    "operationId": "register-user",
     "method": "POST",
     "path": "/api/users",
     "requestBody": ["name", "email"],
@@ -250,14 +250,14 @@ type EndpointMapping = {
     ]
   },
   {
-    "usecaseId": "deactivate-user",
+    "operationId": "deactivate-user",
     "method": "DELETE",
     "path": "/api/users/me",
     "successStatus": 204,
     "errorMapping": []
   },
   {
-    "usecaseId": "create-todo",
+    "operationId": "create-todo",
     "method": "POST",
     "path": "/api/todos",
     "requestBody": ["title", "description", "dueDate"],
@@ -265,7 +265,7 @@ type EndpointMapping = {
     "errorMapping": []
   },
   {
-    "usecaseId": "complete-todo",
+    "operationId": "complete-todo",
     "method": "PATCH",
     "path": "/api/todos/:todoId/complete",
     "pathParams": ["todoId"],
@@ -275,7 +275,7 @@ type EndpointMapping = {
     ]
   },
   {
-    "usecaseId": "reopen-todo",
+    "operationId": "reopen-todo",
     "method": "PATCH",
     "path": "/api/todos/:todoId/reopen",
     "pathParams": ["todoId"],
@@ -285,7 +285,7 @@ type EndpointMapping = {
     ]
   },
   {
-    "usecaseId": "delete-todo",
+    "operationId": "delete-todo",
     "method": "DELETE",
     "path": "/api/todos/:todoId",
     "pathParams": ["todoId"],
@@ -297,7 +297,7 @@ type EndpointMapping = {
 
 ### 参照系エンドポイント
 
-spec の Usecase は状態変更操作が中心だが、実装では参照系エンドポイントも必要になる。Component の `sources` から導出できる:
+spec の Operation は状態変更操作が中心だが、実装では参照系エンドポイントも必要になる。Component の `sources` から導出できる:
 
 ```typescript
 type ReadEndpoint = {
@@ -386,15 +386,15 @@ type ViewRouteMapping = {
 
 ---
 
-## M5. Reaction → 配信設定マッピング
+## M5. SideEffect → 配信設定マッピング
 
-spec の Reaction ごとに、通知の配信方式を定義する。
+spec の SideEffect ごとに、通知の配信方式を定義する。
 
 ```typescript
-type ReactionDeliveryMapping = {
-  // spec の Reaction を特定する情報
+type SideEffectDeliveryMapping = {
+  // spec の SideEffect を特定する情報
   trigger: {
-    usecase: string         // Usecase.id
+    operation: string       // Operation.id
     entity: string          // Entity.id
   }
 
@@ -421,11 +421,11 @@ type ReactionDeliveryMapping = {
 
 ### 記入例
 
-Todo App の spec には reactions が定義されていないが、仮に「TODO完了時にオーナーに通知」がある場合:
+Todo App の spec には sideEffects が定義されていないが、仮に「TODO完了時にオーナーに通知」がある場合:
 
 ```json
 {
-  "trigger": { "usecase": "complete-todo", "entity": "Todo" },
+  "trigger": { "operation": "complete-todo", "entity": "Todo" },
   "channel": "email",
   "processing": "async",
   "queue": {
@@ -442,7 +442,7 @@ Todo App の spec には reactions が定義されていないが、仮に「TOD
 
 ## M6. 外部システム連携マッピング
 
-spec で外部システムの Actor（webhook 送信元等）が定義されている場合、その連携の実装方式を定義する。Usecase の `followUps` がある場合もここで対応を記述する。
+spec で外部システムの Actor（webhook 送信元等）が定義されている場合、その連携の実装方式を定義する。Operation の `followUps` がある場合もここで対応を記述する。
 
 ```typescript
 type ExternalSystemMapping = {
@@ -456,10 +456,10 @@ type ExternalSystemMapping = {
     authMethod: string        // "signature-header" | "api-key" | "basic-auth" | "ip-whitelist"
     secretEnvVar: string      // 検証用シークレットの環境変数名
 
-    // 外部イベント → spec の Usecase への対応
+    // 外部イベント → spec の Operation への対応
     eventMapping: {
       externalEvent: string   // 外部サービスのイベント名
-      usecaseId: string       // spec の Usecase.id
+      operationId: string     // spec の Operation.id
     }[]
   }
 
@@ -485,8 +485,8 @@ Todo App には外部 Actor がないが、仮に決済連携がある場合:
     "authMethod": "signature-header",
     "secretEnvVar": "STRIPE_WEBHOOK_SECRET",
     "eventMapping": [
-      { "externalEvent": "payment_intent.succeeded", "usecaseId": "payment-succeeded" },
-      { "externalEvent": "payment_intent.payment_failed", "usecaseId": "payment-failed" }
+      { "externalEvent": "payment_intent.succeeded", "operationId": "payment-succeeded" },
+      { "externalEvent": "payment_intent.payment_failed", "operationId": "payment-failed" }
     ]
   },
   "outbound": {

@@ -21,7 +21,7 @@ export function ExecutionResultView({ result }: { result: ExecutionResult }) {
         <Badge variant={result.success ? "green" : "red"}>
           {result.success ? "Success" : "Failed"}
         </Badge>
-        <span className="text-sm font-medium">{result.usecaseId}</span>
+        <span className="text-sm font-medium">{result.operationId}</span>
       </div>
 
       {result.error && (
@@ -61,13 +61,13 @@ export function ExecutionResultView({ result }: { result: ExecutionResult }) {
         </div>
       )}
 
-      {result.firedReactions.length > 0 && (
+      {result.firedSideEffects.length > 0 && (
         <div>
           <span className="text-xs font-semibold text-gray-600">
-            Reactions:
+            Side Effects:
           </span>
           <div className="mt-1 space-y-1">
-            {result.firedReactions.map((r, i) => (
+            {result.firedSideEffects.map((r, i) => (
               <div key={i} className="text-xs">
                 <Badge variant="purple">{formatNotify(r.notify)}</Badge>{" "}
                 {r.description}

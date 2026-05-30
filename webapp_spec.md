@@ -8,7 +8,7 @@ Webアプリケーションそのものを機械可読なデータ構造とし�
 
 ### 想定する用途
 
-- **LLMによる実装**: 定義を渡せば「何を作るか」が一意に決まる仕様書として機能する。グラフ構造なので、特定の usecase に関連する entity, transition, spec だけを切り出して LLM に渡すことができる。
+- **LLMによる実装**: 定義を渡せば「何を作るか」が一意に決まる仕様書として機能する。グラフ構造なので、特定の operation に関連する entity, transition, spec だけを切り出して LLM に渡すことができる。
 - **網羅的テスト生成**: entity の ownership, spec の rules, transition の conditions から、テストすべき Scenario のバリアント（正常系・異常系・権限境界）を機械的に導出する。
 
 ### 設計原則
@@ -33,7 +33,7 @@ WebAppSpec は「このアプリは何であるか」を定義する。以下は
 - 認可の実施パターン（ミドルウェア / per-handler）
 - 決済プロバイダ（Stripe 等）・価格設定
 - Notification の配信手段（メール / プッシュ / アプリ内）
-- Reaction の処理基盤（同期 / キュー / cron）
+- SideEffect の処理基盤（同期 / キュー / cron）
 - リアルタイム通信（WebSocket / SSE / polling）
 - ホスティング・デプロイ
 - セキュリティ実装（CORS, CSRF, CSP, XSS 対策, 暗号化, パスワードハッシュ, シークレット管理, セッション管理, 入力バリデーション方針）
@@ -64,17 +64,21 @@ WebAppSpec は「このアプリは何であるか」を定義する。以下は
 type WebAppSpec = {
   domain: Domain          // この世界の構造（ドメインエキスパートが語る事実）
   specs: Spec[]           // このアプリのビジネスルール（プロダクトオーナーが決める判断）
-  actors: Actor[]         // 認証状態のラベル
-  usecases: Usecase[]     // ドメイン操作
-  reactions: Reaction[]   // usecase 実行に伴う副作用
+  usecases: Usecases      // 振る舞い層（誰が何をしたらどうなるか）
   scenarios: Scenario[]   // View ベースのユーザーシナリオ
   ui: UI                  // 画面表示に関する定義
   fixtures?: Fixture[]    // シミュレーション・テスト用のサンプルデータ
 }
 
+type Usecases = {
+  actors: Actor[]           // 認証状態のラベル
+  operations: Operation[]   // ドメイン操作
+  sideEffects: SideEffect[] // operation 実行に伴う副作用
+}
+
 type UI = {
   components: Component[] // 画面上の操作・表示のまとまり
-  views: View[]           // Component の配置と Usecase への接続
+  views: View[]           // Component の配置と Operation への接続
 }
 ```
 
@@ -118,7 +122,7 @@ type Ownership =
   | { kind: "participants", participantFields: string[] }  // 複数の参加者が関与（DM等）
   | { kind: "shared" }                                    // 誰でもアクセス可能
 
-// 明示的な状態。フィールドの値で決まり、usecase の transition で遷移する。
+// 明示的な状態。フィールドの値で決まり、operation の transition で遷移する。
 type State = {
   name: string
   field: string
@@ -378,7 +382,7 @@ type AuthMethod =
 
 `authMethods` は、この actor の認証状態に到達するための手段を定義する。「ユーザーはメールとパスワードでログインする」「Stripe は webhook 署名で認証する」といったプロダクトレベルの決定を表現する。セッション管理方式（JWT / Cookie 等）やパスワードハッシュアルゴリズムといった実装詳細は含まない。
 
-usecase の input で `"actor.id"` と指定すると、実行時に actor にバインドされたエンティティインスタンスの ID に解決される。これにより「自分の Todo を作成する」のような操作で、actor の User ID を自動的に設定できる。
+operation の input で `"actor.id"` と指定すると、実行時に actor にバインドされたエンティティインスタンスの ID に解決される。これにより「自分の Todo を作成する」のような操作で、actor の User ID を自動的に設定できる。
 
 ```typescript
 const actors: Actor[] = [
@@ -414,28 +418,28 @@ Scenario は Actor を指定するだけで、「その Actor になるための
 
 ---
 
-## Usecases — ドメイン操作
+## Operations — ドメイン操作
 
 アプリケーションが提供する操作。domain service に相当するレイヤーで、HTTP エンドポイントとは 1:1 対応しない。
 
-Usecase は Entity の state/trait を名前で参照するだけで、フィルタ条件の詳細を知らない。
+Operation は Entity の state/trait を名前で参照するだけで、フィルタ条件の詳細を知らない。
 
 ```typescript
-type Usecase = {
+type Operation = {
   id: string
   description: string
   actor: ActorRef
   target: Target
   input: Schema
-  transition?: TransitionRef       // 状態遷移を伴わない参照系 usecase では省略可
+  transition?: TransitionRef       // 状態遷移を伴わない参照系 operation では省略可
   conditions?: Condition[]         // この actor がこの操作を実行するための前提条件
   errors: ErrorCase[]
-  followUps?: FollowUpUsecase[]   // この usecase の後に外部起点で起きうる usecase
+  followUps?: FollowUpOperation[]  // この operation の後に外部起点で起きうる operation
 }
 
-type FollowUpUsecase = {
+type FollowUpOperation = {
   description: string             // "決済成功", "決済失敗"
-  usecase: UsecaseRef
+  operation: OperationRef
 }
 
 type Target =
@@ -446,7 +450,7 @@ type Target =
 
 ```typescript
 // 単一エンティティへの操作（scopeByActor で自分の Todo にだけ操作を限定）
-const completeTodo: Usecase = {
+const completeTodo: Operation = {
   id: "complete-todo",
   description: "TODOを完了にする",
   actor: "member",
@@ -459,7 +463,7 @@ const completeTodo: Usecase = {
 }
 
 // actor.id で自分の User ID を自動注入する作成操作
-const createTodo: Usecase = {
+const createTodo: Operation = {
   id: "create-todo",
   description: "新しいTODOを作成する",
   actor: "member",
@@ -470,7 +474,7 @@ const createTodo: Usecase = {
 }
 
 // コレクションへの操作（trait で対象を選択）
-const completeAllOverdue: Usecase = {
+const completeAllOverdue: Operation = {
   id: "complete-all-overdue",
   description: "期日超過のTODOを全て完了にする",
   actor: "member",
@@ -480,8 +484,8 @@ const completeAllOverdue: Usecase = {
   errors: [],
 }
 
-// 外部システム連携を含む操作（followUps で後続の外部起点 usecase を宣言）
-const purchaseOrder: Usecase = {
+// 外部システム連携を含む操作（followUps で後続の外部起点 operation を宣言）
+const purchaseOrder: Operation = {
   id: "purchase-order",
   description: "注文の決済を開始する",
   actor: "member",
@@ -490,13 +494,13 @@ const purchaseOrder: Usecase = {
   transition: "initiate-payment",
   errors: [],
   followUps: [
-    { description: "決済成功", usecase: "payment-succeeded" },
-    { description: "決済失敗", usecase: "payment-failed" },
+    { description: "決済成功", operation: "payment-succeeded" },
+    { description: "決済失敗", operation: "payment-failed" },
   ],
 }
 
-// 外部システム（stripe）が起動する usecase
-const paymentSucceeded: Usecase = {
+// 外部システム（stripe）が起動する operation
+const paymentSucceeded: Operation = {
   id: "payment-succeeded",
   description: "決済が成功した",
   actor: "stripe",
@@ -506,7 +510,7 @@ const paymentSucceeded: Usecase = {
   errors: [],
 }
 
-const paymentFailed: Usecase = {
+const paymentFailed: Operation = {
   id: "payment-failed",
   description: "決済が失敗した",
   actor: "stripe",
@@ -517,9 +521,9 @@ const paymentFailed: Usecase = {
 }
 ```
 
-### Usecase conditions と Transition conditions の違い
+### Operation conditions と Transition conditions の違い
 
-Transition の `conditions` はドメイン不変条件 — 誰が操作しても常に成り立つべきルール。Usecase の `conditions` は actor に依存する操作の前提条件。
+Transition の `conditions` はドメイン不変条件 — 誰が操作しても常に成り立つべきルール。Operation の `conditions` は actor に依存する操作の前提条件。
 
 ```typescript
 // ドメイン不変条件: 公開済みの記事にしかコメントできない（actor 非依存）
@@ -530,7 +534,7 @@ const createComment: Transition = {
 }
 
 // actor 依存の前提条件: member は locked な TODO を削除できない
-const deleteTodo: Usecase = {
+const deleteTodo: Operation = {
   id: "delete-todo",
   actor: "member",
   target: { kind: "single", entity: "Todo" },
@@ -541,7 +545,7 @@ const deleteTodo: Usecase = {
 }
 
 // admin は lock に関係なく削除できる
-const adminDeleteTodo: Usecase = {
+const adminDeleteTodo: Operation = {
   id: "admin-delete-todo",
   actor: "admin",
   target: { kind: "single", entity: "Todo" },
@@ -552,30 +556,30 @@ const adminDeleteTodo: Usecase = {
 }
 ```
 
-### Usecase と Endpoint の関係
+### Operation と Endpoint の関係
 
-Endpoint は WebAppSpec に含めない。Usecase を HTTP でどう公開するかは実装時の関心事。
+Endpoint は WebAppSpec に含めない。Operation を HTTP でどう公開するかは実装時の関心事。
 
 ```
-1 usecase → N endpoints:
+1 operation → N endpoints:
   "TODOを列挙する" → GET /todos (画面用), GET /api/todos (API用)
 
-N usecases → 1 endpoint:
-  バッチエンドポイントが複数 usecase を束ねる
+N operations → 1 endpoint:
+  バッチエンドポイントが複数 operation を束ねる
 
-1 endpoint → 0 usecase:
-  ヘルスチェック等はドメインの usecase ではない
+1 endpoint → 0 operation:
+  ヘルスチェック等はドメインの operation ではない
 ```
 
 ---
 
-## Reactions — 副作用
+## Side Effects — 副作用
 
-Usecase の実行に伴う副作用（通知、ログ、外部連携など）。Usecase を純粋なドメインの状態変更に保つために分離する。
+Operation の実行に伴う副作用（通知、ログ、外部連携など）。Operation を純粋なドメインの状態変更に保つために分離する。
 
 ```typescript
-type Reaction = {
-  trigger: { usecase: UsecaseRef, entity: EntityRef }
+type SideEffect = {
+  trigger: { operation: OperationRef, entity: EntityRef }
   when: Condition[]
   notify: NotificationTarget
   description: string
@@ -588,8 +592,8 @@ type NotificationTarget =
 ```
 
 ```typescript
-const notifyOnComplete: Reaction = {
-  trigger: { usecase: "complete-todo", entity: "Todo" },
+const notifyOnComplete: SideEffect = {
+  trigger: { operation: "complete-todo", entity: "Todo" },
   when: [{ field: "assigneeId", op: "is_not_null" }],
   notify: { owner: "Todo" },
   description: "担当者にTODO完了を通知する",
@@ -607,12 +611,12 @@ View ベースのユーザーシナリオ。Actor が画面を通じて操作す
 ```typescript
 type ViewStep = {
   view: ViewRef
-  action?: UsecaseRef       // 画面上で実行する操作（省略 = 閲覧のみ）
+  action?: OperationRef     // 画面上で実行する操作（省略 = 閲覧のみ）
   description: string
 }
 
 type BackgroundStep = {
-  usecase: UsecaseRef        // ブラウザ外のバックグラウンド処理
+  operation: OperationRef    // ブラウザ外のバックグラウンド処理
   actor: ActorRef            // 実行主体（Scenario の actor とは別）
   description: string
 }
@@ -669,7 +673,7 @@ const manageTodos: Scenario = {
 
 ### Component
 
-画面上の操作・表示の単位。バックエンドからデータを取得して表示するだけのものから、Actor の入力を変換して Usecase に渡すものまで、全て Component として統一的に扱う。
+画面上の操作・表示の単位。バックエンドからデータを取得して表示するだけのものから、Actor の入力を変換して Operation に渡すものまで、全て Component として統一的に扱う。
 
 各フィールドが埋まるか空かの違いだけで、さまざまなパターンを表現できる:
 
@@ -687,7 +691,7 @@ type Component = {
   inputs: Field[]           // Actor が入力する値
   transforms: Transform[]   // クライアント側の変換（what, not how）
   displays: Field[]         // Actor に表示するが永続化しない値
-  outputs: Field[]          // Usecase に渡す値
+  outputs: Field[]          // Operation に渡す値
 }
 
 // Component が表示に必要とするバックエンドデータの宣言
@@ -775,18 +779,18 @@ const shippingCalculator: Component = {
 
 ### View
 
-Component の配置と、Component の output から Usecase への接続を定義する。View は URL を持つページに限らず、モーダルやドロワーなども含む。
+Component の配置と、Component の output から Operation への接続を定義する。View は URL を持つページに限らず、モーダルやドロワーなども含む。
 
 ```typescript
 type View = {
   id: string
   components: ComponentRef[]   // この View に配置する Component
-  actions: ViewAction[]        // Component の output → Usecase の接続
+  actions: ViewAction[]        // Component の output → Operation の接続
 }
 
 type ViewAction = {
-  usecase: UsecaseRef
-  inputFrom: Record<string, string>  // { usecase の input名: "componentId.output名" }
+  operation: OperationRef
+  inputFrom: Record<string, string>  // { operation の input名: "componentId.output名" }
 }
 ```
 
@@ -796,7 +800,7 @@ const todoListView: View = {
   components: ["todo-selector", "announcement-list"],
   actions: [
     {
-      usecase: "complete-todo",
+      operation: "complete-todo",
       inputFrom: { todoId: "todo-selector.todoId" },
     },
   ],
@@ -857,11 +861,11 @@ Relation:     「Entity 間の構造的関連」を宣言する
 Transition:   「どの状態からどの状態に遷移しうるか」を定義する（Entity 横断可）
 Spec:         「このアプリ固有の条件付き制約」を定義する（ビジネスルール）
 Actor:        「認証状態のラベル」を定義する
-Usecase:      「誰がどの Transition を発動できるか」を定義する
-Reaction:     「Usecase 実行時の副作用」を定義する
+Operation:    「誰がどの Transition を発動できるか」を定義する
+SideEffect:   「Operation 実行時の副作用」を定義する
 Scenario:     「View ベースのユーザーシナリオ」を定義する
 Component:    「画面上の操作・表示のまとまり」を定義する
-View:         「Component の配置と Usecase への接続」を定義する
+View:         「Component の配置と Operation への接続」を定義する
 Fixture:      「シミュレーション・テスト用のサンプルデータ」を定義する
 ```
 
@@ -869,7 +873,7 @@ Fixture:      「シミュレーション・テスト用のサンプルデータ
 
 ```
 「期日が過ぎている」とは何か        → Entity が知っている (trait)
-「期日超過のTODOをどうするか」      → Usecase が知っている (transition の適用)
+「期日超過のTODOをどうするか」      → Operation が知っている (transition の適用)
 「いつそれをやるか」               → Scenario が知っている (ステップの順序)
 「何個まで作れるか」               → Spec が知っている (条件付き制約)
 「このリソースは誰のものか」        → Entity が知っている (ownership)
@@ -884,7 +888,7 @@ Fixture:      「シミュレーション・テスト用のサンプルデータ
 
 ```typescript
 type EntityRef = string
-type UsecaseRef = string
+type OperationRef = string
 type TransitionRef = string
 type ActorRef = string
 type ComponentRef = string

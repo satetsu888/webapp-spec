@@ -8,7 +8,7 @@ import {
 import type { WebAppSpec } from "@webapp-spec/types";
 import type { SimState, ExecutionResult, EntityInstance } from "@/engine/types";
 import { simReducer, initialSimState } from "@/engine/store";
-import { executeUsecase } from "@/engine/executor";
+import { executeOperation } from "@/engine/executor";
 
 type SimContextValue = {
   state: SimState;
@@ -18,7 +18,7 @@ type SimContextValue = {
   loadFixture: (spec: WebAppSpec, fixtureId: string) => void;
   execute: (
     spec: WebAppSpec,
-    usecaseId: string,
+    operationId: string,
     input: Record<string, unknown>,
   ) => ExecutionResult;
   reset: () => void;
@@ -69,10 +69,10 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const execute = useCallback(
     (
       spec: WebAppSpec,
-      usecaseId: string,
+      operationId: string,
       input: Record<string, unknown>,
     ): ExecutionResult => {
-      const result = executeUsecase(spec, state, usecaseId, input);
+      const result = executeOperation(spec, state, operationId, input);
       if (result.success) {
         dispatch({ type: "APPLY_RESULT", result });
       }

@@ -3,19 +3,19 @@ import { useSpec } from "@/hooks/useSpec";
 import { useSimulation } from "@/hooks/useSimulation";
 
 type Props = {
-  usecaseId: string;
+  operationId: string;
   onSubmit: (input: Record<string, unknown>) => void;
 };
 
-export function InputForm({ usecaseId, onSubmit }: Props) {
-  const { usecaseMap, transitionMap } = useSpec();
+export function InputForm({ operationId, onSubmit }: Props) {
+  const { operationMap, transitionMap } = useSpec();
   const { state } = useSimulation();
   const [values, setValues] = useState<Record<string, string>>({});
 
-  const usecase = usecaseMap.get(usecaseId);
-  if (!usecase) return null;
+  const operation = operationMap.get(operationId);
+  if (!operation) return null;
 
-  const transition = usecase.transition ? transitionMap.get(usecase.transition) : undefined;
+  const transition = operation.transition ? transitionMap.get(operation.transition) : undefined;
   const isCreation = transition?.changes.some(
     (ch) => ch.scope === "target" && ch.state.from === "_start",
   );
@@ -31,13 +31,13 @@ export function InputForm({ usecaseId, onSubmit }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {Object.entries(usecase.input).map(([key, type]) => {
+      {Object.entries(operation.input).map(([key, type]) => {
         if (type === "actor.id") return null;
 
         const entityIdMatch = type.match(/^(\w+)\.id$/);
 
         const isTargetCreation =
-          isCreation && entityIdMatch?.[1] === usecase.target.entity;
+          isCreation && entityIdMatch?.[1] === operation.target.entity;
         if (entityIdMatch && !isTargetCreation) {
           const entityType = entityIdMatch[1];
           const instances = state.instances[entityType] ?? [];

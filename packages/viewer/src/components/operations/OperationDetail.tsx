@@ -4,37 +4,37 @@ import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
-import { buildUsecaseImpactDiagram } from "./buildUsecaseImpactDiagram";
+import { buildOperationImpactDiagram } from "./buildOperationImpactDiagram";
 
-export function UsecaseDetail() {
+export function OperationDetail() {
   const { id } = useParams<{ id: string }>();
-  const { usecaseMap, transitionMap, reactionsByUsecase, spec } = useSpec();
-  const uc = usecaseMap.get(id!);
-  if (!uc) return <p className="text-red-600">Usecase "{id}" not found</p>;
+  const { operationMap, transitionMap, sideEffectsByOperation, spec } = useSpec();
+  const op = operationMap.get(id!);
+  if (!op) return <p className="text-red-600">Operation "{id}" not found</p>;
 
-  const reactions = reactionsByUsecase(id!);
+  const sideEffects = sideEffectsByOperation(id!);
 
   const impactDiagram = useMemo(
-    () => buildUsecaseImpactDiagram(uc, transitionMap, reactions),
-    [uc, transitionMap, reactions],
+    () => buildOperationImpactDiagram(op, transitionMap, sideEffects),
+    [op, transitionMap, sideEffects],
   );
   const scenarios = spec.scenarios.filter((s) =>
     s.steps.some(
       (step) =>
         typeof step !== "string" &&
         (("view" in step && step.action === id) ||
-          ("usecase" in step && step.usecase === id)),
+          ("operation" in step && step.operation === id)),
     ),
   );
   const views = spec.ui.views.filter((v) =>
-    v.actions.some((a) => a.usecase === id),
+    v.actions.some((a) => a.operation === id),
   );
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold">{uc.id}</h2>
-        <p className="text-sm text-gray-600">{uc.description}</p>
+        <h2 className="text-lg font-bold">{op.id}</h2>
+        <p className="text-sm text-gray-600">{op.description}</p>
       </div>
 
       {impactDiagram && (
@@ -49,23 +49,23 @@ export function UsecaseDetail() {
       <div className="flex flex-wrap gap-4 text-sm">
         <div>
           <span className="text-gray-500">Actor: </span>
-          <Badge variant="green">{uc.actor}</Badge>
+          <Badge variant="green">{op.actor}</Badge>
         </div>
         <div>
           <span className="text-gray-500">Target: </span>
-          <RefLink to={`/entities/${uc.target.entity}`}>
-            {uc.target.entity}
+          <RefLink to={`/entities/${op.target.entity}`}>
+            {op.target.entity}
           </RefLink>
           <Badge variant="gray" >
-            {uc.target.kind}
+            {op.target.kind}
           </Badge>
         </div>
         <div>
-          {uc.transition ? (
+          {op.transition ? (
             <>
               <span className="text-gray-500">Transition: </span>
-              <RefLink to={`/transitions/${uc.transition}`}>
-                {uc.transition}
+              <RefLink to={`/transitions/${op.transition}`}>
+                {op.transition}
               </RefLink>
             </>
           ) : (
@@ -78,7 +78,7 @@ export function UsecaseDetail() {
         <h3 className="mb-2 text-sm font-semibold text-gray-700">Input</h3>
         <table className="w-full text-sm">
           <tbody>
-            {Object.entries(uc.input).map(([key, type]) => (
+            {Object.entries(op.input).map(([key, type]) => (
               <tr key={key} className="border-b border-gray-100">
                 <td className="py-1 pr-4 font-mono text-xs">{key}</td>
                 <td className="py-1 font-mono text-xs text-gray-600">
@@ -90,22 +90,22 @@ export function UsecaseDetail() {
         </table>
       </section>
 
-      {uc.conditions && uc.conditions.length > 0 && (
+      {op.conditions && op.conditions.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             Conditions
           </h3>
           <pre className="rounded bg-gray-50 p-3 text-xs">
-            {JSON.stringify(uc.conditions, null, 2)}
+            {JSON.stringify(op.conditions, null, 2)}
           </pre>
         </section>
       )}
 
-      {uc.errors.length > 0 && (
+      {op.errors.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">Errors</h3>
           <div className="space-y-1">
-            {uc.errors.map((e) => (
+            {op.errors.map((e) => (
               <div key={e.when} className="text-sm">
                 <Badge variant="red">{e.when}</Badge>
                 <span className="ml-2 text-gray-600">{e.description}</span>
@@ -115,16 +115,16 @@ export function UsecaseDetail() {
         </section>
       )}
 
-      {uc.followUps && uc.followUps.length > 0 && (
+      {op.followUps && op.followUps.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             Follow-ups
           </h3>
           <div className="space-y-1">
-            {uc.followUps.map((fu) => (
-              <div key={fu.usecase} className="text-sm">
-                <RefLink to={`/usecases/${fu.usecase}`}>
-                  {fu.usecase}
+            {op.followUps.map((fu) => (
+              <div key={fu.operation} className="text-sm">
+                <RefLink to={`/operations/${fu.operation}`}>
+                  {fu.operation}
                 </RefLink>
                 <span className="ml-2 text-gray-500">{fu.description}</span>
               </div>
@@ -133,15 +133,15 @@ export function UsecaseDetail() {
         </section>
       )}
 
-      {reactions.length > 0 && (
+      {sideEffects.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
-            Reactions
+            Side Effects
           </h3>
           <div className="space-y-1">
-            {reactions.map((r, i) => (
+            {sideEffects.map((se, i) => (
               <div key={i} className="text-sm text-gray-600">
-                {r.description}
+                {se.description}
               </div>
             ))}
           </div>

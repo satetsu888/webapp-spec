@@ -1,57 +1,57 @@
-import type { WebAppSpec, StateChange, Usecase } from "@webapp-spec/types";
+import type { WebAppSpec, StateChange, Operation } from "@webapp-spec/types";
 import type {
   SimState,
   EntityInstance,
   Mutation,
-  FiredReaction,
+  FiredSideEffect,
   ExecutionResult,
 } from "./types";
 
-export function executeUsecase(
+export function executeOperation(
   spec: WebAppSpec,
   state: SimState,
-  usecaseId: string,
+  operationId: string,
   input: Record<string, unknown>,
 ): ExecutionResult {
-  const usecase = spec.usecases.find((u) => u.id === usecaseId);
-  if (!usecase) {
+  const operation = spec.usecases.operations.find((u) => u.id === operationId);
+  if (!operation) {
     return {
       success: false,
-      usecaseId,
+      operationId,
       mutations: [],
-      firedReactions: [],
-      error: `Usecase "${usecaseId}" not found`,
+      firedSideEffects: [],
+      error: `Operation "${operationId}" not found`,
     };
   }
 
-  const resolved = resolveActorIdInputs(spec, state, usecase, input);
+  const resolved = resolveActorIdInputs(spec, state, operation, input);
   if ("error" in resolved) {
     return {
       success: false,
-      usecaseId,
+      operationId,
       mutations: [],
-      firedReactions: [],
+      firedSideEffects: [],
       error: resolved.error,
     };
   }
   const resolvedInput = resolved.input;
   const resolvedSchema = resolved.schema;
 
-  if (!usecase.transition) {
-    const firedReactions = collectReactions(spec, usecaseId);
-    return { success: true, usecaseId, mutations: [], firedReactions };
+  if (!operation.transition) {
+    const firedSideEffects = collectSideEffects(spec, operationId);
+    return { success: true, operationId, mutations: [], firedSideEffects };
   }
 
   const transition = spec.domain.transitions.find(
-    (t) => t.id === usecase.transition,
+    (t) => t.id === operation.transition,
   );
   if (!transition) {
     return {
       success: false,
-      usecaseId,
+      operationId,
       mutations: [],
-      firedReactions: [],
-      error: `Transition "${usecase.transition}" not found`,
+      firedSideEffects: [],
+      error: `Transition "${operation.transition}" not found`,
     };
   }
 
@@ -60,10 +60,10 @@ export function executeUsecase(
 
   if (targetChange && targetChange.state.from === "_start") {
     const result = handleCreation(spec, state, targetChange, transition, resolvedInput);
-    if (!result.success) return { ...result, usecaseId };
+    if (!result.success) return { ...result, operationId };
     mutations.push(...result.mutations);
   } else {
-    const targetEntityType = usecase.target.entity;
+    const targetEntityType = operation.target.entity;
     const targetInstanceId = findTargetInstanceId(
       resolvedInput,
       resolvedSchema,
@@ -73,27 +73,27 @@ export function executeUsecase(
     if (!targetInstanceId && targetChange) {
       return {
         success: false,
-        usecaseId,
+        operationId,
         mutations: [],
-        firedReactions: [],
+        firedSideEffects: [],
         error: `No target instance selected for ${targetEntityType}`,
       };
     }
 
-    if (targetInstanceId && usecase.target.scopeByActor) {
+    if (targetInstanceId && operation.target.scopeByActor) {
       const scopeError = checkActorScope(
         spec,
         state,
-        usecase,
+        operation,
         targetEntityType,
         targetInstanceId,
       );
       if (scopeError) {
         return {
           success: false,
-          usecaseId,
+          operationId,
           mutations: [],
-          firedReactions: [],
+          firedSideEffects: [],
           error: scopeError,
         };
       }
@@ -110,9 +110,9 @@ export function executeUsecase(
         if (result.error)
           return {
             success: false,
-            usecaseId,
+            operationId,
             mutations: [],
-            firedReactions: [],
+            firedSideEffects: [],
             error: result.error,
           };
       } else {
@@ -121,9 +121,9 @@ export function executeUsecase(
     }
   }
 
-  const firedReactions = collectReactions(spec, usecaseId);
+  const firedSideEffects = collectSideEffects(spec, operationId);
 
-  return { success: true, usecaseId, mutations, firedReactions };
+  return { success: true, operationId, mutations, firedSideEffects };
 }
 
 function handleCreation(
@@ -132,7 +132,7 @@ function handleCreation(
   targetChange: StateChange,
   transition: { changes: StateChange[] },
   input: Record<string, unknown>,
-): Omit<ExecutionResult, "usecaseId"> {
+): Omit<ExecutionResult, "operationId"> {
   const entity = spec.domain.entities.find(
     (e) => e.id === targetChange.entity,
   );
@@ -140,7 +140,7 @@ function handleCreation(
     return {
       success: false,
       mutations: [],
-      firedReactions: [],
+      firedSideEffects: [],
       error: `Entity "${targetChange.entity}" not found`,
     };
   }
@@ -178,7 +178,7 @@ function handleCreation(
     }
   }
 
-  return { success: true, mutations, firedReactions: [] };
+  return { success: true, mutations, firedSideEffects: [] };
 }
 
 function handleTargetChange(
@@ -294,16 +294,16 @@ function getStateField(
 function checkActorScope(
   spec: WebAppSpec,
   state: SimState,
-  usecase: Usecase,
+  operation: Operation,
   targetEntityType: string,
   targetInstanceId: string,
 ): string | null {
-  const scopeFields = usecase.target.scopeByActor;
+  const scopeFields = operation.target.scopeByActor;
   if (!scopeFields) return null;
 
-  const actor = spec.actors.find((a) => a.id === usecase.actor);
+  const actor = spec.usecases.actors.find((a) => a.id === operation.actor);
   if (!actor?.entity) {
-    return `Actor "${usecase.actor}" has no entity binding but usecase has scopeByActor`;
+    return `Actor "${operation.actor}" has no entity binding but operation has scopeByActor`;
   }
 
   const actorInstanceId = state.actorInstances[actor.id];
@@ -328,22 +328,22 @@ function checkActorScope(
 function resolveActorIdInputs(
   spec: WebAppSpec,
   state: SimState,
-  usecase: Usecase,
+  operation: Operation,
   input: Record<string, unknown>,
 ):
   | { input: Record<string, unknown>; schema: Record<string, string> }
   | { error: string } {
-  const hasActorIdField = Object.values(usecase.input).some(
+  const hasActorIdField = Object.values(operation.input).some(
     (t) => t === "actor.id",
   );
   if (!hasActorIdField) {
-    return { input, schema: usecase.input };
+    return { input, schema: operation.input };
   }
 
-  const actor = spec.actors.find((a) => a.id === usecase.actor);
+  const actor = spec.usecases.actors.find((a) => a.id === operation.actor);
   if (!actor?.entity) {
     return {
-      error: `Actor "${usecase.actor}" has no entity binding but usecase uses actor.id`,
+      error: `Actor "${operation.actor}" has no entity binding but operation uses actor.id`,
     };
   }
 
@@ -356,7 +356,7 @@ function resolveActorIdInputs(
 
   const resolvedInput = { ...input };
   const resolvedSchema: Record<string, string> = {};
-  for (const [key, type] of Object.entries(usecase.input)) {
+  for (const [key, type] of Object.entries(operation.input)) {
     if (type === "actor.id") {
       resolvedInput[key] = instanceId;
       resolvedSchema[key] = `${actor.entity}.id`;
@@ -368,14 +368,14 @@ function resolveActorIdInputs(
   return { input: resolvedInput, schema: resolvedSchema };
 }
 
-function collectReactions(
+function collectSideEffects(
   spec: WebAppSpec,
-  usecaseId: string,
-): FiredReaction[] {
-  return spec.reactions
-    .filter((r) => r.trigger.usecase === usecaseId)
-    .map((r) => ({
-      description: r.description,
-      notify: r.notify,
+  operationId: string,
+): FiredSideEffect[] {
+  return spec.usecases.sideEffects
+    .filter((se) => se.trigger.operation === operationId)
+    .map((se) => ({
+      description: se.description,
+      notify: se.notify,
     }));
 }

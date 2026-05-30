@@ -11,10 +11,10 @@ import { RelationList } from "@/components/domain/RelationList";
 import { TransitionList } from "@/components/domain/TransitionList";
 import { TransitionDetail } from "@/components/domain/TransitionDetail";
 import { ActorList } from "@/components/actors/ActorList";
-import { UsecaseList } from "@/components/usecases/UsecaseList";
-import { UsecaseDetail } from "@/components/usecases/UsecaseDetail";
+import { OperationList } from "@/components/operations/OperationList";
+import { OperationDetail } from "@/components/operations/OperationDetail";
 import { SpecList } from "@/components/specs/SpecList";
-import { ReactionList } from "@/components/reactions/ReactionList";
+import { SideEffectList } from "@/components/sideeffects/SideEffectList";
 import { ScenarioList } from "@/components/scenarios/ScenarioList";
 import { ScenarioDetail } from "@/components/scenarios/ScenarioDetail";
 import { ViewList } from "@/components/ui/ViewList";
@@ -32,10 +32,10 @@ function AppRoutes({ onUnload }: { onUnload: () => void }) {
         <Route path="transitions" element={<TransitionList />} />
         <Route path="transitions/:id" element={<TransitionDetail />} />
         <Route path="actors" element={<ActorList />} />
-        <Route path="usecases" element={<UsecaseList />} />
-        <Route path="usecases/:id" element={<UsecaseDetail />} />
+        <Route path="operations" element={<OperationList />} />
+        <Route path="operations/:id" element={<OperationDetail />} />
         <Route path="specs" element={<SpecList />} />
-        <Route path="reactions" element={<ReactionList />} />
+        <Route path="side-effects" element={<SideEffectList />} />
         <Route path="scenarios" element={<ScenarioList />} />
         <Route path="scenarios/:id" element={<ScenarioDetail />} />
         <Route path="views" element={<ViewList />} />

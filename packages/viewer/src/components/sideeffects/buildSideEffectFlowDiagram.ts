@@ -1,4 +1,4 @@
-import type { Reaction, NotificationTarget } from "@webapp-spec/types";
+import type { SideEffect, NotificationTarget } from "@webapp-spec/types";
 
 function escapeLabel(text: string): string {
   return text.replace(/"/g, "#quot;");
@@ -20,27 +20,27 @@ function notifyLabel(notify: NotificationTarget): string {
   return `external: ${notify.external}`;
 }
 
-export function buildReactionFlowDiagram(reactions: Reaction[]): string | null {
-  if (reactions.length === 0) return null;
+export function buildSideEffectFlowDiagram(sideEffects: SideEffect[]): string | null {
+  if (sideEffects.length === 0) return null;
 
   const lines = ["flowchart LR"];
   const clicks: string[] = [];
 
-  const usecaseIds = new Set<string>();
+  const operationIds = new Set<string>();
   const targetKeys = new Map<string, NotificationTarget>();
 
-  for (const r of reactions) {
-    usecaseIds.add(r.trigger.usecase);
-    const key = notifyKey(r.notify);
+  for (const se of sideEffects) {
+    operationIds.add(se.trigger.operation);
+    const key = notifyKey(se.notify);
     if (!targetKeys.has(key)) {
-      targetKeys.set(key, r.notify);
+      targetKeys.set(key, se.notify);
     }
   }
 
-  for (const ucId of usecaseIds) {
-    const nodeId = `uc_${sanitizeId(ucId)}`;
-    lines.push(`    ${nodeId}(["${escapeLabel(ucId)}"])`);
-    clicks.push(`    click ${nodeId} href "/usecases/${ucId}"`);
+  for (const opId of operationIds) {
+    const nodeId = `uc_${sanitizeId(opId)}`;
+    lines.push(`    ${nodeId}(["${escapeLabel(opId)}"])`);
+    clicks.push(`    click ${nodeId} href "/operations/${opId}"`);
   }
 
   for (const [key, notify] of targetKeys) {
@@ -51,10 +51,10 @@ export function buildReactionFlowDiagram(reactions: Reaction[]): string | null {
     }
   }
 
-  for (const r of reactions) {
-    const ucNode = `uc_${sanitizeId(r.trigger.usecase)}`;
-    const nNode = `n_${sanitizeId(notifyKey(r.notify))}`;
-    lines.push(`    ${ucNode} -->|"${escapeLabel(r.description)}"| ${nNode}`);
+  for (const se of sideEffects) {
+    const ucNode = `uc_${sanitizeId(se.trigger.operation)}`;
+    const nNode = `n_${sanitizeId(notifyKey(se.notify))}`;
+    lines.push(`    ${ucNode} -->|"${escapeLabel(se.description)}"| ${nNode}`);
   }
 
   lines.push(...clicks);

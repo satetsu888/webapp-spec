@@ -46,30 +46,32 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
       ],
     },
     specs: [],
-    actors: [
-      { id: "member", authState: { kind: "authenticated", roles: ["member"] } },
-    ],
-    usecases: [
-      {
-        id: "create-todo",
-        description: "TODOを作成する",
-        actor: "member",
-        target: { kind: "single", entity: "Todo" },
-        input: { title: "string" },
-        transition: "create-todo",
-        errors: [],
-      },
-      {
-        id: "complete-todo",
-        description: "TODOを完了にする",
-        actor: "member",
-        target: { kind: "single", entity: "Todo" },
-        input: { todoId: "Todo.id" },
-        transition: "complete-todo",
-        errors: [],
-      },
-    ],
-    reactions: [],
+    usecases: {
+      actors: [
+        { id: "member", authState: { kind: "authenticated", roles: ["member"] } },
+      ],
+      operations: [
+        {
+          id: "create-todo",
+          description: "TODOを作成する",
+          actor: "member",
+          target: { kind: "single", entity: "Todo" },
+          input: { title: "string" },
+          transition: "create-todo",
+          errors: [],
+        },
+        {
+          id: "complete-todo",
+          description: "TODOを完了にする",
+          actor: "member",
+          target: { kind: "single", entity: "Todo" },
+          input: { todoId: "Todo.id" },
+          transition: "complete-todo",
+          errors: [],
+        },
+      ],
+      sideEffects: [],
+    },
     scenarios: [
       {
         id: "manage-todos",
@@ -108,11 +110,11 @@ function minimalSpec(overrides?: Partial<WebAppSpec>): WebAppSpec {
           components: ["todo-selector", "todo-form"],
           actions: [
             {
-              usecase: "create-todo",
+              operation: "create-todo",
               inputFrom: { title: "todo-form.title" },
             },
             {
-              usecase: "complete-todo",
+              operation: "complete-todo",
               inputFrom: { todoId: "todo-selector.todoId" },
             },
           ],
@@ -148,9 +150,9 @@ describe("valid spec", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("passes with query usecase (no transition)", () => {
+  it("passes with query operation (no transition)", () => {
     const spec = minimalSpec();
-    spec.usecases.push({
+    spec.usecases.operations.push({
       id: "list-todos",
       description: "TODO一覧を表示する",
       actor: "member",
@@ -161,7 +163,7 @@ describe("valid spec", () => {
     spec.ui.views.push({
       id: "todo-list-view",
       components: ["todo-selector"],
-      actions: [{ usecase: "list-todos", inputFrom: {} }],
+      actions: [{ operation: "list-todos", inputFrom: {} }],
     });
     spec.scenarios[0].steps.push({ view: "todo-list-view", action: "list-todos", description: "TODO一覧を表示する" });
     const result = validate(spec);
@@ -219,39 +221,39 @@ describe("references", () => {
     expect(result.errors.some((e) => e.rule === "ref.state")).toBe(true);
   });
 
-  it("detects missing actor in usecase", () => {
+  it("detects missing actor in operation", () => {
     const spec = minimalSpec();
-    spec.usecases[0].actor = "nonexistent";
+    spec.usecases.operations[0].actor = "nonexistent";
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.actor")).toBe(true);
   });
 
-  it("detects missing transition in usecase", () => {
+  it("detects missing transition in operation", () => {
     const spec = minimalSpec();
-    spec.usecases[0].transition = "nonexistent";
+    spec.usecases.operations[0].transition = "nonexistent";
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.transition")).toBe(true);
   });
 
-  it("detects invalid field in usecase conditions", () => {
+  it("detects invalid field in operation conditions", () => {
     const spec = minimalSpec();
-    spec.usecases[0].conditions = [{ field: "nonexistent", equals: "foo" }];
+    spec.usecases.operations[0].conditions = [{ field: "nonexistent", equals: "foo" }];
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.field")).toBe(true);
   });
 
-  it("accepts valid field in usecase conditions", () => {
+  it("accepts valid field in operation conditions", () => {
     const spec = minimalSpec();
-    spec.usecases[0].conditions = [{ field: "status", equals: "active" }];
+    spec.usecases.operations[0].conditions = [{ field: "status", equals: "active" }];
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "ref.field")).toBe(false);
   });
 
-  it("detects missing usecase in scenario action", () => {
+  it("detects missing operation in scenario action", () => {
     const spec = minimalSpec();
     (spec.scenarios[0].steps[0] as { view: string; action: string }).action = "nonexistent";
     const result = validate(spec);
-    expect(result.errors.some((e) => e.rule === "ref.usecase")).toBe(true);
+    expect(result.errors.some((e) => e.rule === "ref.operation")).toBe(true);
   });
 
   it("detects missing view in scenario step", () => {
@@ -389,7 +391,7 @@ describe("transitions", () => {
   });
 });
 
-describe("usecases", () => {
+describe("operations", () => {
   it("detects transition target mismatch", () => {
     const spec = minimalSpec();
     spec.domain.entities.push({
@@ -399,24 +401,24 @@ describe("usecases", () => {
       states: [{ name: "active", field: "status", value: "active" }],
       traits: [],
     });
-    spec.usecases[0].target = { kind: "single", entity: "Project" };
+    spec.usecases.operations[0].target = { kind: "single", entity: "Project" };
     const result = validate(spec);
-    expect(result.errors.some((e) => e.rule === "usecase.transition-target")).toBe(true);
+    expect(result.errors.some((e) => e.rule === "operation.transition-target")).toBe(true);
   });
 
   it("warns on anonymous actor accessing personal resource", () => {
     const spec = minimalSpec();
-    spec.actors.push({ id: "anonymous", authState: { kind: "anonymous" } });
-    spec.usecases[0].actor = "anonymous";
+    spec.usecases.actors.push({ id: "anonymous", authState: { kind: "anonymous" } });
+    spec.usecases.operations[0].actor = "anonymous";
     const result = validate(spec);
-    expect(result.warnings.some((w) => w.rule === "usecase.anonymous-ownership")).toBe(true);
+    expect(result.warnings.some((w) => w.rule === "operation.anonymous-ownership")).toBe(true);
   });
 
   it("detects followUp cycle", () => {
     const spec = minimalSpec();
-    spec.usecases[0].followUps = [{ description: "self", usecase: "create-todo" }];
+    spec.usecases.operations[0].followUps = [{ description: "self", operation: "create-todo" }];
     const result = validate(spec);
-    expect(result.warnings.some((w) => w.rule === "usecase.followup-cycle")).toBe(true);
+    expect(result.warnings.some((w) => w.rule === "operation.followup-cycle")).toBe(true);
   });
 });
 
@@ -442,15 +444,15 @@ describe("ui", () => {
     expect(result.errors.some((e) => e.rule === "view.input-mapping")).toBe(true);
   });
 
-  it("detects unmapped usecase input", () => {
+  it("detects unmapped operation input", () => {
     const spec = minimalSpec();
     spec.ui.views[0].actions[0].inputFrom = {};
     const result = validate(spec);
-    expect(result.errors.some((e) => e.rule === "view.usecase-input")).toBe(true);
+    expect(result.errors.some((e) => e.rule === "view.operation-input")).toBe(true);
   });
 });
 
-describe("reactions", () => {
+describe("sideEffects", () => {
   it("detects trigger entity mismatch", () => {
     const spec = minimalSpec();
     spec.domain.entities.push({
@@ -460,16 +462,16 @@ describe("reactions", () => {
       states: [],
       traits: [],
     });
-    spec.reactions = [
+    spec.usecases.sideEffects = [
       {
-        trigger: { usecase: "complete-todo", entity: "User" },
+        trigger: { operation: "complete-todo", entity: "User" },
         when: [],
         notify: { external: "test-log" },
-        description: "test reaction",
+        description: "test side effect",
       },
     ];
     const result = validate(spec);
-    expect(result.errors.some((e) => e.rule === "reaction.entity")).toBe(true);
+    expect(result.errors.some((e) => e.rule === "sideeffect.entity")).toBe(true);
   });
 });
 
@@ -488,7 +490,7 @@ describe("unused", () => {
 
   it("warns on unused actor", () => {
     const spec = minimalSpec();
-    spec.actors.push({ id: "unused-actor", authState: { kind: "authenticated", roles: ["unused"] } });
+    spec.usecases.actors.push({ id: "unused-actor", authState: { kind: "authenticated", roles: ["unused"] } });
     const result = validate(spec);
     expect(result.warnings.some((w) => w.rule === "unused.actor")).toBe(true);
   });
@@ -497,8 +499,8 @@ describe("unused", () => {
 describe("scenarios", () => {
   it("warns on actor mismatch in scenario view step action", () => {
     const spec = minimalSpec();
-    spec.actors.push({ id: "admin", authState: { kind: "authenticated", roles: ["admin"] } });
-    spec.usecases.push({
+    spec.usecases.actors.push({ id: "admin", authState: { kind: "authenticated", roles: ["admin"] } });
+    spec.usecases.operations.push({
       id: "admin-action",
       description: "管理者操作",
       actor: "admin",
@@ -507,7 +509,7 @@ describe("scenarios", () => {
       transition: "complete-todo",
       errors: [],
     });
-    spec.ui.views[0].actions.push({ usecase: "admin-action", inputFrom: {} });
+    spec.ui.views[0].actions.push({ operation: "admin-action", inputFrom: {} });
     spec.scenarios[0].steps.push({ view: "todo-dashboard", action: "admin-action", description: "管理者操作" });
     const result = validate(spec);
     expect(result.warnings.some((w) => w.rule === "scenario.actor-mismatch")).toBe(true);
@@ -516,7 +518,7 @@ describe("scenarios", () => {
   it("detects view-action mismatch", () => {
     const spec = minimalSpec();
     spec.scenarios[0].steps.push({ view: "todo-dashboard", action: "create-todo", description: "TODO作成" });
-    spec.ui.views[0].actions = spec.ui.views[0].actions.filter((a) => a.usecase !== "create-todo");
+    spec.ui.views[0].actions = spec.ui.views[0].actions.filter((a) => a.operation !== "create-todo");
     const result = validate(spec);
     expect(result.errors.some((e) => e.rule === "scenario.view-action-mismatch")).toBe(true);
   });
@@ -525,14 +527,14 @@ describe("scenarios", () => {
 describe("actors", () => {
   it("warns when no anonymous actor is defined", () => {
     const spec = minimalSpec();
-    spec.actors = spec.actors.filter((a) => a.authState.kind !== "anonymous");
+    spec.usecases.actors = spec.usecases.actors.filter((a) => a.authState.kind !== "anonymous");
     const result = validate(spec);
     expect(result.warnings.some((w) => w.rule === "actor.no-anonymous")).toBe(true);
   });
 
   it("does not warn when anonymous actor exists", () => {
     const spec = minimalSpec();
-    spec.actors.push({ id: "anonymous", authState: { kind: "anonymous" } });
+    spec.usecases.actors.push({ id: "anonymous", authState: { kind: "anonymous" } });
     const result = validate(spec);
     expect(result.warnings.filter((w) => w.rule === "actor.no-anonymous")).toHaveLength(0);
   });

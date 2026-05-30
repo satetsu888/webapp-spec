@@ -8,7 +8,7 @@ export function ScenarioList() {
     <div>
       <h2 className="mb-4 text-lg font-bold">Scenarios</h2>
       <div className="space-y-6">
-        {spec.actors.map((actor) => {
+        {spec.usecases.actors.map((actor) => {
           const scenarios = spec.scenarios.filter((s) => s.actor === actor.id);
           if (scenarios.length === 0) return null;
           return (

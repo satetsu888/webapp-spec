@@ -5,9 +5,9 @@ import type {
   Relation,
   Transition,
   Actor,
-  Usecase,
+  Operation,
   Spec,
-  Reaction,
+  SideEffect,
   Scenario,
   Component,
   View,
@@ -20,15 +20,15 @@ export type SpecLookups = {
   relationMap: Map<string, Relation>;
   transitionMap: Map<string, Transition>;
   actorMap: Map<string, Actor>;
-  usecaseMap: Map<string, Usecase>;
+  operationMap: Map<string, Operation>;
   specMap: Map<string, Spec>;
   componentMap: Map<string, Component>;
   viewMap: Map<string, View>;
   scenarioMap: Map<string, Scenario>;
   relationsForEntity: (entityId: string) => Relation[];
   transitionsForEntity: (entityId: string) => Transition[];
-  usecasesByActor: (actorId: string) => Usecase[];
-  reactionsByUsecase: (usecaseId: string) => Reaction[];
+  operationsByActor: (actorId: string) => Operation[];
+  sideEffectsByOperation: (operationId: string) => SideEffect[];
   viewsForActor: (actorId: string) => View[];
   stateColorClass: (entityId: string, stateName: string) => string;
 };
@@ -50,8 +50,8 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
   const entityMap = new Map(spec.domain.entities.map((e) => [e.id, e]));
   const relationMap = new Map(spec.domain.relations.map((r) => [r.id, r]));
   const transitionMap = new Map(spec.domain.transitions.map((t) => [t.id, t]));
-  const actorMap = new Map(spec.actors.map((a) => [a.id, a]));
-  const usecaseMap = new Map(spec.usecases.map((u) => [u.id, u]));
+  const actorMap = new Map(spec.usecases.actors.map((a) => [a.id, a]));
+  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
   const specMap = new Map(spec.specs.map((s) => [s.id, s]));
   const componentMap = new Map(spec.ui.components.map((c) => [c.id, c]));
   const viewMap = new Map(spec.ui.views.map((v) => [v.id, v]));
@@ -75,18 +75,18 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     }
   }
 
-  const actorUsecases = new Map<string, Usecase[]>();
-  for (const u of spec.usecases) {
-    const list = actorUsecases.get(u.actor) ?? [];
+  const actorOperations = new Map<string, Operation[]>();
+  for (const u of spec.usecases.operations) {
+    const list = actorOperations.get(u.actor) ?? [];
     list.push(u);
-    actorUsecases.set(u.actor, list);
+    actorOperations.set(u.actor, list);
   }
 
-  const usecaseReactions = new Map<string, Reaction[]>();
-  for (const r of spec.reactions) {
-    const list = usecaseReactions.get(r.trigger.usecase) ?? [];
-    list.push(r);
-    usecaseReactions.set(r.trigger.usecase, list);
+  const operationSideEffects = new Map<string, SideEffect[]>();
+  for (const se of spec.usecases.sideEffects) {
+    const list = operationSideEffects.get(se.trigger.operation) ?? [];
+    list.push(se);
+    operationSideEffects.set(se.trigger.operation, list);
   }
 
   function collectViewIds(scenarioId: string, visited: Set<string>): Set<string> {
@@ -136,15 +136,15 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     relationMap,
     transitionMap,
     actorMap,
-    usecaseMap,
+    operationMap,
     specMap,
     componentMap,
     viewMap,
     scenarioMap,
     relationsForEntity: (id) => entityRelations.get(id) ?? [],
     transitionsForEntity: (id) => entityTransitions.get(id) ?? [],
-    usecasesByActor: (id) => actorUsecases.get(id) ?? [],
-    reactionsByUsecase: (id) => usecaseReactions.get(id) ?? [],
+    operationsByActor: (id) => actorOperations.get(id) ?? [],
+    sideEffectsByOperation: (id) => operationSideEffects.get(id) ?? [],
     viewsForActor: (id) => actorViews.get(id) ?? [],
     stateColorClass: (entityId, stateName) => {
       if (stateName === "_start") return "bg-gray-200 text-gray-600";

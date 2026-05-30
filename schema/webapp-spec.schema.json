@@ -3,7 +3,7 @@
   "$id": "https://webapp-spec.dev/schema/webapp-spec.schema.json",
   "title": "WebAppSpec",
   "type": "object",
-  "required": ["webappSpec", "name", "version", "domain", "specs", "actors", "usecases", "reactions", "scenarios", "ui"],
+  "required": ["webappSpec", "name", "version", "domain", "specs", "usecases", "scenarios", "ui"],
   "additionalProperties": false,
   "properties": {
     "webappSpec": { "type": "string", "description": "WebAppSpec format version" },
@@ -11,9 +11,7 @@
     "version": { "type": "string", "description": "Application spec version" },
     "domain": { "$ref": "#/$defs/Domain" },
     "specs": { "type": "array", "items": { "$ref": "#/$defs/Spec" } },
-    "actors": { "type": "array", "items": { "$ref": "#/$defs/Actor" } },
-    "usecases": { "type": "array", "items": { "$ref": "#/$defs/Usecase" } },
-    "reactions": { "type": "array", "items": { "$ref": "#/$defs/Reaction" } },
+    "usecases": { "$ref": "#/$defs/Usecases" },
     "scenarios": { "type": "array", "items": { "$ref": "#/$defs/Scenario" } },
     "ui": { "$ref": "#/$defs/UI" },
     "fixtures": { "type": "array", "items": { "$ref": "#/$defs/Fixture" } }
@@ -347,7 +345,17 @@
         }
       ]
     },
-    "Usecase": {
+    "Usecases": {
+      "type": "object",
+      "required": ["actors", "operations", "sideEffects"],
+      "additionalProperties": false,
+      "properties": {
+        "actors": { "type": "array", "items": { "$ref": "#/$defs/Actor" } },
+        "operations": { "type": "array", "items": { "$ref": "#/$defs/Operation" } },
+        "sideEffects": { "type": "array", "items": { "$ref": "#/$defs/SideEffect" } }
+      }
+    },
+    "Operation": {
       "type": "object",
       "required": ["id", "description", "actor", "target", "input", "errors"],
       "additionalProperties": false,
@@ -360,7 +368,7 @@
         "transition": { "type": "string" },
         "conditions": { "type": "array", "items": { "$ref": "#/$defs/Condition" } },
         "errors": { "type": "array", "items": { "$ref": "#/$defs/ErrorCase" } },
-        "followUps": { "type": "array", "items": { "$ref": "#/$defs/FollowUpUsecase" } }
+        "followUps": { "type": "array", "items": { "$ref": "#/$defs/FollowUpOperation" } }
       }
     },
     "Target": {
@@ -388,13 +396,13 @@
         }
       ]
     },
-    "FollowUpUsecase": {
+    "FollowUpOperation": {
       "type": "object",
-      "required": ["description", "usecase"],
+      "required": ["description", "operation"],
       "additionalProperties": false,
       "properties": {
         "description": { "type": "string" },
-        "usecase": { "type": "string" }
+        "operation": { "type": "string" }
       }
     },
     "ErrorCase": {
@@ -406,17 +414,17 @@
         "description": { "type": "string" }
       }
     },
-    "Reaction": {
+    "SideEffect": {
       "type": "object",
       "required": ["trigger", "when", "notify", "description"],
       "additionalProperties": false,
       "properties": {
         "trigger": {
           "type": "object",
-          "required": ["usecase", "entity"],
+          "required": ["operation", "entity"],
           "additionalProperties": false,
           "properties": {
-            "usecase": { "type": "string" },
+            "operation": { "type": "string" },
             "entity": { "type": "string" }
           }
         },
@@ -486,10 +494,10 @@
     },
     "BackgroundStep": {
       "type": "object",
-      "required": ["usecase", "actor", "description"],
+      "required": ["operation", "actor", "description"],
       "additionalProperties": false,
       "properties": {
-        "usecase": { "type": "string" },
+        "operation": { "type": "string" },
         "actor": { "type": "string" },
         "description": { "type": "string" }
       }
@@ -560,10 +568,10 @@
     },
     "ViewAction": {
       "type": "object",
-      "required": ["usecase", "inputFrom"],
+      "required": ["operation", "inputFrom"],
       "additionalProperties": false,
       "properties": {
-        "usecase": { "type": "string" },
+        "operation": { "type": "string" },
         "inputFrom": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     },

@@ -3,7 +3,7 @@ import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
-import { buildReactionFlowDiagram } from "./buildReactionFlowDiagram";
+import { buildSideEffectFlowDiagram } from "./buildSideEffectFlowDiagram";
 import type { NotificationTarget } from "@webapp-spec/types";
 
 function formatTarget(target: NotificationTarget): { label: string; variant: "blue" | "green" | "purple" } {
@@ -12,34 +12,34 @@ function formatTarget(target: NotificationTarget): { label: string; variant: "bl
   return { label: `external: ${target.external}`, variant: "purple" };
 }
 
-export function ReactionList() {
+export function SideEffectList() {
   const { spec } = useSpec();
 
-  if (spec.reactions.length === 0) {
+  if (spec.usecases.sideEffects.length === 0) {
     return (
       <div>
-        <h2 className="mb-4 text-lg font-bold">Reactions</h2>
-        <p className="text-sm text-gray-500">No reactions defined</p>
+        <h2 className="mb-4 text-lg font-bold">Side Effects</h2>
+        <p className="text-sm text-gray-500">No side effects defined</p>
       </div>
     );
   }
 
   const diagram = useMemo(
-    () => buildReactionFlowDiagram(spec.reactions),
-    [spec.reactions],
+    () => buildSideEffectFlowDiagram(spec.usecases.sideEffects),
+    [spec.usecases.sideEffects],
   );
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold">Reactions</h2>
+      <h2 className="mb-4 text-lg font-bold">Side Effects</h2>
       {diagram && (
         <div className="mb-4">
           <MermaidDiagram chart={diagram} />
         </div>
       )}
       <div className="space-y-2">
-        {spec.reactions.map((r, i) => {
-          const { label, variant } = formatTarget(r.notify);
+        {spec.usecases.sideEffects.map((se, i) => {
+          const { label, variant } = formatTarget(se.notify);
           return (
             <div
               key={i}
@@ -47,13 +47,13 @@ export function ReactionList() {
             >
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">When</span>
-                <RefLink to={`/usecases/${r.trigger.usecase}`}>
-                  {r.trigger.usecase}
+                <RefLink to={`/operations/${se.trigger.operation}`}>
+                  {se.trigger.operation}
                 </RefLink>
                 <span className="text-gray-400">&rarr;</span>
                 <Badge variant={variant}>{label}</Badge>
               </div>
-              <p className="mt-1 text-sm text-gray-600">{r.description}</p>
+              <p className="mt-1 text-sm text-gray-600">{se.description}</p>
             </div>
           );
         })}

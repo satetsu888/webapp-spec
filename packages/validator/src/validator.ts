@@ -3,11 +3,11 @@ import { compareSemver } from "./semver.js";
 import { checkReferences } from "./rules/references.js";
 import { checkUniqueness } from "./rules/uniqueness.js";
 import { checkTransitions } from "./rules/transitions.js";
-import { checkUsecases } from "./rules/usecases.js";
+import { checkOperations } from "./rules/operations.js";
 import { checkSpecs } from "./rules/specs.js";
 import { checkScenarios } from "./rules/scenarios.js";
 import { checkUI } from "./rules/ui.js";
-import { checkReactions } from "./rules/reactions.js";
+import { checkSideEffects } from "./rules/sideeffects.js";
 import { checkUnused } from "./rules/unused.js";
 import { checkEntities } from "./rules/entities.js";
 import { checkActors } from "./rules/actors.js";
@@ -41,11 +41,11 @@ const allRules: VersionedRule[] = [
   { fn: checkUniqueness, minVersion: "0.1.0" },
   { fn: checkReferences, minVersion: "0.1.0" },
   { fn: checkTransitions, minVersion: "0.1.0" },
-  { fn: checkUsecases, minVersion: "0.1.0" },
+  { fn: checkOperations, minVersion: "0.1.0" },
   { fn: checkSpecs, minVersion: "0.1.0" },
   { fn: checkScenarios, minVersion: "0.1.0" },
   { fn: checkUI, minVersion: "0.1.0" },
-  { fn: checkReactions, minVersion: "0.1.0" },
+  { fn: checkSideEffects, minVersion: "0.1.0" },
   { fn: checkUnused, minVersion: "0.1.0" },
   { fn: checkEntities, minVersion: "0.1.0" },
   { fn: checkActors, minVersion: "0.1.0" },

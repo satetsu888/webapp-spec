@@ -6,12 +6,12 @@ function isViewStep(step: unknown): step is ViewStep {
 }
 
 function isBackgroundStep(step: unknown): step is BackgroundStep {
-  return typeof step === "object" && step !== null && "usecase" in step;
+  return typeof step === "object" && step !== null && "operation" in step;
 }
 
 export function checkScenarios(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const usecaseMap = new Map(spec.usecases.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
   const scenarioMap = new Map(spec.scenarios.map((s) => [s.id, s]));
   const viewMap = new Map(spec.ui.views.map((v) => [v.id, v]));
 
@@ -33,7 +33,7 @@ export function checkScenarios(spec: WebAppSpec): ValidationIssue[] {
         }
       } else if (isViewStep(step)) {
         if (step.action) {
-          const uc = usecaseMap.get(step.action);
+          const uc = operationMap.get(step.action);
           if (uc && uc.actor !== scenario.actor) {
             issues.push({
               severity: "warning",
@@ -44,7 +44,7 @@ export function checkScenarios(spec: WebAppSpec): ValidationIssue[] {
           }
 
           const view = viewMap.get(step.view);
-          if (view && !view.actions.some((a) => a.usecase === step.action)) {
+          if (view && !view.actions.some((a) => a.operation === step.action)) {
             issues.push({
               severity: "error",
               rule: "scenario.view-action-mismatch",

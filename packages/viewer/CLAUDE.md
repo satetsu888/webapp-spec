@@ -1,6 +1,6 @@
 # @webapp-spec/viewer
 
-WebAppSpec のブラウザベースビューア。仕様の閲覧と Usecase のシミュレーション実行ができる。
+WebAppSpec のブラウザベースビューア。仕様の閲覧と Operation のシミュレーション実行ができる。
 
 ## コマンド
 
@@ -27,7 +27,7 @@ src/
     useSpec.tsx            # spec の読み込み・バリデーション
     useSimulation.tsx      # シミュレーションの状態管理
   engine/
-    executor.ts            # Usecase 実行ロジック（状態遷移の適用）
+    executor.ts            # Operation 実行ロジック（状態遷移の適用）
     store.ts               # シミュレーション用の Entity インスタンスストア
     types.ts               # ランタイム型定義（SimulationState 等）
   components/
@@ -36,9 +36,9 @@ src/
     domain/                # Entity, Relation, Transition の詳細表示 + Mermaid 図
     specs/                 # Spec 一覧
     actors/                # Actor 一覧
-    usecases/              # Usecase 一覧・詳細
+    operations/            # Operation 一覧・詳細
     scenarios/             # Scenario 一覧・詳細
-    reactions/             # Reaction 一覧
+    sideeffects/           # SideEffect 一覧
     ui/                    # View 一覧・詳細
     simulation/            # シミュレーション UI（Actor/Action 選択、入力フォーム、実行結果）
     shared/                # 共通コンポーネント（Badge, MermaidDiagram, RefLink, StateArrow, StateTag）
@@ -55,9 +55,9 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 - `/domain/transitions`, `/domain/transitions/:id` — Transition 一覧・詳細
 - `/specs` — Spec 一覧
 - `/actors` — Actor 一覧
-- `/usecases`, `/usecases/:id` — Usecase 一覧・詳細
+- `/operations`, `/operations/:id` — Operation 一覧・詳細
 - `/scenarios`, `/scenarios/:id` — Scenario 一覧・詳細
-- `/reactions` — Reaction 一覧
+- `/side-effects` — SideEffect 一覧
 - `/ui/views`, `/ui/views/:id` — View 一覧・詳細
 - `/simulation` — シミュレーション
 
@@ -73,9 +73,9 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 | EntityDetail | `buildStateDiagram` | stateDiagram-v2 | Entity の全状態と Transition による遷移 |
 | RelationList | `buildErDiagram` | erDiagram | Entity 間のリレーション |
 | TransitionDetail | `buildTransitionDiagram` | stateDiagram-v2 | 単一 Transition の状態変化（Entity ごとにサブグラフ） |
-| UsecaseDetail | `buildUsecaseImpactDiagram` | flowchart LR | Actor → Usecase → 状態変化 / Reaction / Follow-up |
+| OperationDetail | `buildOperationImpactDiagram` | flowchart LR | Actor → Operation → 状態変化 / SideEffect / Follow-up |
 | ScenarioDetail | `buildScenarioFlowDiagram` | flowchart TD | Scenario のステップフロー |
-| ReactionList | `buildReactionFlowDiagram` | flowchart LR | 全 Reaction の Usecase → 通知先ネットワーク |
+| SideEffectList | `buildSideEffectFlowDiagram` | flowchart LR | 全 SideEffect の Operation → 通知先ネットワーク |
 | ViewDetail | `buildViewCompositionDiagram` | flowchart LR | View の Component 構成 |
 
 ### ノード形状ルール
@@ -85,11 +85,11 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 | 概念 | 形状 | Mermaid 構文 |
 |------|------|-------------|
 | Actor | 人型アイコン | `@{ shape: icon, icon: "spec:actor", label: "..." }` |
-| Usecase | スタジアム（丸角） | `(["..."])` |
+| Operation | スタジアム（丸角） | `(["..."])` |
 | Entity / 状態変化 | 矩形 | `["..."]` |
 | Component | 矩形 | `["..."]` |
 | Scenario 参照 | 六角形 | `{{"..."}}` |
-| Reaction | スタジアム + 破線接続 | `(["..."])` + `-.->` |
+| SideEffect | スタジアム + 破線接続 | `(["..."])` + `-.->` |
 | View / Variant | subgraph | コンテナとして使用 |
 
 ### 共通実装ルール
@@ -101,11 +101,11 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 
 ## シミュレーションエンジン
 
-Fixture データを初期状態として読み込み、Actor を選択して Usecase を実行する。`engine/executor.ts` が Transition の状態遷移を適用し、`engine/store.ts` が Entity インスタンスを管理する。
+Fixture データを初期状態として読み込み、Actor を選択して Operation を実行する。`engine/executor.ts` が Transition の状態遷移を適用し、`engine/store.ts` が Entity インスタンスを管理する。
 
 実行フロー:
 1. Fixture 選択 → インスタンスストア初期化
 2. Actor 選択 → Actor にバインドされた Entity インスタンスを選択
-3. 実行可能な Usecase 一覧を表示
-4. Usecase 選択 → input フォーム表示
+3. 実行可能な Operation 一覧を表示
+4. Operation 選択 → input フォーム表示
 5. 実行 → Transition 適用 → ストア更新 → 結果表示

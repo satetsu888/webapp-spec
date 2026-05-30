@@ -12,7 +12,7 @@ export function buildViewCompositionDiagram(
   view: View,
   componentMap: Map<string, Component>,
 ): string | null {
-  const edges: { componentId: string; usecaseId: string; params: string[] }[] =
+  const edges: { componentId: string; operationId: string; params: string[] }[] =
     [];
 
   for (const action of view.actions) {
@@ -26,14 +26,14 @@ export function buildViewCompositionDiagram(
       grouped.set(componentId, list);
     }
     for (const [componentId, params] of grouped) {
-      edges.push({ componentId, usecaseId: action.usecase, params });
+      edges.push({ componentId, operationId: action.operation, params });
     }
   }
 
   if (edges.length === 0) return null;
 
   const componentIds = new Set(edges.map((e) => e.componentId));
-  const usecaseIds = new Set(edges.map((e) => e.usecaseId));
+  const operationIds = new Set(edges.map((e) => e.operationId));
 
   const lines = ["flowchart LR"];
 
@@ -43,20 +43,20 @@ export function buildViewCompositionDiagram(
     lines.push(`    c_${sanitizeId(cid)}["${escapeLabel(cid)}\\n${escapeLabel(label)}"]`);
   }
 
-  for (const uid of usecaseIds) {
+  for (const uid of operationIds) {
     lines.push(`    u_${sanitizeId(uid)}(["${escapeLabel(uid)}"])`);
   }
 
-  for (const { componentId, usecaseId, params } of edges) {
+  for (const { componentId, operationId, params } of edges) {
     const cNode = `c_${sanitizeId(componentId)}`;
-    const uNode = `u_${sanitizeId(usecaseId)}`;
+    const uNode = `u_${sanitizeId(operationId)}`;
     const label = params.join(", ");
     lines.push(`    ${cNode} -- "${escapeLabel(label)}" --> ${uNode}`);
   }
 
-  for (const uid of usecaseIds) {
+  for (const uid of operationIds) {
     lines.push(
-      `    click u_${sanitizeId(uid)} href "/usecases/${uid}"`,
+      `    click u_${sanitizeId(uid)} href "/operations/${uid}"`,
     );
   }
 

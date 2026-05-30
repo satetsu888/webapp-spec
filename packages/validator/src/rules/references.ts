@@ -65,8 +65,8 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const entities = entityIds(spec);
   const transitionIds = new Set(spec.domain.transitions.map((t) => t.id));
-  const actorIds = new Set(spec.actors.map((a) => a.id));
-  const usecaseIds = new Set(spec.usecases.map((u) => u.id));
+  const actorIds = new Set(spec.usecases.actors.map((a) => a.id));
+  const operationIds = new Set(spec.usecases.operations.map((u) => u.id));
   const relationIds = new Set(spec.domain.relations.map((r) => r.id));
   const componentIds = new Set(spec.ui.components.map((c) => c.id));
   const scenarioIds = new Set(spec.scenarios.map((s) => s.id));
@@ -173,49 +173,49 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
     }
   }
 
-  // Actor refs from usecases
-  for (let i = 0; i < spec.usecases.length; i++) {
-    const uc = spec.usecases[i];
-    if (!actorIds.has(uc.actor)) {
-      issues.push({ severity: "error", rule: "ref.actor", message: `Usecase "${uc.id}" references undefined actor "${uc.actor}"`, path: `usecases[${i}].actor` });
+  // Actor refs from operations
+  for (let i = 0; i < spec.usecases.operations.length; i++) {
+    const op = spec.usecases.operations[i];
+    if (!actorIds.has(op.actor)) {
+      issues.push({ severity: "error", rule: "ref.actor", message: `Operation "${op.id}" references undefined actor "${op.actor}"`, path: `usecases.operations[${i}].actor` });
     }
-    if (!entities.has(uc.target.entity)) {
-      issues.push({ severity: "error", rule: "ref.entity", message: `Usecase "${uc.id}" references undefined target entity "${uc.target.entity}"`, path: `usecases[${i}].target.entity` });
-    } else if (uc.target.kind === "collection") {
-      const entity = entityById(spec, uc.target.entity)!;
+    if (!entities.has(op.target.entity)) {
+      issues.push({ severity: "error", rule: "ref.entity", message: `Operation "${op.id}" references undefined target entity "${op.target.entity}"`, path: `usecases.operations[${i}].target.entity` });
+    } else if (op.target.kind === "collection") {
+      const entity = entityById(spec, op.target.entity)!;
       const validNames = stateOrTraitNames(entity);
-      for (const m of uc.target.matching) {
+      for (const m of op.target.matching) {
         if (!validNames.has(m)) {
-          issues.push({ severity: "error", rule: "ref.state-trait", message: `Usecase "${uc.id}" matching "${m}" is not defined on Entity "${uc.target.entity}"`, path: `usecases[${i}].target.matching` });
+          issues.push({ severity: "error", rule: "ref.state-trait", message: `Operation "${op.id}" matching "${m}" is not defined on Entity "${op.target.entity}"`, path: `usecases.operations[${i}].target.matching` });
         }
       }
     }
-    if (uc.transition && !transitionIds.has(uc.transition)) {
-      issues.push({ severity: "error", rule: "ref.transition", message: `Usecase "${uc.id}" references undefined transition "${uc.transition}"`, path: `usecases[${i}].transition` });
+    if (op.transition && !transitionIds.has(op.transition)) {
+      issues.push({ severity: "error", rule: "ref.transition", message: `Operation "${op.id}" references undefined transition "${op.transition}"`, path: `usecases.operations[${i}].transition` });
     }
-    if (uc.conditions) {
-      const contextEntity = entityById(spec, uc.target.entity);
-      for (let j = 0; j < uc.conditions.length; j++) {
-        issues.push(...checkConditionRefs(uc.conditions[j], entities, spec, `usecases[${i}].conditions[${j}]`, contextEntity));
+    if (op.conditions) {
+      const contextEntity = entityById(spec, op.target.entity);
+      for (let j = 0; j < op.conditions.length; j++) {
+        issues.push(...checkConditionRefs(op.conditions[j], entities, spec, `usecases.operations[${i}].conditions[${j}]`, contextEntity));
       }
     }
-    if (uc.followUps) {
-      for (let j = 0; j < uc.followUps.length; j++) {
-        if (!usecaseIds.has(uc.followUps[j].usecase)) {
-          issues.push({ severity: "error", rule: "ref.usecase", message: `Usecase "${uc.id}" followUp references undefined usecase "${uc.followUps[j].usecase}"`, path: `usecases[${i}].followUps[${j}]` });
+    if (op.followUps) {
+      for (let j = 0; j < op.followUps.length; j++) {
+        if (!operationIds.has(op.followUps[j].operation)) {
+          issues.push({ severity: "error", rule: "ref.operation", message: `Operation "${op.id}" followUp references undefined operation "${op.followUps[j].operation}"`, path: `usecases.operations[${i}].followUps[${j}]` });
         }
       }
     }
   }
 
-  // Reaction refs
-  for (let i = 0; i < spec.reactions.length; i++) {
-    const r = spec.reactions[i];
-    if (!usecaseIds.has(r.trigger.usecase)) {
-      issues.push({ severity: "error", rule: "ref.usecase", message: `Reaction trigger references undefined usecase "${r.trigger.usecase}"`, path: `reactions[${i}].trigger.usecase` });
+  // SideEffect refs
+  for (let i = 0; i < spec.usecases.sideEffects.length; i++) {
+    const se = spec.usecases.sideEffects[i];
+    if (!operationIds.has(se.trigger.operation)) {
+      issues.push({ severity: "error", rule: "ref.operation", message: `SideEffect trigger references undefined operation "${se.trigger.operation}"`, path: `usecases.sideEffects[${i}].trigger.operation` });
     }
-    if (!entities.has(r.trigger.entity)) {
-      issues.push({ severity: "error", rule: "ref.entity", message: `Reaction trigger references undefined entity "${r.trigger.entity}"`, path: `reactions[${i}].trigger.entity` });
+    if (!entities.has(se.trigger.entity)) {
+      issues.push({ severity: "error", rule: "ref.entity", message: `SideEffect trigger references undefined entity "${se.trigger.entity}"`, path: `usecases.sideEffects[${i}].trigger.entity` });
     }
   }
 
@@ -235,12 +235,12 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
         if (!viewIds.has(step.view)) {
           issues.push({ severity: "error", rule: "ref.view", message: `Scenario "${s.id}" references undefined view "${step.view}"`, path: `scenarios[${i}].steps[${k}]` });
         }
-        if (step.action && !usecaseIds.has(step.action)) {
-          issues.push({ severity: "error", rule: "ref.usecase", message: `Scenario "${s.id}" references undefined usecase "${step.action}"`, path: `scenarios[${i}].steps[${k}]` });
+        if (step.action && !operationIds.has(step.action)) {
+          issues.push({ severity: "error", rule: "ref.operation", message: `Scenario "${s.id}" references undefined operation "${step.action}"`, path: `scenarios[${i}].steps[${k}]` });
         }
       } else {
-        if (!usecaseIds.has(step.usecase)) {
-          issues.push({ severity: "error", rule: "ref.usecase", message: `Scenario "${s.id}" references undefined usecase "${step.usecase}"`, path: `scenarios[${i}].steps[${k}]` });
+        if (!operationIds.has(step.operation)) {
+          issues.push({ severity: "error", rule: "ref.operation", message: `Scenario "${s.id}" references undefined operation "${step.operation}"`, path: `scenarios[${i}].steps[${k}]` });
         }
         if (!actorIds.has(step.actor)) {
           issues.push({ severity: "error", rule: "ref.actor", message: `Scenario "${s.id}" background step references undefined actor "${step.actor}"`, path: `scenarios[${i}].steps[${k}]` });
@@ -293,8 +293,8 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
     }
     for (let j = 0; j < view.actions.length; j++) {
       const action = view.actions[j];
-      if (!usecaseIds.has(action.usecase)) {
-        issues.push({ severity: "error", rule: "ref.usecase", message: `View "${view.id}" references undefined usecase "${action.usecase}"`, path: `ui.views[${i}].actions[${j}]` });
+      if (!operationIds.has(action.operation)) {
+        issues.push({ severity: "error", rule: "ref.operation", message: `View "${view.id}" references undefined operation "${action.operation}"`, path: `ui.views[${i}].actions[${j}]` });
       }
     }
   }

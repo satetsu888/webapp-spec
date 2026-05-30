@@ -90,8 +90,8 @@ export function ViewDetail() {
                 key={i}
                 className="rounded border border-gray-100 bg-white p-3 text-sm"
               >
-                <RefLink to={`/usecases/${a.usecase}`}>
-                  {a.usecase}
+                <RefLink to={`/operations/${a.operation}`}>
+                  {a.operation}
                 </RefLink>
                 <div className="mt-1 space-y-0.5 text-xs text-gray-500">
                   {Object.entries(a.inputFrom).map(([key, from]) => (

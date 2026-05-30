@@ -50,7 +50,7 @@ function buildFlowFromSteps(
         allIds.push(id);
         lines.push(`        ${id}["${escapeLabel(step.description)}"]`);
         if (step.action) {
-          clicks.push(`    click ${id} href "/usecases/${step.action}"`);
+          clicks.push(`    click ${id} href "/operations/${step.action}"`);
         }
       }
       lines.push(`    end`);
@@ -60,7 +60,7 @@ function buildFlowFromSteps(
       allIds.push(id);
       const label = `${group.step.actor}: ${group.step.description}`;
       lines.push(`    ${id}(["${escapeLabel(label)}"])`);
-      clicks.push(`    click ${id} href "/usecases/${group.step.usecase}"`);
+      clicks.push(`    click ${id} href "/operations/${group.step.operation}"`);
     } else {
       const id = `${idPrefix}s${group.index}`;
       allIds.push(id);

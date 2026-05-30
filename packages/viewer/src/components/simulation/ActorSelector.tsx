@@ -12,7 +12,7 @@ export function ActorSelector() {
         Select Actor
       </h3>
       <div className="flex flex-wrap gap-2">
-        {spec.actors.map((a) => (
+        {spec.usecases.actors.map((a) => (
           <button
             key={a.id}
             onClick={() =>

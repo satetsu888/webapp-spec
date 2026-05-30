@@ -51,10 +51,11 @@ cd packages/viewer && npm run dev
 - **Domain** — entities, relations, transitions（世界の構造的事実）
 - **Specs** — ビジネスルール（プラン制限等の条件付き制約）
 - **Actors** — 認証状態で定義（human + 外部システム）
-- **Usecases** — ドメイン操作（エンドポイントではない）。followUps で外部システム連携
-- **Reactions** — Usecase 実行後の副作用（通知、ログ、webhook）
+- **Usecases** — 振る舞い層（actors / operations / sideEffects をグループ化）
+- **Operations** — ドメイン操作（エンドポイントではない）。followUps で外部システム連携
+- **SideEffects** — Operation 実行後の副作用（通知、ログ、webhook）
 - **Scenarios** — View ベースのユーザーシナリオ
-- **UI** — Components（データ取得 + 入力 + 変換 + 出力）と Views（配置 + Usecase 接続）
+- **UI** — Components（データ取得 + 入力 + 変換 + 出力）と Views（配置 + Operation 接続）
 
 ## 擬似状態 `_start` / `_end`
 

@@ -58,7 +58,7 @@ export function ScenarioDetail() {
                   {step.action && (
                     <>
                       <span className="text-gray-400">&rarr;</span>
-                      <RefLink to={`/usecases/${step.action}`}>
+                      <RefLink to={`/operations/${step.action}`}>
                         {step.action}
                       </RefLink>
                     </>
@@ -70,8 +70,8 @@ export function ScenarioDetail() {
               ) : (
                 <>
                   <Badge variant="gray">background</Badge>
-                  <RefLink to={`/usecases/${step.usecase}`}>
-                    {step.usecase}
+                  <RefLink to={`/operations/${step.operation}`}>
+                    {step.operation}
                   </RefLink>
                   <Badge variant="green">{step.actor}</Badge>
                   {step.description && (

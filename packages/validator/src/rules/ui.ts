@@ -4,7 +4,7 @@ import type { ValidationIssue } from "../validator.js";
 export function checkUI(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const componentMap = new Map(spec.ui.components.map((c) => [c.id, c]));
-  const usecaseMap = new Map(spec.usecases.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
 
   // Component internal consistency
   for (let i = 0; i < spec.ui.components.length; i++) {
@@ -50,7 +50,7 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
 
     for (let j = 0; j < view.actions.length; j++) {
       const action = view.actions[j];
-      const uc = usecaseMap.get(action.usecase);
+      const uc = operationMap.get(action.operation);
 
       for (const [ucInput, source] of Object.entries(action.inputFrom)) {
         // Validate "componentId.outputName" format
@@ -95,8 +95,8 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
         if (uc && !(ucInput in uc.input)) {
           issues.push({
             severity: "error",
-            rule: "view.usecase-input",
-            message: `View "${view.id}" inputFrom key "${ucInput}" is not defined in Usecase "${action.usecase}" input`,
+            rule: "view.operation-input",
+            message: `View "${view.id}" inputFrom key "${ucInput}" is not defined in Operation "${action.operation}" input`,
             path: `ui.views[${i}].actions[${j}].inputFrom`,
           });
         }
@@ -109,8 +109,8 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           if (!(inputKey in action.inputFrom)) {
             issues.push({
               severity: "error",
-              rule: "view.usecase-input",
-              message: `View "${view.id}" does not map Usecase "${action.usecase}" input "${inputKey}"`,
+              rule: "view.operation-input",
+              message: `View "${view.id}" does not map Operation "${action.operation}" input "${inputKey}"`,
               path: `ui.views[${i}].actions[${j}]`,
             });
           }

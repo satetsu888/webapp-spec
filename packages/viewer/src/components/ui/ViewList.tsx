@@ -5,14 +5,14 @@ import { Badge } from "@/components/shared/Badge";
 import type { View } from "@webapp-spec/types";
 
 export function ViewList() {
-  const { spec, usecaseMap } = useSpec();
+  const { spec, operationMap } = useSpec();
 
   const viewsByActor = useMemo(() => {
     const groups = new Map<string, View[]>();
     for (const view of spec.ui.views) {
       const actors = new Set<string>();
       for (const action of view.actions) {
-        const uc = usecaseMap.get(action.usecase);
+        const uc = operationMap.get(action.operation);
         if (uc) actors.add(uc.actor);
       }
       if (actors.size === 0) actors.add("_none");
@@ -23,13 +23,13 @@ export function ViewList() {
       }
     }
     return groups;
-  }, [spec, usecaseMap]);
+  }, [spec, operationMap]);
 
   return (
     <div>
       <h2 className="mb-4 text-lg font-bold">Views</h2>
       <div className="space-y-6">
-        {spec.actors.map((actor) => {
+        {spec.usecases.actors.map((actor) => {
           const views = viewsByActor.get(actor.id);
           if (!views || views.length === 0) return null;
           return (

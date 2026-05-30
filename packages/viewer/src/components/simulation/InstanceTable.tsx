@@ -11,7 +11,7 @@ export function InstanceTable() {
   if (entityTypes.length === 0) {
     return (
       <p className="text-sm text-gray-500">
-        No entity instances yet. Execute a creation usecase to get started.
+        No entity instances yet. Execute a creation operation to get started.
       </p>
     );
   }

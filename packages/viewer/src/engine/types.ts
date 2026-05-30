@@ -18,16 +18,16 @@ export type Mutation =
     }
   | { kind: "deleted"; entity: string; instanceId: string };
 
-export type FiredReaction = {
+export type FiredSideEffect = {
   description: string;
   notify: NotificationTarget;
 };
 
 export type ExecutionResult = {
   success: boolean;
-  usecaseId: string;
+  operationId: string;
   mutations: Mutation[];
-  firedReactions: FiredReaction[];
+  firedSideEffects: FiredSideEffect[];
   error?: string;
 };
 

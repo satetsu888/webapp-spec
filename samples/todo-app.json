@@ -278,230 +278,6 @@
     ]
   },
   "specs": [],
-  "actors": [
-    {
-      "id": "anonymous",
-      "authState": {
-        "kind": "anonymous"
-      }
-    },
-    {
-      "id": "member",
-      "authState": {
-        "kind": "authenticated",
-        "roles": [
-          "member"
-        ]
-      },
-      "authMethods": [
-        { "kind": "email-password" }
-      ],
-      "entity": "User"
-    },
-    {
-      "id": "system",
-      "authState": {
-        "kind": "authenticated",
-        "roles": [
-          "system"
-        ]
-      }
-    }
-  ],
-  "usecases": [
-    {
-      "id": "register-user",
-      "description": "新しいユーザーを登録する",
-      "actor": "anonymous",
-      "target": {
-        "kind": "single",
-        "entity": "User"
-      },
-      "input": {
-        "name": "string",
-        "email": "string",
-        "password": "string"
-      },
-      "transition": "register-user",
-      "errors": [
-        {
-          "when": "email_taken",
-          "description": "すでに登録済みのメールアドレス"
-        }
-      ]
-    },
-    {
-      "id": "login",
-      "description": "メールアドレスとパスワードでログインする",
-      "actor": "anonymous",
-      "target": {
-        "kind": "single",
-        "entity": "User"
-      },
-      "input": {
-        "email": "string",
-        "password": "string"
-      },
-      "errors": [
-        {
-          "when": "invalid_credentials",
-          "description": "メールアドレスまたはパスワードが正しくない"
-        },
-        {
-          "when": "user_deactivated",
-          "description": "退会済みのアカウント"
-        }
-      ]
-    },
-    {
-      "id": "logout",
-      "description": "ログアウトする",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "User"
-      },
-      "input": {
-        "userId": "actor.id"
-      },
-      "errors": []
-    },
-    {
-      "id": "deactivate-user",
-      "description": "自分のアカウントを退会する",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "User"
-      },
-      "input": {
-        "userId": "actor.id"
-      },
-      "transition": "deactivate-user",
-      "errors": []
-    },
-    {
-      "id": "create-todo",
-      "description": "新しいTODOを作成する",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "Todo"
-      },
-      "input": {
-        "title": "string",
-        "description": "string",
-        "dueDate": "date",
-        "userId": "actor.id"
-      },
-      "transition": "create-todo",
-      "errors": []
-    },
-    {
-      "id": "complete-todo",
-      "description": "TODOを完了にする",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "Todo",
-        "scopeByActor": [
-          "userId"
-        ]
-      },
-      "input": {
-        "todoId": "Todo.id"
-      },
-      "transition": "complete-todo",
-      "errors": [
-        {
-          "when": "already_completed",
-          "description": "すでに完了済みのTODO"
-        }
-      ]
-    },
-    {
-      "id": "reopen-todo",
-      "description": "完了したTODOを再度有効にする",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "Todo",
-        "scopeByActor": [
-          "userId"
-        ]
-      },
-      "input": {
-        "todoId": "Todo.id"
-      },
-      "transition": "reopen-todo",
-      "errors": [
-        {
-          "when": "not_completed",
-          "description": "完了していないTODO"
-        }
-      ]
-    },
-    {
-      "id": "delete-todo",
-      "description": "TODOを削除する",
-      "actor": "member",
-      "target": {
-        "kind": "single",
-        "entity": "Todo",
-        "scopeByActor": [
-          "userId"
-        ]
-      },
-      "input": {
-        "todoId": "Todo.id"
-      },
-      "transition": "delete-todo",
-      "errors": []
-    },
-    {
-      "id": "send-deadline-reminders",
-      "description": "期限が近づいているTODOの所有者にリマインダーを送信する",
-      "actor": "system",
-      "target": {
-        "kind": "collection",
-        "entity": "Todo",
-        "matching": [
-          "approaching-deadline"
-        ]
-      },
-      "input": {},
-      "errors": []
-    },
-    {
-      "id": "cleanup-completed-todos",
-      "description": "完了後1週間が経過したTODOを自動削除する",
-      "actor": "system",
-      "target": {
-        "kind": "collection",
-        "entity": "Todo",
-        "matching": [
-          "stale-completed"
-        ]
-      },
-      "input": {},
-      "transition": "delete-todo",
-      "errors": []
-    }
-  ],
-  "reactions": [
-    {
-      "trigger": { "usecase": "send-deadline-reminders", "entity": "Todo" },
-      "when": [],
-      "notify": { "owner": "Todo" },
-      "description": "期限が近づいているTODOの所有者に通知する"
-    },
-    {
-      "trigger": { "usecase": "cleanup-completed-todos", "entity": "Todo" },
-      "when": [],
-      "notify": { "owner": "Todo" },
-      "description": "完了後1週間が経過したTODOが自動削除されたことを所有者に通知する"
-    }
-  ],
   "scenarios": [
     {
       "id": "user-onboarding",
@@ -595,9 +371,9 @@
           "description": "期限付きのTODOを作成する"
         },
         {
-          "usecase": "send-deadline-reminders",
           "actor": "system",
-          "description": "期限が近づくとシステムがリマインダーを送信する"
+          "description": "期限が近づくとシステムがリマインダーを送信する",
+          "operation": "send-deadline-reminders"
         }
       ]
     },
@@ -612,9 +388,9 @@
           "description": "TODOを完了にする"
         },
         {
-          "usecase": "cleanup-completed-todos",
           "actor": "system",
-          "description": "完了後1週間が経過したTODOをシステムが自動削除する"
+          "description": "完了後1週間が経過したTODOをシステムが自動削除する",
+          "operation": "cleanup-completed-todos"
         }
       ]
     }
@@ -976,12 +752,12 @@
         ],
         "actions": [
           {
-            "usecase": "register-user",
             "inputFrom": {
               "name": "register-form.name",
               "email": "register-form.email",
               "password": "register-form.password"
-            }
+            },
+            "operation": "register-user"
           }
         ]
       },
@@ -992,11 +768,11 @@
         ],
         "actions": [
           {
-            "usecase": "login",
             "inputFrom": {
               "email": "login-form.email",
               "password": "login-form.password"
-            }
+            },
+            "operation": "login"
           }
         ]
       },
@@ -1009,30 +785,30 @@
         ],
         "actions": [
           {
-            "usecase": "create-todo",
             "inputFrom": {
               "title": "todo-form.title",
               "description": "todo-form.description",
               "dueDate": "todo-form.dueDate"
-            }
+            },
+            "operation": "create-todo"
           },
           {
-            "usecase": "complete-todo",
             "inputFrom": {
               "todoId": "todo-list.todoId"
-            }
+            },
+            "operation": "complete-todo"
           },
           {
-            "usecase": "reopen-todo",
             "inputFrom": {
               "todoId": "completed-todo-list.todoId"
-            }
+            },
+            "operation": "reopen-todo"
           },
           {
-            "usecase": "delete-todo",
             "inputFrom": {
               "todoId": "todo-list.todoId"
-            }
+            },
+            "operation": "delete-todo"
           }
         ]
       },
@@ -1043,14 +819,252 @@
         ],
         "actions": [
           {
-            "usecase": "logout",
-            "inputFrom": {}
+            "inputFrom": {},
+            "operation": "logout"
           },
           {
-            "usecase": "deactivate-user",
-            "inputFrom": {}
+            "inputFrom": {},
+            "operation": "deactivate-user"
           }
         ]
+      }
+    ]
+  },
+  "usecases": {
+    "actors": [
+      {
+        "id": "anonymous",
+        "authState": {
+          "kind": "anonymous"
+        }
+      },
+      {
+        "id": "member",
+        "authState": {
+          "kind": "authenticated",
+          "roles": [
+            "member"
+          ]
+        },
+        "authMethods": [
+          {
+            "kind": "email-password"
+          }
+        ],
+        "entity": "User"
+      },
+      {
+        "id": "system",
+        "authState": {
+          "kind": "authenticated",
+          "roles": [
+            "system"
+          ]
+        }
+      }
+    ],
+    "operations": [
+      {
+        "id": "register-user",
+        "description": "新しいユーザーを登録する",
+        "actor": "anonymous",
+        "target": {
+          "kind": "single",
+          "entity": "User"
+        },
+        "input": {
+          "name": "string",
+          "email": "string",
+          "password": "string"
+        },
+        "transition": "register-user",
+        "errors": [
+          {
+            "when": "email_taken",
+            "description": "すでに登録済みのメールアドレス"
+          }
+        ]
+      },
+      {
+        "id": "login",
+        "description": "メールアドレスとパスワードでログインする",
+        "actor": "anonymous",
+        "target": {
+          "kind": "single",
+          "entity": "User"
+        },
+        "input": {
+          "email": "string",
+          "password": "string"
+        },
+        "errors": [
+          {
+            "when": "invalid_credentials",
+            "description": "メールアドレスまたはパスワードが正しくない"
+          },
+          {
+            "when": "user_deactivated",
+            "description": "退会済みのアカウント"
+          }
+        ]
+      },
+      {
+        "id": "logout",
+        "description": "ログアウトする",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "User"
+        },
+        "input": {
+          "userId": "actor.id"
+        },
+        "errors": []
+      },
+      {
+        "id": "deactivate-user",
+        "description": "自分のアカウントを退会する",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "User"
+        },
+        "input": {
+          "userId": "actor.id"
+        },
+        "transition": "deactivate-user",
+        "errors": []
+      },
+      {
+        "id": "create-todo",
+        "description": "新しいTODOを作成する",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "Todo"
+        },
+        "input": {
+          "title": "string",
+          "description": "string",
+          "dueDate": "date",
+          "userId": "actor.id"
+        },
+        "transition": "create-todo",
+        "errors": []
+      },
+      {
+        "id": "complete-todo",
+        "description": "TODOを完了にする",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "Todo",
+          "scopeByActor": [
+            "userId"
+          ]
+        },
+        "input": {
+          "todoId": "Todo.id"
+        },
+        "transition": "complete-todo",
+        "errors": [
+          {
+            "when": "already_completed",
+            "description": "すでに完了済みのTODO"
+          }
+        ]
+      },
+      {
+        "id": "reopen-todo",
+        "description": "完了したTODOを再度有効にする",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "Todo",
+          "scopeByActor": [
+            "userId"
+          ]
+        },
+        "input": {
+          "todoId": "Todo.id"
+        },
+        "transition": "reopen-todo",
+        "errors": [
+          {
+            "when": "not_completed",
+            "description": "完了していないTODO"
+          }
+        ]
+      },
+      {
+        "id": "delete-todo",
+        "description": "TODOを削除する",
+        "actor": "member",
+        "target": {
+          "kind": "single",
+          "entity": "Todo",
+          "scopeByActor": [
+            "userId"
+          ]
+        },
+        "input": {
+          "todoId": "Todo.id"
+        },
+        "transition": "delete-todo",
+        "errors": []
+      },
+      {
+        "id": "send-deadline-reminders",
+        "description": "期限が近づいているTODOの所有者にリマインダーを送信する",
+        "actor": "system",
+        "target": {
+          "kind": "collection",
+          "entity": "Todo",
+          "matching": [
+            "approaching-deadline"
+          ]
+        },
+        "input": {},
+        "errors": []
+      },
+      {
+        "id": "cleanup-completed-todos",
+        "description": "完了後1週間が経過したTODOを自動削除する",
+        "actor": "system",
+        "target": {
+          "kind": "collection",
+          "entity": "Todo",
+          "matching": [
+            "stale-completed"
+          ]
+        },
+        "input": {},
+        "transition": "delete-todo",
+        "errors": []
+      }
+    ],
+    "sideEffects": [
+      {
+        "trigger": {
+          "entity": "Todo",
+          "operation": "send-deadline-reminders"
+        },
+        "when": [],
+        "notify": {
+          "owner": "Todo"
+        },
+        "description": "期限が近づいているTODOの所有者に通知する"
+      },
+      {
+        "trigger": {
+          "entity": "Todo",
+          "operation": "cleanup-completed-todos"
+        },
+        "when": [],
+        "notify": {
+          "owner": "Todo"
+        },
+        "description": "完了後1週間が経過したTODOが自動削除されたことを所有者に通知する"
       }
     ]
   }
