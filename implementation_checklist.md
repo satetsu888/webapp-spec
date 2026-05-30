@@ -1,75 +1,128 @@
 # WebAppSpec 実装決定チェックリスト
 
-WebAppSpec は「何を作るか」を定義する。このドキュメントは「どう作るか」— spec から実装に至るまでに決めるべきことの全量リストである。
+WebAppSpec は「何を作るか」を定義する。このドキュメントは「どう作るか」を決めるためのチェックリストである。
 
-構造化フォーマットが決まる項目は TypeScript 型で定義し、自由選択の項目はチェックリストで列挙する。上から順に埋めていけば、全ての決定が完了する。
+2 つのパートに分かれる:
 
-## 全体構造
-
-```typescript
-type ImplementationDecisions = {
-  specRef: string                            // 対象の spec ファイル
-  techStack: TechStack                       // §1 技術スタック
-  database: DatabaseConventions              // §2 DB 共通ルール
-  entityMappings: EntityTableMapping[]       // §3 Entity → テーブル
-  actorAuth: ActorAuthImplMapping[]           // §4 Actor → 認証実装設定
-  endpoints: EndpointMapping[]               // §5 Usecase → エンドポイント
-  routes: ViewRouteMapping[]                 // §6 View → ルート
-  reactionDelivery: ReactionDeliveryMapping[] // §7 Reaction → 配信設定
-  externalSystems: ExternalSystemMapping[]   // §8 外部システム連携
-  // §9〜§13 はフリーフォーム（チェックリスト）
-}
-```
+- **Part 1: 質問事項** — 選択肢から回答すれば決まる項目。ヒアリング形式で情報を集める。
+- **Part 2: 構造化マッピング** — spec の要素ごとに構造化されたデータとして定義が必要な項目。Part 1 の回答と spec の内容をもとに作成する。
 
 ---
 
-## §1 技術スタック
+# Part 1: 質問事項
 
-- [ ] フロントエンドフレームワーク（React / Vue / Svelte / SolidJS / ...）
-- [ ] バックエンドフレームワーク / ランタイム（Next.js / Express / Hono / Rails / ...）
-- [ ] API スタイル（REST / GraphQL / tRPC / Server Actions）
-- [ ] DB 製品（PostgreSQL / MySQL / SQLite / MongoDB / ...）
-- [ ] ORM / クエリビルダ（Prisma / Drizzle / TypeORM / Kysely / ...）
-- [ ] パッケージマネージャ / ビルドツール
+各セクションの質問に回答することで、実装の方針が決まる。
+
+## Q1. 技術スタック
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 1.1 | フロントエンドフレームワークは？ | React / Vue / Svelte / SolidJS | |
+| 1.2 | バックエンドフレームワーク / ランタイムは？ | Next.js / Express / Hono / Rails | |
+| 1.3 | API スタイルは？ | REST / GraphQL / tRPC / Server Actions | |
+| 1.4 | DB 製品は？ | PostgreSQL / MySQL / SQLite / MongoDB | |
+| 1.5 | ORM / クエリビルダは？ | Prisma / Drizzle / TypeORM / Kysely | |
+| 1.6 | パッケージマネージャ / ビルドツールは？ | npm / pnpm / Vite / Turbopack | |
+
+## Q2. データベース規約
+
+spec の全 Entity に横断的に適用するルール。Entity 個別の設定は Part 2 の EntityTableMapping で上書きできる。
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 2.1 | ID の生成方式は？ | uuid-v4 / ulid / auto-increment / nanoid | |
+| 2.2 | ID の DB 型は？ | uuid / bigint / varchar(26) | |
+| 2.3 | `createdAt` カラムを全テーブルに追加するか？ | yes / no | |
+| 2.4 | `updatedAt` カラムを全テーブルに追加するか？ | yes / no | |
+| 2.5 | タイムスタンプの DB 型は？ | timestamptz / datetime / bigint | |
+| 2.6 | `_end`（削除）の実装は？ | 論理削除 (soft) / 物理削除 (hard) | |
+| 2.7 | 論理削除のカラム名は？（soft の場合） | deletedAt / deleted / is_deleted | |
+| 2.8 | テーブル名の命名規約は？ | snake_case / PascalCase / camelCase | |
+| 2.9 | カラム名の命名規約は？ | snake_case / camelCase | |
+| 2.10 | 外部キー制約を DB レベルで張るか？ | yes / no | |
+
+## Q3. 認証 / セッション
+
+spec の `authMethods` は「どの手段で認証するか」を定義している。ここでは認証後のセッション管理など実装上の決定を扱う。
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 3.1 | セッション管理方式は？ | JWT / session-cookie / hybrid | |
+| 3.2 | JWT の場合、トークンの保存先は？ | httpOnly Cookie / localStorage / memory | |
+| 3.3 | セッションの有効期限は？ | 1h / 24h / 7d / 30d | |
+| 3.4 | リフレッシュトークンを使うか？ | yes / no | |
+| 3.5 | role の解決方法は？ | DB カラム / JWT claim / role テーブル | |
+| 3.6 | 認証情報からユーザーを特定するフィールドは？ | email / sub (OAuth) / user_id | |
+| 3.7 | パスワードハッシュアルゴリズムは？ | bcrypt / argon2 / scrypt | |
+
+## Q4. デザイン / UX
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 4.1 | UI コンポーネントライブラリは？ | shadcn / MUI / Chakra UI / Headless UI / 自作 | |
+| 4.2 | スタイリング手法は？ | Tailwind CSS / CSS Modules / styled-components | |
+| 4.3 | レスポンシブ戦略は？ | モバイルファースト / デスクトップファースト | |
+| 4.4 | ローディング状態の表現は？ | スケルトン / スピナー / プログレスバー | |
+| 4.5 | 空状態（データ0件）の表現は？ | イラスト + メッセージ / テキストのみ | |
+| 4.6 | エラー表示パターンは？ | トースト / インライン / モーダル / バナー | |
+| 4.7 | `_end` 遷移時に確認ダイアログを表示するか？ | yes / no | |
+| 4.8 | 国際化（i18n）対応の有無と対応言語は？ | なし / 日本語+英語 / ... | |
+| 4.9 | アクセシビリティ基準は？ | WCAG 2.1 AA / AAA / なし | |
+| 4.10 | ダークモード対応は？ | あり / なし / システム追従 | |
+
+## Q5. セキュリティ
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 5.1 | CORS ポリシーは？ | 同一オリジンのみ / 特定オリジン / 全許可 | |
+| 5.2 | CSRF 対策方式は？ | Token / SameSite Cookie / Double Submit | |
+| 5.3 | CSP ヘッダを設定するか？ | yes / no | |
+| 5.4 | 入力バリデーションライブラリは？ | Zod / Joi / Yup / class-validator | |
+| 5.5 | レートリミティングを設けるか？ | yes / no | |
+| 5.6 | シークレット管理方式は？ | 環境変数 / Vault / dotenv | |
+
+## Q6. テスト戦略
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 6.1 | テストフレームワークは？ | Vitest / Jest / pytest / RSpec | |
+| 6.2 | E2E テストツールは？ | Playwright / Cypress / なし | |
+| 6.3 | テスト DB 戦略は？ | テスト専用 DB / インメモリ / トランザクションロールバック | |
+| 6.4 | spec の Fixture をどう利用するか？ | シードデータとして投入 / テストケースごとに構築 | |
+| 6.5 | Scenario → テストケースの導出方針は？ | 手動 / 自動生成 / ハイブリッド | |
+
+## Q7. インフラ / デプロイ
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 7.1 | ホスティングプラットフォームは？ | Vercel / AWS / GCP / Cloudflare / 自前 | |
+| 7.2 | コンテナ化するか？ | Docker / docker-compose / なし | |
+| 7.3 | CI/CD パイプラインは？ | GitHub Actions / CircleCI / GitLab CI | |
+| 7.4 | 環境はいくつ分けるか？ | dev + prod / dev + staging + prod | |
+| 7.5 | CDN を使うか？ | yes / no | |
+
+## Q8. 運用
+
+| # | 質問 | 選択肢の例 | 回答 |
+|---|------|-----------|------|
+| 8.1 | ログ基盤は？ | 構造化ログ (JSON) / テキストログ | |
+| 8.2 | エラー監視サービスは？ | Sentry / Datadog / CloudWatch / なし | |
+| 8.3 | Usecase 実行の監査ログを残すか？ | yes / no | |
+| 8.4 | DB バックアップの頻度は？ | 日次 / 週次 / リアルタイムレプリカ | |
+| 8.5 | 論理削除データの保持期間は？ | 30日 / 90日 / 無期限 | |
+| 8.6 | プライバシーポリシー / 利用規約は必要か？ | yes / no | |
 
 ---
 
-## §2 データベース共通ルール
+# Part 2: 構造化マッピング
 
-spec の全 Entity に横断的に適用するデータベース規約。Entity 個別のオーバーライドは §3 で定義する。
+spec の各要素を実装上の構造にマッピングする。Part 1 の回答と spec の内容をもとに、要素ごとに1エントリずつ定義する。
+
+## M1. フィールド型変換ルール
+
+spec のフィールド型を DB 型・TypeScript 型にどう変換するかのグローバルルール。Q2 の DB 規約に基づいて定義する。
 
 ```typescript
-type DatabaseConventions = {
-  // ID
-  idStrategy: string    // "uuid-v4" | "ulid" | "auto-increment" | "nanoid"
-  idDbType: string      // "uuid" | "bigint" | "varchar(26)"
-
-  // タイムスタンプ
-  timestamps: {
-    createdAt: boolean
-    updatedAt: boolean
-    dbType: string      // "timestamptz" | "datetime" | "bigint"
-  }
-
-  // _end（削除）の実装方法
-  deletion: {
-    strategy: "soft" | "hard"
-    softDeleteField?: string  // soft の場合のカラム名（例: "deletedAt"）
-  }
-
-  // 命名規約
-  naming: {
-    table: "snake_case" | "PascalCase" | "camelCase"
-    column: "snake_case" | "camelCase"
-  }
-
-  // 外部キー制約を DB レベルで張るか
-  foreignKeys: boolean
-
-  // spec の型文字列 → DB 型 + TypeScript 型
-  fieldTypeMapping: FieldTypeRule[]
-}
-
 type FieldTypeRule = {
   specType: string    // spec で使われる型文字列
   dbType: string      // DB のカラム型
@@ -77,42 +130,24 @@ type FieldTypeRule = {
 }
 ```
 
-### 記入例（Todo App）
+### 記入例
 
 ```json
-{
-  "idStrategy": "uuid-v4",
-  "idDbType": "uuid",
-  "timestamps": {
-    "createdAt": true,
-    "updatedAt": true,
-    "dbType": "timestamptz"
-  },
-  "deletion": {
-    "strategy": "soft",
-    "softDeleteField": "deletedAt"
-  },
-  "naming": {
-    "table": "snake_case",
-    "column": "snake_case"
-  },
-  "foreignKeys": true,
-  "fieldTypeMapping": [
-    { "specType": "string",      "dbType": "varchar(255)", "tsType": "string" },
-    { "specType": "number",      "dbType": "integer",      "tsType": "number" },
-    { "specType": "boolean",     "dbType": "boolean",      "tsType": "boolean" },
-    { "specType": "date",        "dbType": "date",         "tsType": "string" },
-    { "specType": "datetime",    "dbType": "timestamptz",  "tsType": "string" },
-    { "specType": "Entity.id",   "dbType": "uuid",         "tsType": "string" }
-  ]
-}
+[
+  { "specType": "string",    "dbType": "varchar(255)", "tsType": "string" },
+  { "specType": "number",    "dbType": "integer",      "tsType": "number" },
+  { "specType": "boolean",   "dbType": "boolean",      "tsType": "boolean" },
+  { "specType": "date",      "dbType": "date",         "tsType": "string" },
+  { "specType": "datetime",  "dbType": "timestamptz",  "tsType": "string" },
+  { "specType": "Entity.id", "dbType": "uuid",         "tsType": "string" }
+]
 ```
 
 ---
 
-## §3 Entity → テーブルマッピング
+## M2. Entity → テーブルマッピング
 
-spec の Entity ごとに、DB テーブルへの対応を定義する。§2 のグローバルルールから導出できるカラムは省略し、差分のみ記述する。
+spec の Entity ごとに、DB テーブルへの対応を定義する。Q2 のグローバルルール + M1 の型変換から自動導出できる部分は省略し、差分のみ記述する。
 
 ```typescript
 type EntityTableMapping = {
@@ -124,7 +159,7 @@ type EntityTableMapping = {
   columnOverrides?: {
     fieldName: string     // spec のフィールド名
     columnName?: string   // DB カラム名がフィールド名と異なる場合
-    dbType?: string       // グローバル FieldTypeRule と異なる場合
+    dbType?: string       // M1 の FieldTypeRule と異なる場合
   }[]
 
   // spec に定義されていないが実装上必要な追加カラム
@@ -162,7 +197,6 @@ type EntityTableMapping = {
   {
     "entityId": "Todo",
     "tableName": "todos",
-    "columnOverrides": [],
     "indexes": [
       { "columns": ["user_id"], "unique": false },
       { "columns": ["user_id", "completion", "availability"], "unique": false }
@@ -173,49 +207,11 @@ type EntityTableMapping = {
 
 ---
 
-## §4 Actor → 認証実装マッピング
+## M3. Usecase → エンドポイントマッピング
 
-spec の Actor ごとに、認証の実装方式を定義する。認証手段（`authMethods`）は spec 側で定義済みのため、ここでは実装固有の設定のみを扱う。
+spec の Usecase ごとに、HTTP エンドポイントへの対応を定義する。
 
-```typescript
-type ActorAuthImplMapping = {
-  actorId: string           // spec の Actor.id
-
-  // セッション管理方式
-  sessionStrategy: string   // "jwt" | "session-cookie" | "api-key-header"
-                            // | "signature-verification"
-
-  // role の解決方法
-  roleResolution: string    // "db-column" | "jwt-claim" | "role-table" | "static"
-
-  // 認証情報からエンティティを特定する方法（spec の entity バインディングの実装）
-  identifierField?: string  // "email" | "sub" (OAuth) 等
-}
-```
-
-### 記入例（Todo App）
-
-```json
-[
-  {
-    "actorId": "anonymous",
-    "sessionStrategy": "none",
-    "roleResolution": "static"
-  },
-  {
-    "actorId": "member",
-    "sessionStrategy": "session-cookie",
-    "roleResolution": "db-column",
-    "identifierField": "email"
-  }
-]
-```
-
----
-
-## §5 Usecase → エンドポイントマッピング
-
-spec の Usecase ごとに、HTTP エンドポイントへの対応を定義する。1 usecase が複数エンドポイントに対応する場合や、参照系（transition を持たない）usecase が追加される場合もある。
+`"actor.id"` 型の input はサーバー側でセッションから解決するため、pathParams / queryParams / requestBody のいずれにも含めない。
 
 ```typescript
 type EndpointMapping = {
@@ -228,9 +224,6 @@ type EndpointMapping = {
   pathParams?: string[]     // パスパラメータに入れる input フィールド
   queryParams?: string[]    // クエリパラメータに入れる input フィールド（主に GET）
   requestBody?: string[]    // リクエストボディに入れる input フィールド
-
-  // "actor.id" 型の input はサーバー側でセッションから解決するため、
-  // pathParams/queryParams/requestBody のいずれにも含めない
 
   successStatus: number     // 200 | 201 | 204
 
@@ -307,7 +300,6 @@ type EndpointMapping = {
 spec の Usecase は状態変更操作が中心だが、実装では参照系エンドポイントも必要になる。Component の `sources` から導出できる:
 
 ```typescript
-// Component の DataSource から導出される参照系エンドポイント
 type ReadEndpoint = {
   derivedFrom: string       // Component.id
   method: "GET"
@@ -344,7 +336,7 @@ type ReadEndpoint = {
 
 ---
 
-## §6 View → ルートマッピング
+## M4. View → ルートマッピング
 
 spec の View ごとに、フロントエンドのルーティングを定義する。
 
@@ -394,7 +386,7 @@ type ViewRouteMapping = {
 
 ---
 
-## §7 Reaction → 配信設定マッピング
+## M5. Reaction → 配信設定マッピング
 
 spec の Reaction ごとに、通知の配信方式を定義する。
 
@@ -448,7 +440,7 @@ Todo App の spec には reactions が定義されていないが、仮に「TOD
 
 ---
 
-## §8 外部システム連携マッピング
+## M6. 外部システム連携マッピング
 
 spec で外部システムの Actor（webhook 送信元等）が定義されている場合、その連携の実装方式を定義する。Usecase の `followUps` がある場合もここで対応を記述する。
 
@@ -504,68 +496,3 @@ Todo App には外部 Actor がないが、仮に決済連携がある場合:
   }
 }
 ```
-
----
-
-## §9 デザイン / UX
-
-- [ ] UI コンポーネントライブラリ（shadcn / MUI / Chakra UI / Headless UI / 自作）
-- [ ] スタイリング手法（Tailwind CSS / CSS Modules / styled-components / vanilla CSS）
-- [ ] レスポンシブ戦略（モバイルファースト / デスクトップファースト / ブレークポイント定義）
-- [ ] ローディング状態の表現（スケルトン / スピナー / プログレスバー）
-- [ ] 空状態の表現（データ0件時の画面）
-- [ ] エラー表示パターン（トースト / インライン / モーダル / バナー）
-- [ ] 確認ダイアログの方針（`_end` 遷移の usecase で表示するか、どのような文言か）
-- [ ] 国際化（i18n）対応の有無と対応言語
-- [ ] アクセシビリティ基準（WCAG 2.1 AA / AAA）
-- [ ] フォント選定
-- [ ] カラーテーマ / ダークモード対応
-
----
-
-## §10 セキュリティ
-
-- [ ] CORS ポリシー（許可オリジンの設定）
-- [ ] CSRF 対策方式（Token / SameSite Cookie / Double Submit）
-- [ ] CSP ヘッダ設定
-- [ ] XSS 対策方針（サニタイズライブラリ、エスケープ方針）
-- [ ] 入力バリデーション方針（バリデーションライブラリ、サーバー側 / クライアント側の役割分担）
-- [ ] レートリミティング（エンドポイント別の制限値）
-- [ ] パスワードハッシュアルゴリズム（bcrypt / argon2 / scrypt）
-- [ ] シークレット管理方式（環境変数 / Vault / dotenv）
-- [ ] セッション管理（有効期限、リフレッシュ方式、並行セッション制限）
-
----
-
-## §11 テスト戦略
-
-- [ ] テストフレームワーク（Vitest / Jest / pytest / RSpec / ...）
-- [ ] E2E テストツール（Playwright / Cypress / ...）
-- [ ] テスト DB 戦略（テスト専用 DB / インメモリ / トランザクションロールバック）
-- [ ] Fixture の利用方法（spec の Fixture をシードデータとしてどう取り込むか）
-- [ ] Scenario → テストケースの導出方針（手動 / 自動生成 / ハイブリッド）
-- [ ] CI でのテスト実行方針
-
----
-
-## §12 インフラ / デプロイ
-
-- [ ] ホスティングプラットフォーム（Vercel / AWS / GCP / Cloudflare / 自前）
-- [ ] コンテナ化の有無（Docker / docker-compose）
-- [ ] CI/CD パイプライン（GitHub Actions / CircleCI / GitLab CI）
-- [ ] 環境分離（dev / staging / production）
-- [ ] ドメイン / DNS 設定
-- [ ] SSL/TLS 証明書管理
-- [ ] CDN（静的アセット配信）
-
----
-
-## §13 運用
-
-- [ ] ログ基盤（構造化ログ、ログレベル、集約先）
-- [ ] 監視 / アラート（Datadog / Sentry / CloudWatch / ...）
-- [ ] 監査ログ（Usecase 実行履歴の記録方法）
-- [ ] バックアップ戦略（頻度、保持期間）
-- [ ] データ保持ポリシー（`_end` で論理削除したデータの保持期間）
-- [ ] プライバシー対応（GDPR / 個人情報保護法）
-- [ ] 利用規約 / プライバシーポリシー
