@@ -69,6 +69,11 @@
             "required": false
           },
           {
+            "name": "completedAt",
+            "type": "datetime",
+            "required": false
+          },
+          {
             "name": "userId",
             "type": "User.id",
             "required": true
@@ -109,6 +114,53 @@
                   "field": "dueDate",
                   "op": "lt",
                   "value": "now"
+                }
+              ]
+            }
+          },
+          {
+            "name": "approaching-deadline",
+            "description": "期限まで24時間以内の未完了TODO",
+            "derivedFrom": {
+              "and": [
+                {
+                  "field": "completion",
+                  "equals": "incomplete"
+                },
+                {
+                  "field": "availability",
+                  "equals": "available"
+                },
+                {
+                  "field": "dueDate",
+                  "op": "lte",
+                  "value": "24_hours_from_now"
+                },
+                {
+                  "field": "dueDate",
+                  "op": "gt",
+                  "value": "now"
+                }
+              ]
+            }
+          },
+          {
+            "name": "stale-completed",
+            "description": "完了後1週間が経過した削除対象のTODO",
+            "derivedFrom": {
+              "and": [
+                {
+                  "field": "completion",
+                  "equals": "complete"
+                },
+                {
+                  "field": "availability",
+                  "equals": "available"
+                },
+                {
+                  "field": "completedAt",
+                  "op": "lt",
+                  "value": "7_days_ago"
                 }
               ]
             }
@@ -245,6 +297,15 @@
         { "kind": "email-password" }
       ],
       "entity": "User"
+    },
+    {
+      "id": "system",
+      "authState": {
+        "kind": "authenticated",
+        "roles": [
+          "system"
+        ]
+      }
     }
   ],
   "usecases": [
@@ -258,7 +319,8 @@
       },
       "input": {
         "name": "string",
-        "email": "string"
+        "email": "string",
+        "password": "string"
       },
       "transition": "register-user",
       "errors": [
@@ -267,6 +329,42 @@
           "description": "すでに登録済みのメールアドレス"
         }
       ]
+    },
+    {
+      "id": "login",
+      "description": "メールアドレスとパスワードでログインする",
+      "actor": "anonymous",
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
+      "input": {
+        "email": "string",
+        "password": "string"
+      },
+      "errors": [
+        {
+          "when": "invalid_credentials",
+          "description": "メールアドレスまたはパスワードが正しくない"
+        },
+        {
+          "when": "user_deactivated",
+          "description": "退会済みのアカウント"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "description": "ログアウトする",
+      "actor": "member",
+      "target": {
+        "kind": "single",
+        "entity": "User"
+      },
+      "input": {
+        "userId": "actor.id"
+      },
+      "errors": []
     },
     {
       "id": "deactivate-user",
@@ -359,19 +457,78 @@
       },
       "transition": "delete-todo",
       "errors": []
+    },
+    {
+      "id": "send-deadline-reminders",
+      "description": "期限が近づいているTODOの所有者にリマインダーを送信する",
+      "actor": "system",
+      "target": {
+        "kind": "collection",
+        "entity": "Todo",
+        "matching": [
+          "approaching-deadline"
+        ]
+      },
+      "input": {},
+      "errors": []
+    },
+    {
+      "id": "cleanup-completed-todos",
+      "description": "完了後1週間が経過したTODOを自動削除する",
+      "actor": "system",
+      "target": {
+        "kind": "collection",
+        "entity": "Todo",
+        "matching": [
+          "stale-completed"
+        ]
+      },
+      "input": {},
+      "transition": "delete-todo",
+      "errors": []
     }
   ],
-  "reactions": [],
+  "reactions": [
+    {
+      "trigger": { "usecase": "send-deadline-reminders", "entity": "Todo" },
+      "when": [],
+      "notify": { "owner": "Todo" },
+      "description": "期限が近づいているTODOの所有者に通知する"
+    },
+    {
+      "trigger": { "usecase": "cleanup-completed-todos", "entity": "Todo" },
+      "when": [],
+      "notify": { "owner": "Todo" },
+      "description": "完了後1週間が経過したTODOが自動削除されたことを所有者に通知する"
+    }
+  ],
   "scenarios": [
     {
       "id": "user-onboarding",
       "actor": "anonymous",
-      "goal": "アカウントを作成してTODO管理を始める",
+      "goal": "アカウントを作成してログインする",
       "steps": [
         {
           "view": "register-page",
           "action": "register-user",
           "description": "登録フォームに入力してアカウントを作成する"
+        },
+        {
+          "view": "login-page",
+          "action": "login",
+          "description": "作成したアカウントでログインする"
+        }
+      ]
+    },
+    {
+      "id": "login-flow",
+      "actor": "anonymous",
+      "goal": "ログインする",
+      "steps": [
+        {
+          "view": "login-page",
+          "action": "login",
+          "description": "メールアドレスとパスワードでログインする"
         }
       ]
     },
@@ -380,6 +537,10 @@
       "actor": "member",
       "goal": "TODOを管理する",
       "steps": [
+        {
+          "view": "todo-dashboard",
+          "description": "TODO一覧を確認する"
+        },
         {
           "view": "todo-dashboard",
           "action": "create-todo",
@@ -409,8 +570,148 @@
       "steps": [
         {
           "view": "account-settings-page",
+          "description": "アカウント情報を確認する"
+        },
+        {
+          "view": "account-settings-page",
+          "action": "logout",
+          "description": "ログアウトする"
+        },
+        {
+          "view": "account-settings-page",
           "action": "deactivate-user",
           "description": "アカウントを退会する"
+        }
+      ]
+    },
+    {
+      "id": "deadline-notification-flow",
+      "actor": "member",
+      "goal": "期限が近いTODOの通知を受け取る",
+      "steps": [
+        {
+          "view": "todo-dashboard",
+          "action": "create-todo",
+          "description": "期限付きのTODOを作成する"
+        },
+        {
+          "usecase": "send-deadline-reminders",
+          "actor": "system",
+          "description": "期限が近づくとシステムがリマインダーを送信する"
+        }
+      ]
+    },
+    {
+      "id": "auto-cleanup-flow",
+      "actor": "member",
+      "goal": "完了したTODOが自動的にクリーンアップされる",
+      "steps": [
+        {
+          "view": "todo-dashboard",
+          "action": "complete-todo",
+          "description": "TODOを完了にする"
+        },
+        {
+          "usecase": "cleanup-completed-todos",
+          "actor": "system",
+          "description": "完了後1週間が経過したTODOをシステムが自動削除する"
+        }
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "basic-setup",
+      "description": "ユーザー2名とTODO数件の基本データ（期限切れ・期限間近・完了済み・長期完了済みを含む）",
+      "instances": [
+        {
+          "entity": "User",
+          "id": "User-1",
+          "fields": {
+            "name": "Alice",
+            "email": "alice@example.com",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "User",
+          "id": "User-2",
+          "fields": {
+            "name": "Bob",
+            "email": "bob@example.com",
+            "status": "active"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-1",
+          "fields": {
+            "title": "Buy groceries",
+            "description": "Milk, eggs, bread",
+            "completion": "incomplete",
+            "availability": "available",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-2",
+          "fields": {
+            "title": "Write report",
+            "description": "Q2 summary",
+            "completion": "incomplete",
+            "availability": "available",
+            "dueDate": "2025-06-15",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-3",
+          "fields": {
+            "title": "Review PR",
+            "description": "#142",
+            "completion": "complete",
+            "completedAt": "2025-05-23T15:00:00Z",
+            "availability": "available",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-4",
+          "fields": {
+            "title": "Deploy staging",
+            "description": "v2.1.0",
+            "completion": "incomplete",
+            "availability": "available",
+            "dueDate": "2025-05-26",
+            "userId": "User-2"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-5",
+          "fields": {
+            "title": "Submit timesheet",
+            "description": "Weekly timesheet",
+            "completion": "incomplete",
+            "availability": "available",
+            "dueDate": "2025-05-26T17:00:00Z",
+            "userId": "User-1"
+          }
+        },
+        {
+          "entity": "Todo",
+          "id": "Todo-6",
+          "fields": {
+            "title": "Send invoice",
+            "description": "April invoice",
+            "completion": "complete",
+            "completedAt": "2025-05-10T10:00:00Z",
+            "availability": "available",
+            "userId": "User-2"
+          }
         }
       ]
     }
@@ -431,6 +732,11 @@
             "name": "email",
             "type": "string",
             "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
           }
         ],
         "transforms": [],
@@ -443,6 +749,42 @@
           },
           {
             "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "login-form",
+        "description": "ログインフォーム",
+        "sources": [],
+        "inputs": [
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "transforms": [],
+        "displays": [],
+        "outputs": [
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
             "type": "string",
             "required": true
           }
@@ -484,7 +826,7 @@
           {
             "name": "dueDate",
             "type": "date",
-            "required": true
+            "required": false
           },
           {
             "name": "isOverdue",
@@ -513,9 +855,16 @@
             "fields": [
               "title",
               "description",
-              "completion"
+              "completion",
+              "completedAt"
             ],
-            "paginated": true
+            "paginated": true,
+            "sort": [
+              {
+                "field": "completedAt",
+                "order": "desc"
+              }
+            ]
           }
         ],
         "inputs": [],
@@ -524,6 +873,11 @@
           {
             "name": "title",
             "type": "string",
+            "required": true
+          },
+          {
+            "name": "completedAt",
+            "type": "datetime",
             "required": true
           }
         ],
@@ -548,12 +902,12 @@
           {
             "name": "description",
             "type": "string",
-            "required": true
+            "required": false
           },
           {
             "name": "dueDate",
             "type": "date",
-            "required": true
+            "required": false
           }
         ],
         "transforms": [],
@@ -567,12 +921,12 @@
           {
             "name": "description",
             "type": "string",
-            "required": true
+            "required": false
           },
           {
             "name": "dueDate",
             "type": "date",
-            "required": true
+            "required": false
           }
         ]
       },
@@ -625,7 +979,23 @@
             "usecase": "register-user",
             "inputFrom": {
               "name": "register-form.name",
-              "email": "register-form.email"
+              "email": "register-form.email",
+              "password": "register-form.password"
+            }
+          }
+        ]
+      },
+      {
+        "id": "login-page",
+        "components": [
+          "login-form"
+        ],
+        "actions": [
+          {
+            "usecase": "login",
+            "inputFrom": {
+              "email": "login-form.email",
+              "password": "login-form.password"
             }
           }
         ]
@@ -673,81 +1043,15 @@
         ],
         "actions": [
           {
+            "usecase": "logout",
+            "inputFrom": {}
+          },
+          {
             "usecase": "deactivate-user",
             "inputFrom": {}
           }
         ]
       }
     ]
-  },
-  "fixtures": [
-    {
-      "id": "basic-setup",
-      "description": "ユーザー2名とTODO数件の基本データ",
-      "instances": [
-        {
-          "entity": "User",
-          "id": "User-1",
-          "fields": {
-            "name": "Alice",
-            "email": "alice@example.com",
-            "status": "active"
-          }
-        },
-        {
-          "entity": "User",
-          "id": "User-2",
-          "fields": {
-            "name": "Bob",
-            "email": "bob@example.com",
-            "status": "active"
-          }
-        },
-        {
-          "entity": "Todo",
-          "id": "Todo-1",
-          "fields": {
-            "title": "Buy groceries",
-            "description": "Milk, eggs, bread",
-            "completion": "incomplete",
-            "availability": "available",
-            "userId": "User-1"
-          }
-        },
-        {
-          "entity": "Todo",
-          "id": "Todo-2",
-          "fields": {
-            "title": "Write report",
-            "description": "Q2 summary",
-            "completion": "incomplete",
-            "availability": "available",
-            "userId": "User-1"
-          }
-        },
-        {
-          "entity": "Todo",
-          "id": "Todo-3",
-          "fields": {
-            "title": "Review PR",
-            "description": "#142",
-            "completion": "complete",
-            "availability": "available",
-            "userId": "User-1"
-          }
-        },
-        {
-          "entity": "Todo",
-          "id": "Todo-4",
-          "fields": {
-            "title": "Deploy staging",
-            "description": "v2.1.0",
-            "completion": "incomplete",
-            "availability": "available",
-            "userId": "User-2"
-          }
-        }
-      ]
-    }
-  ]
+  }
 }
