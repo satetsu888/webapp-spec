@@ -23,7 +23,7 @@ WebAppSpec の位置づけを明確にするため、Web アプリケーショ�
                     ドメイン/ビジネスロジック中心
 ```
 
-WebAppSpec は「ドメイン中心 × 仕様定義（コード生成しない）」の象限に位置する。この象限は既存プロジェクトが少なく、特に Entity の Ownership・Specs・SideEffects・Journey を統合した定義を持つものは他にない。
+WebAppSpec は「ドメイン中心 × 仕様定義（コード生成しない）」の象限に位置する。この象限は既存プロジェクトが少なく、特に Entity の Ownership・Specs・SideEffects・Scenario を統合した定義を持つものは他にない。
 
 ---
 
@@ -55,7 +55,7 @@ OMG 標準（2015）。WebML の後継的位置づけで、ユーザーインタ
 
 IFML の Event → Action → NavigationFlow という三つ組に対し、WebAppSpec では Component.outputs → View.actions → Operation → Transition と分解されている。IFML の Action がフロー内のノードであるのに対し、WebAppSpec の Operation は UI から独立した操作定義。
 
-「画面をまたぐ操作の流れ」への答え方も異なる。IFML は NavigationFlow でフローを明示的にモデル化するが、WebAppSpec は Journey で Actor の目的達成プロセスとして記述する。画面遷移のトポロジーではなく Operation の列。
+「画面をまたぐ操作の流れ」への答え方も異なる。IFML は NavigationFlow でフローを明示的にモデル化するが、WebAppSpec は Scenario で Actor の目的達成プロセスとして記述する。画面遷移のトポロジーではなく Operation の列。
 
 IFML は outside-in（UI の振る舞いから）、WebAppSpec は inside-out（ドメインの事実から）のアプローチ。
 
@@ -129,7 +129,7 @@ DDD の Context Map を機械可読に記述する DSL。Bounded Context 間の�
 
 マイクロサービス API コントラクトの記述言語。OpenAPI・gRPC・AsyncAPI を単一モデルから生成。Context Mapper と連携。
 
-API の境界定義に特化しており、WebAppSpec の Operation・Journey・Specs・SideEffect のようなアプリ内部の構造は扱わない。
+API の境界定義に特化しており、WebAppSpec の Operation・Scenario・Specs・SideEffect のようなアプリ内部の構造は扱わない。
 
 ### Structurizr DSL — 2016〜現在
 
@@ -145,7 +145,7 @@ C4 モデルに基づくソフトウェアアーキテクチャの "Models as Co
 
 テーブル定義・リレーション・ロール別権限・イベントトリガー・cron を YAML/HML で宣言的に定義。Hasura DDN (v3) ではサブグラフ・コネクタ・モデル・コマンドまで含む。
 
-GraphQL API + 認可 + イベントのフルスタック定義としては最も実用的に普及しているが、データベース中心。WebAppSpec の Operation（ドメイン操作）、Journey（シナリオ）、Specs（ビジネスルール）のような抽象レイヤーは持たない。
+GraphQL API + 認可 + イベントのフルスタック定義としては最も実用的に普及しているが、データベース中心。WebAppSpec の Operation（ドメイン操作）、Scenario（シナリオ）、Specs（ビジネスルール）のような抽象レイヤーは持たない。
 
 ### Prisma Schema Language (PSL) — 2019〜現在
 
@@ -212,6 +212,6 @@ Appsmith・Lowcoder・ToolJet はいずれもアプリ全体を JSON で保存�
 調査の結果、WebAppSpec が占める領域の特徴が明確になった:
 
 1. **ドメイン中心 × 仕様定義（コード生成しない）の象限が空いている。** Wasp（最も近い）はコード生成に結合しており、Context Mapper はシステム間境界に特化している。
-2. **Ownership・Specs・SideEffects・Journey の統合は他にない。** 個別の概念は他ツールにも存在するが、これらを単一構造に統合してテスト導出可能にした設計は独自。
+2. **Ownership・Specs・SideEffects・Scenario の統合は他にない。** 個別の概念は他ツールにも存在するが、これらを単一構造に統合してテスト導出可能にした設計は独自。
 3. **LLM 時代の仕様記述としての設計が明確。** Athena が実証した「中間表現の有効性」を、ドメインロジック層まで拡張している。
 4. **Specs の独立レイヤーは比較対象がない。** ビジネスルールの横断的制約を Transition と疎結合に保つ設計は、既存のどのアプローチにも見られない。
