@@ -14,7 +14,7 @@ export function TransitionDetail() {
   if (!transition)
     return <p className="text-red-600">Transition "{id}" not found</p>;
 
-  const usecases = spec.usecases.operations.filter((u) => u.transition === id);
+  const operations = spec.usecases.operations.filter((o) => o.transition === id);
 
   const diagram = useMemo(
     () => buildTransitionDiagram(transition),
@@ -70,18 +70,18 @@ export function TransitionDetail() {
         </section>
       )}
 
-      {usecases.length > 0 && (
+      {operations.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             Used by Operations
           </h3>
           <div className="space-y-1">
-            {usecases.map((u) => (
-              <div key={u.id} className="text-sm">
-                <RefLink to={`/operations/${u.id}`}>
-                  {u.id}
+            {operations.map((o) => (
+              <div key={o.id} className="text-sm">
+                <RefLink to={`/operations/${o.id}`}>
+                  {o.id}
                 </RefLink>
-                <span className="ml-2 text-gray-500">({u.actor})</span>
+                <span className="ml-2 text-gray-500">({o.actor})</span>
               </div>
             ))}
           </div>

@@ -34,10 +34,10 @@ export function ActorList() {
               {ops.length > 0 && (
                 <div className="mt-2 space-y-1">
                   <span className="text-xs text-gray-500">Operations:</span>
-                  {ops.map((u) => (
-                    <div key={u.id} className="ml-2 text-sm">
-                      <RefLink to={`/operations/${u.id}`}>
-                        {u.id}
+                  {ops.map((o) => (
+                    <div key={o.id} className="ml-2 text-sm">
+                      <RefLink to={`/operations/${o.id}`}>
+                        {o.id}
                       </RefLink>
                     </div>
                   ))}

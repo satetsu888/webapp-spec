@@ -66,7 +66,7 @@ export function checkReferences(spec: WebAppSpec): ValidationIssue[] {
   const entities = entityIds(spec);
   const transitionIds = new Set(spec.domain.transitions.map((t) => t.id));
   const actorIds = new Set(spec.usecases.actors.map((a) => a.id));
-  const operationIds = new Set(spec.usecases.operations.map((u) => u.id));
+  const operationIds = new Set(spec.usecases.operations.map((o) => o.id));
   const relationIds = new Set(spec.domain.relations.map((r) => r.id));
   const componentIds = new Set(spec.ui.components.map((c) => c.id));
   const scenarioIds = new Set(spec.scenarios.map((s) => s.id));

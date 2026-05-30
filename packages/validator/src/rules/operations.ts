@@ -3,7 +3,7 @@ import type { ValidationIssue } from "../validator.js";
 
 export function checkOperations(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((o) => [o.id, o]));
   const actorMap = new Map(spec.usecases.actors.map((a) => [a.id, a]));
   const entityMap = new Map(spec.domain.entities.map((e) => [e.id, e]));
   const transitionMap = new Map(spec.domain.transitions.map((t) => [t.id, t]));

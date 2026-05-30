@@ -4,7 +4,7 @@ import type { ValidationIssue } from "../validator.js";
 export function checkUI(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const componentMap = new Map(spec.ui.components.map((c) => [c.id, c]));
-  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((o) => [o.id, o]));
 
   // Component internal consistency
   for (let i = 0; i < spec.ui.components.length; i++) {

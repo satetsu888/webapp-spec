@@ -5,10 +5,10 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   // Collect all references
-  const referencedTransitions = new Set(spec.usecases.operations.map((u) => u.transition).filter(Boolean));
+  const referencedTransitions = new Set(spec.usecases.operations.map((o) => o.transition).filter(Boolean));
 
   const referencedActors = new Set([
-    ...spec.usecases.operations.map((u) => u.actor),
+    ...spec.usecases.operations.map((o) => o.actor),
     ...spec.scenarios.map((s) => s.actor),
     ...spec.scenarios.flatMap((s) =>
       s.steps.filter((step): step is BackgroundStep => typeof step !== "string" && "operation" in step).map((step) => step.actor),
@@ -16,7 +16,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
   ]);
 
   const referencedOperations = new Set([
-    ...spec.usecases.operations.flatMap((u) => u.followUps?.map((f) => f.operation) ?? []),
+    ...spec.usecases.operations.flatMap((o) => o.followUps?.map((f) => f.operation) ?? []),
     ...spec.scenarios.flatMap((s) =>
       s.steps.flatMap((step) => {
         if (typeof step === "string") return [];
@@ -35,7 +35,7 @@ export function checkUnused(spec: WebAppSpec): ValidationIssue[] {
   const referencedEntities = new Set([
     ...spec.domain.relations.flatMap((r) => [r.from, r.to]),
     ...spec.domain.transitions.flatMap((t) => t.changes.map((c) => c.entity)),
-    ...spec.usecases.operations.map((u) => u.target.entity),
+    ...spec.usecases.operations.map((o) => o.target.entity),
     ...spec.usecases.sideEffects.map((se) => se.trigger.entity),
     ...spec.ui.components.flatMap((c) => c.sources.map((s) => s.entity)),
   ]);

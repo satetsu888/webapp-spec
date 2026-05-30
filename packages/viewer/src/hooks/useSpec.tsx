@@ -51,7 +51,7 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
   const relationMap = new Map(spec.domain.relations.map((r) => [r.id, r]));
   const transitionMap = new Map(spec.domain.transitions.map((t) => [t.id, t]));
   const actorMap = new Map(spec.usecases.actors.map((a) => [a.id, a]));
-  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((o) => [o.id, o]));
   const specMap = new Map(spec.specs.map((s) => [s.id, s]));
   const componentMap = new Map(spec.ui.components.map((c) => [c.id, c]));
   const viewMap = new Map(spec.ui.views.map((v) => [v.id, v]));
@@ -76,10 +76,10 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
   }
 
   const actorOperations = new Map<string, Operation[]>();
-  for (const u of spec.usecases.operations) {
-    const list = actorOperations.get(u.actor) ?? [];
-    list.push(u);
-    actorOperations.set(u.actor, list);
+  for (const o of spec.usecases.operations) {
+    const list = actorOperations.get(o.actor) ?? [];
+    list.push(o);
+    actorOperations.set(o.actor, list);
   }
 
   const operationSideEffects = new Map<string, SideEffect[]>();

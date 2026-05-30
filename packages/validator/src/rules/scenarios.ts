@@ -11,7 +11,7 @@ function isBackgroundStep(step: unknown): step is BackgroundStep {
 
 export function checkScenarios(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((o) => [o.id, o]));
   const scenarioMap = new Map(spec.scenarios.map((s) => [s.id, s]));
   const viewMap = new Map(spec.ui.views.map((v) => [v.id, v]));
 

@@ -20,24 +20,24 @@ export function OperationList() {
                 </span>
               </h3>
               <div className="space-y-2">
-                {operations.map((u) => (
+                {operations.map((o) => (
                   <div
-                    key={u.id}
+                    key={o.id}
                     className="rounded border border-gray-200 bg-white p-4"
                   >
                     <div className="flex items-center gap-2">
-                      <RefLink to={`/operations/${u.id}`}>
-                        <span className="font-medium">{u.id}</span>
+                      <RefLink to={`/operations/${o.id}`}>
+                        <span className="font-medium">{o.id}</span>
                       </RefLink>
                       <RefLink
-                        to={`/entities/${u.target.entity}`}
+                        to={`/entities/${o.target.entity}`}
                         className="text-sm"
                       >
-                        {u.target.entity}
+                        {o.target.entity}
                       </RefLink>
                     </div>
                     <p className="mt-1 text-sm text-gray-600">
-                      {u.description}
+                      {o.description}
                     </p>
                   </div>
                 ))}

@@ -43,20 +43,20 @@ export function buildViewCompositionDiagram(
     lines.push(`    c_${sanitizeId(cid)}["${escapeLabel(cid)}\\n${escapeLabel(label)}"]`);
   }
 
-  for (const uid of operationIds) {
-    lines.push(`    u_${sanitizeId(uid)}(["${escapeLabel(uid)}"])`);
+  for (const oid of operationIds) {
+    lines.push(`    o_${sanitizeId(oid)}(["${escapeLabel(oid)}"])`);
   }
 
   for (const { componentId, operationId, params } of edges) {
     const cNode = `c_${sanitizeId(componentId)}`;
-    const uNode = `u_${sanitizeId(operationId)}`;
+    const oNode = `o_${sanitizeId(operationId)}`;
     const label = params.join(", ");
-    lines.push(`    ${cNode} -- "${escapeLabel(label)}" --> ${uNode}`);
+    lines.push(`    ${cNode} -- "${escapeLabel(label)}" --> ${oNode}`);
   }
 
-  for (const uid of operationIds) {
+  for (const oid of operationIds) {
     lines.push(
-      `    click u_${sanitizeId(uid)} href "/operations/${uid}"`,
+      `    click o_${sanitizeId(oid)} href "/operations/${oid}"`,
     );
   }
 

@@ -10,7 +10,7 @@ function extractFieldsFromCondition(condition: Condition): string[] {
 
 export function checkSideEffects(spec: WebAppSpec): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const operationMap = new Map(spec.usecases.operations.map((u) => [u.id, u]));
+  const operationMap = new Map(spec.usecases.operations.map((o) => [o.id, o]));
   const entityMap = new Map(spec.domain.entities.map((e) => [e.id, e]));
 
   for (let i = 0; i < spec.usecases.sideEffects.length; i++) {
