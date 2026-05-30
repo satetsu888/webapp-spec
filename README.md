@@ -10,7 +10,7 @@ WebAppSpec はこれらを一つの構造にまとめ、アプリケーション
 
 ## 想定する用途
 
-- **LLMによる実装** — 定義を渡せばアプリの仕様が一意に決まる。グラフ構造なので、特定の usecase に関連する部分だけを切り出して LLM に渡すこともできる
+- **LLMによる実装** — 定義を渡せばアプリの仕様が一意に決まる。グラフ構造なので、特定の operation に関連する部分だけを切り出して LLM に渡すこともできる
 - **網羅的テスト生成** — Entity の状態遷移や Spec のルールから、正常系・異常系・権限境界のテストケースを機械的に導出する
 
 ## 仕様の構造
@@ -22,10 +22,11 @@ WebAppSpec は以下のレイヤーで構成されます。
 | **Domain** | Entity、Relation、状態遷移 — ドメインの構造的事実 |
 | **Specs** | プラン制限等の条件付きビジネスルール |
 | **Actors** | 認証状態で定義されるユーザー・外部システム |
-| **Usecases** | ドメイン操作 |
-| **Reactions** | Usecase 実行後の副作用 |
+| **Usecases** | 振る舞い層（actors / operations / sideEffects） |
+| **Operations** | ドメイン操作 |
+| **SideEffects** | Operation 実行後の副作用 |
 | **Scenarios** | View ベースのユーザーシナリオ |
-| **UI** | Component（データ取得・入力・変換・出力）と View（配置・Usecase 接続） |
+| **UI** | Component（データ取得・入力・変換・出力）と View（配置・Operation 接続） |
 
 HTTPメソッドやフレームワーク選定といった実装の詳細には依存しません。REST でも GraphQL でも Server Actions でも、同じ定義から実装できます。
 

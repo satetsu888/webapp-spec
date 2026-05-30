@@ -33,12 +33,12 @@ export function checkScenarios(spec: WebAppSpec): ValidationIssue[] {
         }
       } else if (isViewStep(step)) {
         if (step.action) {
-          const uc = operationMap.get(step.action);
-          if (uc && uc.actor !== scenario.actor) {
+          const op = operationMap.get(step.action);
+          if (op && op.actor !== scenario.actor) {
             issues.push({
               severity: "warning",
               rule: "scenario.actor-mismatch",
-              message: `Scenario "${scenario.id}" (actor: ${scenario.actor}) step action "${step.action}" has different actor "${uc.actor}"`,
+              message: `Scenario "${scenario.id}" (actor: ${scenario.actor}) step action "${step.action}" has different actor "${op.actor}"`,
               path: `scenarios[${i}].steps[${k}]`,
             });
           }

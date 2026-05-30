@@ -29,7 +29,7 @@ export function buildOperationImpactDiagram(
   const clicks: string[] = [];
 
   lines.push(`    actor@{ shape: icon, icon: "spec:actor", label: "${escapeLabel(operation.actor)}" }`);
-  lines.push(`    uc(["${escapeLabel(operation.id)}"])`);
+  lines.push(`    op(["${escapeLabel(operation.id)}"])`);
 
   if (transition && transition.changes.length > 0) {
     for (let i = 0; i < transition.changes.length; i++) {
@@ -59,20 +59,20 @@ export function buildOperationImpactDiagram(
     }
   }
 
-  lines.push(`    actor --> uc`);
+  lines.push(`    actor --> op`);
   if (transition && transition.changes.length > 0) {
     for (let i = 0; i < transition.changes.length; i++) {
-      lines.push(`    uc --> c${i}`);
+      lines.push(`    op --> c${i}`);
     }
   } else {
-    lines.push(`    uc --> target`);
+    lines.push(`    op --> target`);
   }
   for (let i = 0; i < sideEffects.length; i++) {
-    lines.push(`    uc -.-> r${i}`);
+    lines.push(`    op -.-> r${i}`);
   }
   if (operation.followUps) {
     for (let i = 0; i < operation.followUps.length; i++) {
-      lines.push(`    uc -.-> fu${i}`);
+      lines.push(`    op -.-> fu${i}`);
     }
   }
 

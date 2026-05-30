@@ -12,8 +12,8 @@ export function ViewList() {
     for (const view of spec.ui.views) {
       const actors = new Set<string>();
       for (const action of view.actions) {
-        const uc = operationMap.get(action.operation);
-        if (uc) actors.add(uc.actor);
+        const op = operationMap.get(action.operation);
+        if (op) actors.add(op.actor);
       }
       if (actors.size === 0) actors.add("_none");
       for (const actor of actors) {

@@ -50,9 +50,9 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
 
     for (let j = 0; j < view.actions.length; j++) {
       const action = view.actions[j];
-      const uc = operationMap.get(action.operation);
+      const op = operationMap.get(action.operation);
 
-      for (const [ucInput, source] of Object.entries(action.inputFrom)) {
+      for (const [opInput, source] of Object.entries(action.inputFrom)) {
         // Validate "componentId.outputName" format
         const dotIdx = source.indexOf(".");
         if (dotIdx === -1) {
@@ -91,21 +91,21 @@ export function checkUI(spec: WebAppSpec): ValidationIssue[] {
           }
         }
 
-        // Check usecase input field exists
-        if (uc && !(ucInput in uc.input)) {
+        // Check operation input field exists
+        if (op && !(opInput in op.input)) {
           issues.push({
             severity: "error",
             rule: "view.operation-input",
-            message: `View "${view.id}" inputFrom key "${ucInput}" is not defined in Operation "${action.operation}" input`,
+            message: `View "${view.id}" inputFrom key "${opInput}" is not defined in Operation "${action.operation}" input`,
             path: `ui.views[${i}].actions[${j}].inputFrom`,
           });
         }
       }
 
-      // Check all usecase inputs are mapped
-      if (uc) {
-        for (const inputKey of Object.keys(uc.input)) {
-          if (uc.input[inputKey].startsWith("actor.")) continue;
+      // Check all operation inputs are mapped
+      if (op) {
+        for (const inputKey of Object.keys(op.input)) {
+          if (op.input[inputKey].startsWith("actor.")) continue;
           if (!(inputKey in action.inputFrom)) {
             issues.push({
               severity: "error",
