@@ -60,7 +60,7 @@ export function EntityDetail() {
                 <td className="py-1 pr-4">
                   {f.type.includes(".") ? (
                     <RefLink
-                      to={`/entities/${f.type.split(".")[0]}`}
+                      to={`/domain/entities/${f.type.split(".")[0]}`}
                       className="font-mono text-xs"
                     >
                       {f.type}
@@ -148,7 +148,7 @@ export function EntityDetail() {
                   <span className="mx-1 text-gray-400">
                     ({direction})
                   </span>
-                  <RefLink to={`/entities/${other}`}>
+                  <RefLink to={`/domain/entities/${other}`}>
                     {other}
                   </RefLink>
                 </div>
@@ -166,7 +166,7 @@ export function EntityDetail() {
           <div className="space-y-1">
             {transitions.map((t) => (
               <div key={t.id} className="text-sm">
-                <RefLink to={`/transitions/${t.id}`}>
+                <RefLink to={`/domain/transitions/${t.id}`}>
                   {t.id}
                 </RefLink>
                 <span className="ml-2">

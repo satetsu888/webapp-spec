@@ -53,7 +53,7 @@ export function OperationDetail() {
         </div>
         <div>
           <span className="text-gray-500">Target: </span>
-          <RefLink to={`/entities/${op.target.entity}`}>
+          <RefLink to={`/domain/entities/${op.target.entity}`}>
             {op.target.entity}
           </RefLink>
           <Badge variant="gray" >
@@ -64,7 +64,7 @@ export function OperationDetail() {
           {op.transition ? (
             <>
               <span className="text-gray-500">Transition: </span>
-              <RefLink to={`/transitions/${op.transition}`}>
+              <RefLink to={`/domain/transitions/${op.transition}`}>
                 {op.transition}
               </RefLink>
             </>
@@ -123,7 +123,7 @@ export function OperationDetail() {
           <div className="space-y-1">
             {op.followUps.map((fu) => (
               <div key={fu.operation} className="text-sm">
-                <RefLink to={`/operations/${fu.operation}`}>
+                <RefLink to={`/usecases/operations/${fu.operation}`}>
                   {fu.operation}
                 </RefLink>
                 <span className="ml-2 text-gray-500">{fu.description}</span>
@@ -173,7 +173,7 @@ export function OperationDetail() {
           <div className="space-y-1">
             {views.map((v) => (
               <div key={v.id} className="text-sm">
-                <RefLink to={`/views/${v.id}`}>
+                <RefLink to={`/ui/views/${v.id}`}>
                   {v.id}
                 </RefLink>
               </div>

@@ -56,7 +56,7 @@ export function buildViewCompositionDiagram(
 
   for (const oid of operationIds) {
     lines.push(
-      `    click o_${sanitizeId(oid)} href "/operations/${oid}"`,
+      `    click o_${sanitizeId(oid)} href "/usecases/operations/${oid}"`,
     );
   }
 

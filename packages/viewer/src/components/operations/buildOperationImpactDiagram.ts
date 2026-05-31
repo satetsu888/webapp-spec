@@ -38,11 +38,11 @@ export function buildOperationImpactDiagram(
       const to = formatState(ch.state.to);
       const scope = ch.scope === "related" ? " (related)" : "";
       lines.push(`    c${i}["${escapeLabel(ch.entity)}\\n${escapeLabel(from)} → ${escapeLabel(to)}${escapeLabel(scope)}"]`);
-      clicks.push(`    click c${i} href "/entities/${ch.entity}"`);
+      clicks.push(`    click c${i} href "/domain/entities/${ch.entity}"`);
     }
   } else {
     lines.push(`    target["${escapeLabel(operation.target.entity)}"]`);
-    clicks.push(`    click target href "/entities/${operation.target.entity}"`);
+    clicks.push(`    click target href "/domain/entities/${operation.target.entity}"`);
   }
 
   for (let i = 0; i < sideEffects.length; i++) {
@@ -55,7 +55,7 @@ export function buildOperationImpactDiagram(
     for (let i = 0; i < operation.followUps.length; i++) {
       const fu = operation.followUps[i];
       lines.push(`    fu${i}(["${escapeLabel(fu.operation)}\\n${escapeLabel(fu.description)}"])`);
-      clicks.push(`    click fu${i} href "/operations/${fu.operation}"`);
+      clicks.push(`    click fu${i} href "/usecases/operations/${fu.operation}"`);
     }
   }
 

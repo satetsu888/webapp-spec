@@ -54,7 +54,7 @@ export function ViewDetail() {
                   <div className="mt-1 flex flex-wrap gap-1">
                     {comp.sources.map((src, i) => (
                       <span key={i} className="text-xs">
-                        <RefLink to={`/entities/${src.entity}`}>
+                        <RefLink to={`/domain/entities/${src.entity}`}>
                           {src.entity}
                         </RefLink>
                         {src.matching && (
@@ -90,7 +90,7 @@ export function ViewDetail() {
                 key={i}
                 className="rounded border border-gray-100 bg-white p-3 text-sm"
               >
-                <RefLink to={`/operations/${a.operation}`}>
+                <RefLink to={`/usecases/operations/${a.operation}`}>
                   {a.operation}
                 </RefLink>
                 <div className="mt-1 space-y-0.5 text-xs text-gray-500">

@@ -53,7 +53,7 @@ export function TransitionList() {
                     key={t.id}
                     className="rounded border border-gray-200 bg-white p-4"
                   >
-                    <RefLink to={`/transitions/${t.id}`}>
+                    <RefLink to={`/domain/transitions/${t.id}`}>
                       <span className="font-medium">{t.id}</span>
                     </RefLink>
                     <p className="mt-1 text-sm text-gray-600">
@@ -65,7 +65,7 @@ export function TransitionList() {
                           key={i}
                           className="flex items-center gap-2 text-sm"
                         >
-                          <RefLink to={`/entities/${ch.entity}`}>
+                          <RefLink to={`/domain/entities/${ch.entity}`}>
                             {ch.entity}
                           </RefLink>
                           <StateArrow

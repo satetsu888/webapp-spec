@@ -50,17 +50,17 @@ function buildFlowFromSteps(
         allIds.push(id);
         lines.push(`        ${id}["${escapeLabel(step.description)}"]`);
         if (step.action) {
-          clicks.push(`    click ${id} href "/operations/${step.action}"`);
+          clicks.push(`    click ${id} href "/usecases/operations/${step.action}"`);
         }
       }
       lines.push(`    end`);
-      clicks.push(`    click ${sgId} href "/views/${group.view}"`);
+      clicks.push(`    click ${sgId} href "/ui/views/${group.view}"`);
     } else if (group.kind === "background") {
       const id = `${idPrefix}s${group.index}`;
       allIds.push(id);
       const label = `${group.step.actor}: ${group.step.description}`;
       lines.push(`    ${id}(["${escapeLabel(label)}"])`);
-      clicks.push(`    click ${id} href "/operations/${group.step.operation}"`);
+      clicks.push(`    click ${id} href "/usecases/operations/${group.step.operation}"`);
     } else {
       const id = `${idPrefix}s${group.index}`;
       allIds.push(id);

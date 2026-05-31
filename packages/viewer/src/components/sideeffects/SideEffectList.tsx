@@ -47,7 +47,7 @@ export function SideEffectList() {
             >
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">When</span>
-                <RefLink to={`/operations/${se.trigger.operation}`}>
+                <RefLink to={`/usecases/operations/${se.trigger.operation}`}>
                   {se.trigger.operation}
                 </RefLink>
                 <span className="text-gray-400">&rarr;</span>

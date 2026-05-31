@@ -54,10 +54,10 @@ spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コ�
 - `/domain/relations` — Relation 一覧
 - `/domain/transitions`, `/domain/transitions/:id` — Transition 一覧・詳細
 - `/specs` — Spec 一覧
-- `/actors` — Actor 一覧
-- `/operations`, `/operations/:id` — Operation 一覧・詳細
+- `/usecases/actors` — Actor 一覧
+- `/usecases/operations`, `/usecases/operations/:id` — Operation 一覧・詳細
+- `/usecases/side-effects` — SideEffect 一覧
 - `/scenarios`, `/scenarios/:id` — Scenario 一覧・詳細
-- `/side-effects` — SideEffect 一覧
 - `/ui/views`, `/ui/views/:id` — View 一覧・詳細
 - `/simulation` — シミュレーション
 

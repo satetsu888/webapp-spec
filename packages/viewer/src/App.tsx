@@ -25,21 +25,21 @@ function AppRoutes({ onUnload }: { onUnload: () => void }) {
   return (
     <Routes>
       <Route element={<Layout onUnload={onUnload} />}>
-        <Route index element={<Navigate to="/entities" replace />} />
-        <Route path="entities" element={<EntityList />} />
-        <Route path="entities/:id" element={<EntityDetail />} />
-        <Route path="relations" element={<RelationList />} />
-        <Route path="transitions" element={<TransitionList />} />
-        <Route path="transitions/:id" element={<TransitionDetail />} />
-        <Route path="actors" element={<ActorList />} />
-        <Route path="operations" element={<OperationList />} />
-        <Route path="operations/:id" element={<OperationDetail />} />
+        <Route index element={<Navigate to="/domain/entities" replace />} />
+        <Route path="domain/entities" element={<EntityList />} />
+        <Route path="domain/entities/:id" element={<EntityDetail />} />
+        <Route path="domain/relations" element={<RelationList />} />
+        <Route path="domain/transitions" element={<TransitionList />} />
+        <Route path="domain/transitions/:id" element={<TransitionDetail />} />
+        <Route path="usecases/actors" element={<ActorList />} />
+        <Route path="usecases/operations" element={<OperationList />} />
+        <Route path="usecases/operations/:id" element={<OperationDetail />} />
         <Route path="specs" element={<SpecList />} />
-        <Route path="side-effects" element={<SideEffectList />} />
+        <Route path="usecases/side-effects" element={<SideEffectList />} />
         <Route path="scenarios" element={<ScenarioList />} />
         <Route path="scenarios/:id" element={<ScenarioDetail />} />
-        <Route path="views" element={<ViewList />} />
-        <Route path="views/:id" element={<ViewDetail />} />
+        <Route path="ui/views" element={<ViewList />} />
+        <Route path="ui/views/:id" element={<ViewDetail />} />
         <Route path="simulation" element={<SimulationPanel />} />
       </Route>
     </Routes>

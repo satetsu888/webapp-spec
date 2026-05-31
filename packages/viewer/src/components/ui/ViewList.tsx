@@ -68,7 +68,7 @@ export function ViewList() {
 function ViewCard({ view }: { view: View }) {
   return (
     <div className="rounded border border-gray-200 bg-white p-4">
-      <RefLink to={`/views/${view.id}`}>
+      <RefLink to={`/ui/views/${view.id}`}>
         <span className="font-medium">{view.id}</span>
       </RefLink>
       <div className="mt-1 text-sm text-gray-500">

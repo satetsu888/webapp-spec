@@ -52,13 +52,13 @@ export function ScenarioDetail() {
                 </RefLink>
               ) : "view" in step ? (
                 <>
-                  <RefLink to={`/views/${step.view}`}>
+                  <RefLink to={`/ui/views/${step.view}`}>
                     {step.view}
                   </RefLink>
                   {step.action && (
                     <>
                       <span className="text-gray-400">&rarr;</span>
-                      <RefLink to={`/operations/${step.action}`}>
+                      <RefLink to={`/usecases/operations/${step.action}`}>
                         {step.action}
                       </RefLink>
                     </>
@@ -70,7 +70,7 @@ export function ScenarioDetail() {
               ) : (
                 <>
                   <Badge variant="gray">background</Badge>
-                  <RefLink to={`/operations/${step.operation}`}>
+                  <RefLink to={`/usecases/operations/${step.operation}`}>
                     {step.operation}
                   </RefLink>
                   <Badge variant="green">{step.actor}</Badge>

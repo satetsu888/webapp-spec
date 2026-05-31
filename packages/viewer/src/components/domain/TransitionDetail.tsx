@@ -47,7 +47,7 @@ export function TransitionDetail() {
               key={i}
               className="flex items-center gap-2 rounded border border-gray-100 bg-white p-3 text-sm"
             >
-              <RefLink to={`/entities/${ch.entity}`}>
+              <RefLink to={`/domain/entities/${ch.entity}`}>
                 {ch.entity}
               </RefLink>
               <StateArrow entity={ch.entity} from={ch.state.from} to={ch.state.to} />
@@ -78,7 +78,7 @@ export function TransitionDetail() {
           <div className="space-y-1">
             {operations.map((o) => (
               <div key={o.id} className="text-sm">
-                <RefLink to={`/operations/${o.id}`}>
+                <RefLink to={`/usecases/operations/${o.id}`}>
                   {o.id}
                 </RefLink>
                 <span className="ml-2 text-gray-500">({o.actor})</span>

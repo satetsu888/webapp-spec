@@ -40,14 +40,14 @@ export function buildSideEffectFlowDiagram(sideEffects: SideEffect[]): string | 
   for (const opId of operationIds) {
     const nodeId = `uc_${sanitizeId(opId)}`;
     lines.push(`    ${nodeId}(["${escapeLabel(opId)}"])`);
-    clicks.push(`    click ${nodeId} href "/operations/${opId}"`);
+    clicks.push(`    click ${nodeId} href "/usecases/operations/${opId}"`);
   }
 
   for (const [key, notify] of targetKeys) {
     const nodeId = `n_${sanitizeId(key)}`;
     lines.push(`    ${nodeId}["${escapeLabel(notifyLabel(notify))}"]`);
     if ("owner" in notify) {
-      clicks.push(`    click ${nodeId} href "/entities/${notify.owner}"`);
+      clicks.push(`    click ${nodeId} href "/domain/entities/${notify.owner}"`);
     }
   }
 
