@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useLocation, useNavigate, Link } from "react-router";
 import { useSpec, type SpecLookups } from "@/hooks/useSpec";
 
 type MenuSection = {
@@ -13,6 +13,7 @@ type MenuEntry =
   | { kind: "section"; label: string; path: string; getItems: (s: SpecLookups) => { id: string }[] };
 
 const menu: MenuEntry[] = [
+  { kind: "section", path: "", label: "Overview", getItems: () => [] },
   {
     kind: "group",
     label: "Domain",
@@ -20,29 +21,11 @@ const menu: MenuEntry[] = [
     children: [
       { path: "entities", label: "Entities", getItems: (s) => s.spec.domain.entities },
       { path: "relations", label: "Relations", getItems: () => [] },
-      { path: "transitions", label: "Transitions", getItems: (s) => s.spec.domain.transitions },
     ],
   },
-  {
-    kind: "group",
-    label: "Usecases",
-    prefix: "usecases",
-    children: [
-      { path: "actors", label: "Actors", getItems: () => [] },
-      { path: "operations", label: "Operations", getItems: (s) => s.spec.usecases.operations },
-      { path: "side-effects", label: "Side Effects", getItems: () => [] },
-    ],
-  },
-  { kind: "section", path: "specs", label: "Specs", getItems: () => [] },
+  { kind: "section", path: "operations", label: "Operations", getItems: (s) => s.spec.usecases.operations },
+  { kind: "section", path: "views", label: "Views", getItems: (s) => s.spec.ui.views },
   { kind: "section", path: "scenarios", label: "Scenarios", getItems: (s) => s.spec.scenarios },
-  {
-    kind: "group",
-    label: "UI",
-    prefix: "ui",
-    children: [
-      { path: "views", label: "Views", getItems: (s) => s.spec.ui.views },
-    ],
-  },
   { kind: "section", path: "simulation", label: "Simulation", getItems: () => [] },
 ];
 
@@ -82,12 +65,13 @@ function SectionRow({
   const hasChildren = items.length > 0;
   const childActive = pathname.startsWith(`/${fullPath}/`);
   const isExpanded = hasChildren && (expanded.has(fullPath) || childActive);
+  const isActive = fullPath === "" ? pathname === "/" : pathname === `/${fullPath}`;
 
   return (
     <div>
       <div
         className={`flex items-center hover:bg-gray-100 ${
-          pathname === `/${fullPath}` ? "bg-blue-100" : ""
+          isActive ? "bg-blue-100" : ""
         }`}
       >
         {hasChildren ? (
@@ -169,28 +153,39 @@ export function Sidebar({ onUnload }: { onUnload: () => void }) {
             );
           }
 
-          const groupActive = entry.children.some(
-            (c) =>
-              location.pathname === `/${entry.prefix}/${c.path}` ||
-              location.pathname.startsWith(`/${entry.prefix}/${c.path}/`),
-          );
+          const groupActive =
+            location.pathname === `/${entry.prefix}` ||
+            entry.children.some(
+              (c) =>
+                location.pathname === `/${entry.prefix}/${c.path}` ||
+                location.pathname.startsWith(`/${entry.prefix}/${c.path}/`),
+            );
           const isGroupExpanded = expanded.has(entry.prefix) || groupActive;
 
           return (
             <div key={entry.prefix}>
-              <button
-                onClick={() => toggle(entry.prefix)}
-                className={`flex w-full items-center gap-1 px-2 py-1.5 text-left text-sm hover:bg-gray-100 ${
+              <div
+                className={`flex w-full items-center gap-1 px-2 py-1.5 text-sm hover:bg-gray-100 ${
                   groupActive ? "font-medium text-blue-800" : "font-medium text-gray-500"
                 }`}
               >
-                <span
-                  className={`inline-block text-[10px] transition-transform ${isGroupExpanded ? "rotate-90" : ""}`}
+                <button
+                  onClick={() => toggle(entry.prefix)}
+                  className="pr-0.5 text-gray-400 hover:text-gray-600"
                 >
-                  ▶
-                </span>
-                {entry.label}
-              </button>
+                  <span
+                    className={`inline-block text-[10px] transition-transform ${isGroupExpanded ? "rotate-90" : ""}`}
+                  >
+                    ▶
+                  </span>
+                </button>
+                <button
+                  onClick={() => toggle(entry.prefix)}
+                  className="flex-1 text-left"
+                >
+                  {entry.label}
+                </button>
+              </div>
               {isGroupExpanded &&
                 entry.children.map((child) => (
                   <SectionRow

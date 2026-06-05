@@ -1,9 +1,22 @@
 import type { Entity, Relation } from "@webapp-spec/types";
+import type { Node, Edge } from "@xyflow/react";
+import type { FlowData } from "@/components/shared/flow/types";
+
+function cardinality(kind: Relation["kind"]): { source: string; target: string } {
+  switch (kind) {
+    case "hasMany":
+      return { source: "1", target: "*" };
+    case "belongsTo":
+      return { source: "*", target: "1" };
+    case "manyToMany":
+      return { source: "*", target: "*" };
+  }
+}
 
 export function buildErDiagram(
   entities: Entity[],
   relations: Relation[],
-): string | null {
+): FlowData | null {
   if (relations.length === 0) return null;
 
   const referencedEntityIds = new Set<string>();
@@ -12,37 +25,34 @@ export function buildErDiagram(
     referencedEntityIds.add(r.to);
   }
 
-  const lines = ["erDiagram"];
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
 
   for (const entity of entities) {
     if (!referencedEntityIds.has(entity.id)) continue;
-    lines.push(`    ${entity.id} {`);
-    for (const f of entity.fields) {
-      const safeType = sanitizeType(f.type);
-      lines.push(`        ${safeType} ${f.name}`);
-    }
-    lines.push("    }");
+    nodes.push({
+      id: entity.id,
+      type: "entitySchema",
+      position: { x: 0, y: 0 },
+      data: {
+        label: entity.id,
+        fields: entity.fields.map((f) => ({ name: f.name, type: f.type })),
+        href: `/domain/entities/${entity.id}`,
+      },
+    });
   }
 
   for (const r of relations) {
-    const notation = relationNotation(r.kind);
-    lines.push(`    ${r.from} ${notation} ${r.to} : "${r.id}"`);
+    const c = cardinality(r.kind);
+    edges.push({
+      id: `rel_${r.id}`,
+      source: r.from,
+      target: r.to,
+      type: "relation",
+      label: r.id,
+      data: { sourceCardinality: c.source, targetCardinality: c.target },
+    });
   }
 
-  return lines.join("\n");
-}
-
-function sanitizeType(type: string): string {
-  return type.replace(/\./g, "_");
-}
-
-function relationNotation(kind: Relation["kind"]): string {
-  switch (kind) {
-    case "hasMany":
-      return "||--o{";
-    case "belongsTo":
-      return "}o--||";
-    case "manyToMany":
-      return "}o--o{";
-  }
+  return { nodes, edges, direction: "RIGHT" };
 }

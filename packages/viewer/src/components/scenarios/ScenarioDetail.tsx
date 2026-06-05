@@ -1,10 +1,7 @@
-import { useMemo } from "react";
 import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
-import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
-import { buildScenarioFlowDiagram } from "./buildScenarioFlowDiagram";
 
 export function ScenarioDetail() {
   const { id } = useParams<{ id: string }>();
@@ -13,11 +10,6 @@ export function ScenarioDetail() {
   if (!scenario)
     return <p className="text-red-600">Scenario "{id}" not found</p>;
 
-  const flowDiagram = useMemo(
-    () => buildScenarioFlowDiagram(scenario),
-    [scenario],
-  );
-
   return (
     <div className="space-y-6">
       <div>
@@ -25,15 +17,6 @@ export function ScenarioDetail() {
         <Badge variant="green">{scenario.actor}</Badge>
         <p className="mt-1 text-sm text-gray-600">{scenario.goal}</p>
       </div>
-
-      {flowDiagram && (
-        <section>
-          <h3 className="mb-2 text-sm font-semibold text-gray-700">
-            Scenario Flow
-          </h3>
-          <MermaidDiagram chart={flowDiagram} />
-        </section>
-      )}
 
       <section>
         <h3 className="mb-2 text-sm font-semibold text-gray-700">Steps</h3>
@@ -52,13 +35,13 @@ export function ScenarioDetail() {
                 </RefLink>
               ) : "view" in step ? (
                 <>
-                  <RefLink to={`/ui/views/${step.view}`}>
+                  <RefLink to={`/views/${step.view}`}>
                     {step.view}
                   </RefLink>
                   {step.action && (
                     <>
                       <span className="text-gray-400">&rarr;</span>
-                      <RefLink to={`/usecases/operations/${step.action}`}>
+                      <RefLink to={`/operations/${step.action}`}>
                         {step.action}
                       </RefLink>
                     </>
@@ -70,7 +53,7 @@ export function ScenarioDetail() {
               ) : (
                 <>
                   <Badge variant="gray">background</Badge>
-                  <RefLink to={`/usecases/operations/${step.operation}`}>
+                  <RefLink to={`/operations/${step.operation}`}>
                     {step.operation}
                   </RefLink>
                   <Badge variant="green">{step.actor}</Badge>

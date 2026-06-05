@@ -1,7 +1,7 @@
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
-import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { FlowDiagram } from "@/components/shared/flow/FlowDiagram";
 import { buildErDiagram } from "./buildErDiagram";
 
 export function RelationList() {
@@ -12,7 +12,7 @@ export function RelationList() {
     <div className="space-y-6">
       <h2 className="text-lg font-bold">Relations</h2>
 
-      {erDiagram && <MermaidDiagram chart={erDiagram} />}
+      {erDiagram && <FlowDiagram data={erDiagram} />}
 
       <div className="space-y-2">
         {spec.domain.relations.map((r) => (

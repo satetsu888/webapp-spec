@@ -26,7 +26,7 @@ export function OperationList() {
                     className="rounded border border-gray-200 bg-white p-4"
                   >
                     <div className="flex items-center gap-2">
-                      <RefLink to={`/usecases/operations/${o.id}`}>
+                      <RefLink to={`/operations/${o.id}`}>
                         <span className="font-medium">{o.id}</span>
                       </RefLink>
                       <RefLink

@@ -5,17 +5,19 @@ import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
 import { StateTag } from "@/components/shared/StateTag";
 import { StateArrow } from "@/components/shared/StateArrow";
-import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { FlowDiagram } from "@/components/shared/flow/FlowDiagram";
 import { buildStateDiagram } from "./buildStateDiagram";
 
 export function EntityDetail() {
   const { id } = useParams<{ id: string }>();
-  const { entityMap, relationsForEntity, transitionsForEntity } = useSpec();
+  const { entityMap, relationsForEntity, transitionsForEntity, operationsForEntity, componentsForEntity } = useSpec();
   const entity = entityMap.get(id!);
   if (!entity) return <p className="text-red-600">Entity "{id}" not found</p>;
 
   const relations = relationsForEntity(id!);
   const transitions = transitionsForEntity(id!);
+  const operations = operationsForEntity(id!);
+  const components = componentsForEntity(id!);
   const stateDiagram = useMemo(
     () => buildStateDiagram(id!, transitions, entity.states),
     [id, transitions, entity.states],
@@ -115,7 +117,7 @@ export function EntityDetail() {
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             State Diagram
           </h3>
-          <MermaidDiagram chart={stateDiagram} />
+          <FlowDiagram data={stateDiagram} />
         </section>
       )}
 
@@ -166,9 +168,7 @@ export function EntityDetail() {
           <div className="space-y-1">
             {transitions.map((t) => (
               <div key={t.id} className="text-sm">
-                <RefLink to={`/domain/transitions/${t.id}`}>
-                  {t.id}
-                </RefLink>
+                <span className="font-medium">{t.id}</span>
                 <span className="ml-2">
                   {t.changes
                     .filter((ch) => ch.entity === id)
@@ -181,6 +181,41 @@ export function EntityDetail() {
                       />
                     ))}
                 </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {operations.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Operations
+          </h3>
+          <div className="space-y-1">
+            {operations.map((op) => (
+              <div key={op.id} className="text-sm">
+                <RefLink to={`/operations/${op.id}`}>
+                  {op.id}
+                </RefLink>
+                <Badge variant="gray">{op.target.kind}</Badge>
+                <span className="ml-2 text-gray-500">{op.description}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {components.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            Components
+          </h3>
+          <div className="space-y-1">
+            {components.map((comp) => (
+              <div key={comp.id} className="text-sm">
+                <span className="font-medium">{comp.id}</span>
+                <span className="ml-2 text-gray-500">{comp.description}</span>
               </div>
             ))}
           </div>

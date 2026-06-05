@@ -3,18 +3,18 @@ import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
-import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { FlowDiagram } from "@/components/shared/flow/FlowDiagram";
 import { buildViewCompositionDiagram } from "./buildViewCompositionDiagram";
 
 export function ViewDetail() {
   const { id } = useParams<{ id: string }>();
-  const { viewMap, componentMap } = useSpec();
+  const { viewMap, componentMap, operationMap } = useSpec();
   const view = viewMap.get(id!);
   if (!view) return <p className="text-red-600">View "{id}" not found</p>;
 
   const compositionDiagram = useMemo(
-    () => buildViewCompositionDiagram(view, componentMap),
-    [view, componentMap],
+    () => buildViewCompositionDiagram(view, componentMap, operationMap),
+    [view, componentMap, operationMap],
   );
 
   return (
@@ -26,7 +26,7 @@ export function ViewDetail() {
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             Data Flow
           </h3>
-          <MermaidDiagram chart={compositionDiagram} />
+          <FlowDiagram data={compositionDiagram} />
         </section>
       )}
 
@@ -90,7 +90,7 @@ export function ViewDetail() {
                 key={i}
                 className="rounded border border-gray-100 bg-white p-3 text-sm"
               >
-                <RefLink to={`/usecases/operations/${a.operation}`}>
+                <RefLink to={`/operations/${a.operation}`}>
                   {a.operation}
                 </RefLink>
                 <div className="mt-1 space-y-0.5 text-xs text-gray-500">

@@ -27,6 +27,8 @@ export type SpecLookups = {
   scenarioMap: Map<string, Scenario>;
   relationsForEntity: (entityId: string) => Relation[];
   transitionsForEntity: (entityId: string) => Transition[];
+  operationsForEntity: (entityId: string) => Operation[];
+  componentsForEntity: (entityId: string) => Component[];
   operationsByActor: (actorId: string) => Operation[];
   sideEffectsByOperation: (operationId: string) => SideEffect[];
   viewsForActor: (actorId: string) => View[];
@@ -72,6 +74,26 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
       const list = entityTransitions.get(ch.entity) ?? [];
       if (!list.includes(t)) list.push(t);
       entityTransitions.set(ch.entity, list);
+    }
+  }
+
+  const entityOperations = new Map<string, Operation[]>();
+  for (const o of spec.usecases.operations) {
+    const list = entityOperations.get(o.target.entity) ?? [];
+    list.push(o);
+    entityOperations.set(o.target.entity, list);
+  }
+
+  const entityComponents = new Map<string, Component[]>();
+  for (const c of spec.ui.components) {
+    const seen = new Set<string>();
+    for (const src of c.sources) {
+      if (!seen.has(src.entity)) {
+        seen.add(src.entity);
+        const list = entityComponents.get(src.entity) ?? [];
+        list.push(c);
+        entityComponents.set(src.entity, list);
+      }
     }
   }
 
@@ -143,6 +165,8 @@ function buildLookups(spec: WebAppSpec): SpecLookups {
     scenarioMap,
     relationsForEntity: (id) => entityRelations.get(id) ?? [],
     transitionsForEntity: (id) => entityTransitions.get(id) ?? [],
+    operationsForEntity: (id) => entityOperations.get(id) ?? [],
+    componentsForEntity: (id) => entityComponents.get(id) ?? [],
     operationsByActor: (id) => actorOperations.get(id) ?? [],
     sideEffectsByOperation: (id) => operationSideEffects.get(id) ?? [],
     viewsForActor: (id) => actorViews.get(id) ?? [],

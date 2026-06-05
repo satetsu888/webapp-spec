@@ -1,8 +1,6 @@
 import type { SideEffect, NotificationTarget } from "@webapp-spec/types";
-
-function escapeLabel(text: string): string {
-  return text.replace(/"/g, "#quot;");
-}
+import type { Node, Edge } from "@xyflow/react";
+import type { FlowData } from "@/components/shared/flow/types";
 
 function sanitizeId(text: string): string {
   return text.replace(/[^a-zA-Z0-9]/g, "_");
@@ -20,11 +18,16 @@ function notifyLabel(notify: NotificationTarget): string {
   return `external: ${notify.external}`;
 }
 
-export function buildSideEffectFlowDiagram(sideEffects: SideEffect[]): string | null {
+function notifyHref(notify: NotificationTarget): string | undefined {
+  if ("owner" in notify) return `/domain/entities/${notify.owner}`;
+  return undefined;
+}
+
+export function buildSideEffectFlowDiagram(sideEffects: SideEffect[]): FlowData | null {
   if (sideEffects.length === 0) return null;
 
-  const lines = ["flowchart LR"];
-  const clicks: string[] = [];
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
 
   const operationIds = new Set<string>();
   const targetKeys = new Map<string, NotificationTarget>();
@@ -38,25 +41,33 @@ export function buildSideEffectFlowDiagram(sideEffects: SideEffect[]): string | 
   }
 
   for (const opId of operationIds) {
-    const nodeId = `uc_${sanitizeId(opId)}`;
-    lines.push(`    ${nodeId}(["${escapeLabel(opId)}"])`);
-    clicks.push(`    click ${nodeId} href "/usecases/operations/${opId}"`);
+    nodes.push({
+      id: `uc_${sanitizeId(opId)}`,
+      type: "operation",
+      position: { x: 0, y: 0 },
+      data: { label: opId, href: `/operations/${opId}` },
+    });
   }
 
   for (const [key, notify] of targetKeys) {
-    const nodeId = `n_${sanitizeId(key)}`;
-    lines.push(`    ${nodeId}["${escapeLabel(notifyLabel(notify))}"]`);
-    if ("owner" in notify) {
-      clicks.push(`    click ${nodeId} href "/domain/entities/${notify.owner}"`);
-    }
+    nodes.push({
+      id: `n_${sanitizeId(key)}`,
+      type: "labeled",
+      position: { x: 0, y: 0 },
+      data: { label: notifyLabel(notify), href: notifyHref(notify) },
+    });
   }
 
   for (const se of sideEffects) {
-    const ucNode = `uc_${sanitizeId(se.trigger.operation)}`;
-    const nNode = `n_${sanitizeId(notifyKey(se.notify))}`;
-    lines.push(`    ${ucNode} -->|"${escapeLabel(se.description)}"| ${nNode}`);
+    const sourceId = `uc_${sanitizeId(se.trigger.operation)}`;
+    const targetId = `n_${sanitizeId(notifyKey(se.notify))}`;
+    edges.push({
+      id: `e_${sourceId}_${targetId}_${sanitizeId(se.description)}`,
+      source: sourceId,
+      target: targetId,
+      label: se.description,
+    });
   }
 
-  lines.push(...clicks);
-  return lines.join("\n");
+  return { nodes, edges, direction: "RIGHT" };
 }

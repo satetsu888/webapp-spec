@@ -3,20 +3,23 @@ import { useParams } from "react-router";
 import { useSpec } from "@/hooks/useSpec";
 import { RefLink } from "@/components/shared/RefLink";
 import { Badge } from "@/components/shared/Badge";
-import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { FlowDiagram } from "@/components/shared/flow/FlowDiagram";
 import { buildOperationImpactDiagram } from "./buildOperationImpactDiagram";
 
 export function OperationDetail() {
   const { id } = useParams<{ id: string }>();
-  const { operationMap, transitionMap, sideEffectsByOperation, spec } = useSpec();
+  const { operationMap, componentMap, sideEffectsByOperation, spec } = useSpec();
   const op = operationMap.get(id!);
   if (!op) return <p className="text-red-600">Operation "{id}" not found</p>;
 
   const sideEffects = sideEffectsByOperation(id!);
+  const views = spec.ui.views.filter((v) =>
+    v.actions.some((a) => a.operation === id),
+  );
 
   const impactDiagram = useMemo(
-    () => buildOperationImpactDiagram(op, transitionMap, sideEffects),
-    [op, transitionMap, sideEffects],
+    () => buildOperationImpactDiagram(op, views, componentMap, sideEffects),
+    [op, views, componentMap, sideEffects],
   );
   const scenarios = spec.scenarios.filter((s) =>
     s.steps.some(
@@ -25,9 +28,6 @@ export function OperationDetail() {
         (("view" in step && step.action === id) ||
           ("operation" in step && step.operation === id)),
     ),
-  );
-  const views = spec.ui.views.filter((v) =>
-    v.actions.some((a) => a.operation === id),
   );
 
   return (
@@ -42,7 +42,7 @@ export function OperationDetail() {
           <h3 className="mb-2 text-sm font-semibold text-gray-700">
             Impact Flow
           </h3>
-          <MermaidDiagram chart={impactDiagram} />
+          <FlowDiagram data={impactDiagram} />
         </section>
       )}
 
@@ -64,9 +64,7 @@ export function OperationDetail() {
           {op.transition ? (
             <>
               <span className="text-gray-500">Transition: </span>
-              <RefLink to={`/domain/transitions/${op.transition}`}>
-                {op.transition}
-              </RefLink>
+              <span className="font-medium">{op.transition}</span>
             </>
           ) : (
             <Badge variant="purple">Query</Badge>
@@ -123,7 +121,7 @@ export function OperationDetail() {
           <div className="space-y-1">
             {op.followUps.map((fu) => (
               <div key={fu.operation} className="text-sm">
-                <RefLink to={`/usecases/operations/${fu.operation}`}>
+                <RefLink to={`/operations/${fu.operation}`}>
                   {fu.operation}
                 </RefLink>
                 <span className="ml-2 text-gray-500">{fu.description}</span>
@@ -173,7 +171,7 @@ export function OperationDetail() {
           <div className="space-y-1">
             {views.map((v) => (
               <div key={v.id} className="text-sm">
-                <RefLink to={`/ui/views/${v.id}`}>
+                <RefLink to={`/views/${v.id}`}>
                   {v.id}
                 </RefLink>
               </div>

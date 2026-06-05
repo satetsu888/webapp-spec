@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+.react-flow__handle {
+  opacity: 0;
+}
+
+.react-flow__node-group {
+  border: none;
+  background: none;
+  padding: 0;
+  width: auto;
+}

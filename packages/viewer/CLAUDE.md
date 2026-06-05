@@ -14,7 +14,7 @@ npm run preview   # ビルド済みファイルのプレビュー
 
 - React 19 + React Router 7（BrowserRouter）
 - Vite 6 + Tailwind CSS 4
-- Mermaid（ER 図・状態遷移図の描画）
+- @xyflow/react + elkjs（ダイアグラム描画・自動レイアウト）
 
 ## アーキテクチャ
 
@@ -33,15 +33,15 @@ src/
   components/
     loading/               # SpecLoader（ファイル選択・サンプル選択）
     layout/                # Layout, Sidebar（ナビゲーション）
-    domain/                # Entity, Relation, Transition の詳細表示 + Mermaid 図
-    specs/                 # Spec 一覧
-    actors/                # Actor 一覧
+    overview/              # Overview ページ（App Map 図、ER 図、SideEffect フロー、Specs サマリー）
+    domain/                # Entity, Relation の詳細表示 + State 図
     operations/            # Operation 一覧・詳細
     scenarios/             # Scenario 一覧・詳細
-    sideeffects/           # SideEffect 一覧
+    sideeffects/           # SideEffect フロー図ビルダー
+    usecases/              # Actor-Operation 図ビルダー
     ui/                    # View 一覧・詳細
     simulation/            # シミュレーション UI（Actor/Action 選択、入力フォーム、実行結果）
-    shared/                # 共通コンポーネント（Badge, MermaidDiagram, RefLink, StateArrow, StateTag）
+    shared/                # 共通コンポーネント（Badge, RefLink, StateArrow, StateTag, FlowDiagram）
 ```
 
 ## 画面構成
@@ -49,55 +49,65 @@ src/
 spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コンテンツ領域のレイアウトに切り替わる。
 
 ルーティング:
-- `/` — SpecLoader（spec 未ロード時）またはリダイレクト
+- `/` — Overview（App Map 図、ER 図、SideEffect フロー、Specs サマリー）
 - `/domain/entities`, `/domain/entities/:id` — Entity 一覧・詳細
-- `/domain/relations` — Relation 一覧
-- `/domain/transitions`, `/domain/transitions/:id` — Transition 一覧・詳細
-- `/specs` — Spec 一覧
-- `/usecases/actors` — Actor 一覧
-- `/usecases/operations`, `/usecases/operations/:id` — Operation 一覧・詳細
-- `/usecases/side-effects` — SideEffect 一覧
+- `/domain/relations` — Relation（ER 図）
+- `/operations`, `/operations/:id` — Operation 一覧・詳細
+- `/views`, `/views/:id` — View 一覧・詳細
 - `/scenarios`, `/scenarios/:id` — Scenario 一覧・詳細
-- `/ui/views`, `/ui/views/:id` — View 一覧・詳細
 - `/simulation` — シミュレーション
 
-## Mermaid ダイアグラム
+## ダイアグラム（xyflow / React Flow）
+
+### アーキテクチャ
+
+ダイアグラムは `@xyflow/react` + `elkjs`（自動レイアウト）で描画する。
+
+```
+shared/flow/
+  FlowDiagram.tsx          ← 共通ラッパー（レイアウト計算・描画・クリックナビゲーション）
+  layout.ts                ← ELK.js レイアウトユーティリティ
+  types.ts                 ← FlowData 型（nodes + edges + direction）
+  nodes/                   ← カスタムノードコンポーネント
+  edges/                   ← カスタムエッジコンポーネント
+```
+
+各画面のビルダー関数が `FlowData | null` を返し、`FlowDiagram` コンポーネントで描画する。ビルダーはデータ不足時に `null` を返し、その場合ダイアグラムは非表示になる。
 
 ### ダイアグラム一覧
 
-各画面に対応するビルダー関数がダイアグラム文字列を生成し、`MermaidDiagram` コンポーネントで描画する。
-ビルダーはデータが不足する場合（changes が空など）に `null` を返し、その場合ダイアグラムは非表示になる。
+| 画面 | ビルダー | 方向 | 内容 |
+|------|----------|------|------|
+| Overview | `buildAppMapDiagram` | RIGHT | Actor → View{Component} → Operation → Entity |
+| Overview / RelationList | `buildErDiagram` | RIGHT | Entity 間のリレーション（ER図） |
+| Overview | `buildSideEffectFlowDiagram` | RIGHT | 全 SideEffect の Operation → 通知先ネットワーク |
+| EntityDetail | `buildStateDiagram` | DOWN | Entity の全状態と Transition による遷移 |
+| OperationDetail | `buildOperationImpactDiagram` | RIGHT | Actor → Operation → 状態変化 / SideEffect / Follow-up |
+| ViewDetail | `buildViewCompositionDiagram` | RIGHT | View の Component 構成 |
 
-| 画面 | ビルダー | Mermaid 種別 | 内容 |
-|------|----------|-------------|------|
-| EntityDetail | `buildStateDiagram` | stateDiagram-v2 | Entity の全状態と Transition による遷移 |
-| RelationList | `buildErDiagram` | erDiagram | Entity 間のリレーション |
-| TransitionDetail | `buildTransitionDiagram` | stateDiagram-v2 | 単一 Transition の状態変化（Entity ごとにサブグラフ） |
-| OperationDetail | `buildOperationImpactDiagram` | flowchart LR | Actor → Operation → 状態変化 / SideEffect / Follow-up |
-| ScenarioDetail | `buildScenarioFlowDiagram` | flowchart TD | Scenario のステップフロー |
-| SideEffectList | `buildSideEffectFlowDiagram` | flowchart LR | 全 SideEffect の Operation → 通知先ネットワーク |
-| ViewDetail | `buildViewCompositionDiagram` | flowchart LR | View の Component 構成 |
+### カスタムノード
 
-### ノード形状ルール
+| ノード型 | 用途 | 視覚 |
+|----------|------|------|
+| `entitySchema` | ER 図の Entity | テーブル（ヘッダー + フィールド行） |
+| `state` | 状態遷移図の状態 | 黒丸（start）/ 二重丸（end）/ 角丸矩形（normal） |
+| `actor` | Operation Impact の Actor | 人型 SVG アイコン |
+| `operation` | Operation | ピル型（丸角） |
+| `labeled` | 汎用ラベル付き矩形 | 矩形（variant="hexagon" で六角風） |
+| `group` | サブグラフ相当 | 破線コンテナ |
 
-ダイアグラム間で spec オブジェクトの形状を統一する。新しいダイアグラムを追加する際はこのルールに従うこと。
+### カスタムエッジ
 
-| 概念 | 形状 | Mermaid 構文 |
-|------|------|-------------|
-| Actor | 人型アイコン | `@{ shape: icon, icon: "spec:actor", label: "..." }` |
-| Operation | スタジアム（丸角） | `(["..."])` |
-| Entity / 状態変化 | 矩形 | `["..."]` |
-| Component | 矩形 | `["..."]` |
-| Scenario 参照 | 六角形 | `{{"..."}}` |
-| SideEffect | スタジアム + 破線接続 | `(["..."])` + `-.->` |
-| View / Variant | subgraph | コンテナとして使用 |
+| エッジ型 | 用途 |
+|----------|------|
+| `dashed` | SideEffect / FollowUp への破線接続 |
+| `relation` | ER 図のリレーション（カーディナリティ "1" / "*" 表示付き） |
 
-### 共通実装ルール
+### 共通ルール
 
-- `spec:actor` アイコンは `MermaidDiagram.tsx` で `registerIconPacks` により登録済み
-- クリック可能なノードには `click nodeId href "/path"` を付与。`MermaidDiagram` が `bindFunctions` + キャプチャフェーズのイベント委譲で React Router 遷移に変換する
-- ラベル内の `"` は `#quot;` にエスケープ（`escapeLabel` ヘルパー）
-- stateDiagram-v2 のグループノード（`state alias { ... }`）にはラベル（description）を付けられない。`state "label" as alias { ... }` は Mermaid がエラーを出すため、alias のみで定義する
+- ビルダーは `FlowData` を返す（position は `{ x: 0, y: 0 }` でよい。レイアウトは FlowDiagram が計算）
+- クリック可能なノードは `data.href` にパスを設定（FlowDiagram が onNodeClick で React Router 遷移）
+- グループノードは `type: "group"` + 子ノードの `parentId` / `extent: "parent"` で表現
 
 ## シミュレーションエンジン
 
