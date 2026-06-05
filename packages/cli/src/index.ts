@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { registerValidateCommand } from "./commands/validate.js";
 import { registerViewCommand } from "./commands/view.js";
 import { registerSchemaCommand } from "./commands/schema.js";
+import { registerInfoCommand } from "./commands/info.js";
 
 const program = new Command();
 
@@ -15,5 +16,6 @@ program
 registerValidateCommand(program);
 registerViewCommand(program);
 registerSchemaCommand(program);
+registerInfoCommand(program);
 
 program.parse();
