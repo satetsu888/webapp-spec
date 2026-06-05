@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router";
 import type { WebAppSpec } from "@webapp-spec/types";
 import { SpecProvider } from "@/hooks/useSpec";
 import { SimulationProvider } from "@/hooks/useSimulation";
@@ -39,6 +39,24 @@ function AppRoutes({ onUnload }: { onUnload: () => void }) {
 
 export function App() {
   const [spec, setSpec] = useState<WebAppSpec | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/__spec__.json")
+      .then((res) => {
+        if (res.ok && res.headers.get("content-type")?.includes("json")) {
+          return res.json();
+        }
+        return null;
+      })
+      .then((data) => {
+        if (data) setSpec(data as WebAppSpec);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
 
   return (
     <BrowserRouter>

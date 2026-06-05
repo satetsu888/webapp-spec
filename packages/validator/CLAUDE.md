@@ -1,13 +1,12 @@
 # @webapp-spec/validator
 
-WebAppSpec の意味的バリデーター。JSON Schema による構造チェック（ajv）の後に、参照整合性やルール違反を検出する。
+WebAppSpec の意味的バリデーションライブラリ。参照整合性やルール違反を検出する。CLI 機能は `@webapp-spec/cli`（`wspec` コマンド）に統合済み。
 
 ## コマンド
 
 ```sh
 npx tsc              # ビルド（types パッケージを先にビルドしておくこと）
 npx vitest run       # テスト実行
-npx webapp-spec-validate <spec.json>  # CLI
 ```
 
 ## アーキテクチャ
@@ -29,10 +28,15 @@ src/
     entities.ts       # Entity の構造チェック（states 必須）
     actors.ts         # Actor の構造チェック（anonymous 存在）
     fixtures.ts       # Fixture の整合性（entity 参照、field 存在、state 値、インスタンス参照）
-  index.ts            # CLI エントリポイント（JSON Schema + 意味バリデーション）
 tests/
   validator.test.ts   # vitest テスト
 ```
+
+## 公開 API
+
+- `validate(spec: WebAppSpec): ValidationResult` — 意味バリデーション実行
+- `ValidationIssue`, `ValidationResult`, `Severity`, `VersionedRule` — 型定義
+- `SUPPORTED_SPEC_VERSION` — サポートする spec バージョン
 
 各ルールファイルは `(spec: WebAppSpec) => ValidationIssue[]` を返す関数をエクスポートする。`validator.ts` が `VersionedRule`（`fn` + `minVersion` + `maxVersion?`）として登録し、`spec.webappSpec` のバージョンに応じてフィルタして実行する。`SUPPORTED_SPEC_VERSION` より新しい spec はエラーで即 return する。
 

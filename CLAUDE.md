@@ -20,8 +20,9 @@ webapp-spec/
   samples/                    # サンプル spec ファイル
   packages/
     types/                    # @webapp-spec/types — TypeScript 型定義
-    validator/                # @webapp-spec/validator — 意味的バリデーター + CLI
+    validator/                # @webapp-spec/validator — 意味的バリデーター（ライブラリ）
     viewer/                   # @webapp-spec/viewer — ブラウザベースの仕様ビューア + シミュレーター
+    cli/                      # @webapp-spec/cli — 統合 CLI（wspec コマンド）
 ```
 
 ## 設計原則
@@ -33,18 +34,32 @@ webapp-spec/
 ## ビルドとテスト
 
 ```sh
-# 型パッケージのビルド（validator, viewer が依存するため先にビルド）
+# 型パッケージのビルド（validator, viewer, cli が依存するため先にビルド）
 cd packages/types && npx tsc
 
 # validator のビルドとテスト
 cd packages/validator && npx tsc && npx vitest run
 
-# CLI でサンプルを検証
-npx webapp-spec-validate samples/todo-app.json
+# viewer のビルド（cli の view コマンドが dist/ を参照するためビルドが必要）
+cd packages/viewer && npm run build
 
-# viewer の開発サーバ
+# cli のビルド
+cd packages/cli && npx tsc
+
+# CLI でサンプルを検証
+npx wspec validate samples/todo-app.json
+
+# ブラウザで spec を閲覧
+npx wspec view samples/todo-app.json
+
+# JSON Schema を出力
+npx wspec schema
+
+# viewer の開発サーバ（viewer 単体の開発時）
 cd packages/viewer && npm run dev
 ```
+
+ビルド順序: `types` → `validator` → `viewer` (vite build) → `cli` (tsc)
 
 ## WebAppSpec のレイヤー構造
 

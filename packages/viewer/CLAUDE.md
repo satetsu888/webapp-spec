@@ -46,7 +46,9 @@ src/
 
 ## 画面構成
 
-spec が未ロード時は SpecLoader を表示。ロード後は Sidebar + コンテンツ領域のレイアウトに切り替わる。
+App.tsx は初回マウント時に `/__spec__.json` を fetch する。CLI（`wspec view`）経由で起動した場合はこのエンドポイントから spec が返されるため自動ロードされる。`npm run dev` で単体起動した場合は 404 になり、従来の SpecLoader（ファイル選択・サンプル選択）にフォールバックする。
+
+ロード後は Sidebar + コンテンツ領域のレイアウトに切り替わる。
 
 ルーティング:
 - `/` — Overview（App Map 図、ER 図、SideEffect フロー、Specs サマリー）
