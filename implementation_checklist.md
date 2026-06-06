@@ -7,6 +7,18 @@ WebAppSpec は「何を作るか」を定義する。このドキュメントは
 - **Part 1: 質問事項** — 選択肢から回答すれば決まる項目。ヒアリング形式で情報を集める。
 - **Part 2: 構造化マッピング** — spec の要素ごとに構造化されたデータとして定義が必要な項目。Part 1 の回答と spec の内容をもとに作成する。
 
+## 方針: 技術選定からの導出を優先する
+
+このチェックリストで明示的に問うのは、技術選定だけでは決まらない判断に限る。フレームワーク（Next.js, Rails 等）、認証基盤（Supabase, Auth0 等）、ホスティング（Vercel, AWS 等）などを選択すれば自明に決まる項目は、選定した技術のベストプラクティスや規約に従えばよく、ここで個別に決定する必要はない。
+
+例:
+- **認可の実施パターン** — Next.js なら middleware + Server Actions、Rails なら before_action 等、フレームワークの標準に従う
+- **ファイルストレージ / キャッシュ / 検索** — ホスティング先やマネージドサービスの選定で決まる
+- **リアルタイム通信** — Supabase Realtime, Pusher 等、基盤の選定で決まる
+- **セッション管理 / トークン保存先** — 認証基盤の推奨方式に従う
+
+Part 1 の回答で技術スタック（Q1）や認証基盤（Q3）が決まった時点で、関連する下位の決定はそちらの規約から導出すること。
+
 ---
 
 # Part 1: 質問事項
@@ -243,7 +255,7 @@ type EndpointMapping = {
     "operationId": "register-user",
     "method": "POST",
     "path": "/api/users",
-    "requestBody": ["name", "email"],
+    "requestBody": ["name", "email", "password"],
     "successStatus": 201,
     "errorMapping": [
       { "when": "email_taken", "status": 409 }
@@ -291,6 +303,34 @@ type EndpointMapping = {
     "pathParams": ["todoId"],
     "successStatus": 204,
     "errorMapping": []
+  }
+]
+```
+
+### システム操作マッピング
+
+actor が `"system"` の Operation は HTTP エンドポイントではなく、cron ジョブやキューワーカーとして実装する。
+
+```typescript
+type SystemOperationMapping = {
+  operationId: string       // spec の Operation.id
+  trigger: "cron" | "queue" | "event"
+  schedule?: string         // cron の場合（例: "0 * * * *"）
+  queue?: string            // queue の場合のキュー名
+}
+```
+
+```json
+[
+  {
+    "operationId": "send-deadline-reminders",
+    "trigger": "cron",
+    "schedule": "0 9 * * *"
+  },
+  {
+    "operationId": "cleanup-completed-todos",
+    "trigger": "cron",
+    "schedule": "0 3 * * *"
   }
 ]
 ```
@@ -419,23 +459,35 @@ type SideEffectDeliveryMapping = {
 }
 ```
 
-### 記入例
-
-Todo App の spec には sideEffects が定義されていないが、仮に「TODO完了時にオーナーに通知」がある場合:
+### 記入例（Todo App）
 
 ```json
-{
-  "trigger": { "operation": "complete-todo", "entity": "Todo" },
-  "channel": "email",
-  "processing": "async",
-  "queue": {
-    "provider": "bullmq",
-    "retryMax": 3,
-    "retryBackoff": "exponential"
+[
+  {
+    "trigger": { "operation": "send-deadline-reminders", "entity": "Todo" },
+    "channel": "push",
+    "processing": "async",
+    "queue": {
+      "provider": "bullmq",
+      "retryMax": 3,
+      "retryBackoff": "exponential"
+    },
+    "provider": "fcm",
+    "templateId": "deadline-reminder"
   },
-  "provider": "sendgrid",
-  "templateId": "todo-completed"
-}
+  {
+    "trigger": { "operation": "cleanup-completed-todos", "entity": "Todo" },
+    "channel": "email",
+    "processing": "async",
+    "queue": {
+      "provider": "bullmq",
+      "retryMax": 3,
+      "retryBackoff": "exponential"
+    },
+    "provider": "sendgrid",
+    "templateId": "todo-auto-deleted"
+  }
+]
 ```
 
 ---
